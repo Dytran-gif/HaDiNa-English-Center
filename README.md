@@ -82,8 +82,8 @@ Tài khoản demo, mật khẩu `123456`: `admin@demo.com` · `teacher@demo.com`
 
 | Vùng | FE | API | BE | Người |
 |---|---|---|---|---|
-| Public | `src/pages/*.tsx` | `api/public` | `Controllers/Public/` | Hoàng |
-| Admin | `src/pages/admin/` | `api/admin` | `Controllers/Admin/` | ⟨cần điền⟩ |
+| Public | `src/pages/*.tsx` | `api/public` | `Controllers/Public/` | Done |
+| Admin | `src/pages/admin/` | `api/admin` | `Controllers/Admin/` | Hoàng |
 | Teacher | `src/pages/teacher/` | `api/teacher` | `Controllers/TeacherPortal/` | Duy |
 | Student | `src/pages/student/` | `api/student` | `Controllers/StudentPortal/` | Nam |
 
