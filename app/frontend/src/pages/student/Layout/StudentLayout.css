@@ -1,0 +1,46 @@
+.student-layout {
+    min-height: 100vh;
+
+    background-color: #f5fdff;
+}
+
+
+.student-main {
+    min-height: 100vh;
+
+    margin-left: 180px;
+
+    display: flex;
+    flex-direction: column;
+}
+
+
+.student-content {
+    flex: 1;
+
+    padding-top:15px;
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 900px) {
+    .student-main {
+        margin-left: 230px;
+    }
+}
+
+
+@media (max-width: 768px) {
+    .student-main {
+        margin-left: 0;
+    }
+
+    .student-content {
+        padding: 20px 16px;
+    }
+}

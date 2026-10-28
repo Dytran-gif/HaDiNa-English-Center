@@ -1,0 +1,62 @@
+.why-different {
+  padding-block: var(--section-y);
+}
+
+.why-different__grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 800px) {
+  .why-different__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.why-different__item {
+  padding: clamp(24px, 3vw, 32px);
+  border-radius: var(--radius-lg);
+  background: var(--paper);
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.why-different__index {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.5rem;
+  color: var(--blue);
+}
+
+.why-different__item h3 {
+  font-size: 1.3rem;
+  font-family: var(--font-body);
+  font-weight: 700;
+}
+
+.why-different__item ul {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.why-different__item li {
+  padding-inline-start: 1.2em;
+  position: relative;
+}
+
+.why-different__item li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.5em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--blue);
+}

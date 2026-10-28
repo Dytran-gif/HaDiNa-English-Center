@@ -1,0 +1,44 @@
+/* ============================================================
+   PUBLIC THEME — chỉ áp dụng cho trang PUBLIC (trong .page-shell).
+   Do Hoàng thêm. Được nạp bởi src/components/layout/PageShell.tsx.
+
+   Vì dashboard student / teacher / admin dùng layout riêng
+   (StudentLayout / TeacherLayout / AdminLayout) và KHÔNG nằm trong
+   .page-shell, nên mọi override ở đây tuyệt đối không ảnh hưởng tới
+   phần của 2 bạn kia — token gốc trong tokens.css vẫn giữ nguyên.
+
+   Nội dung:
+   1) Làm dịu tông xanh dương cho trang public (nhạt & dễ chịu hơn).
+   2) Tiện ích hiệu ứng "reveal" khi cuộn — dùng bởi <Reveal/>.
+   ============================================================ */
+
+/* 1) Bảng màu public dịu hơn — chỉ ghi đè trong phạm vi .page-shell */
+.page-shell {
+  --blue: #5385ef; /* xanh dương dịu hơn (gốc #2563eb) */
+  --blue-dark: #33468c; /* navy nhẹ hơn cho tiêu đề (gốc #1e3a8a) */
+  --blue-light: #eff5ff; /* nền xanh nhạt, thoáng hơn */
+  --blue-hover: #3f6fdd; /* màu hover */
+}
+
+/* 2) Reveal khi cuộn tới (JS gắn class .is-visible qua IntersectionObserver) */
+.reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s ease;
+  will-change: opacity, transform;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

@@ -1,0 +1,22 @@
+.testimonials {
+  padding-block: var(--section-y);
+  overflow: hidden;
+}
+
+.testimonials__rail {
+  display: flex;
+  gap: 20px;
+  padding-inline: var(--gutter);
+  padding-block-end: 8px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+}
+
+.testimonials__rail::-webkit-scrollbar {
+  height: 8px;
+}
+
+.testimonials__rail::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: var(--radius-pill);
+}

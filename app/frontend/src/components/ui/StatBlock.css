@@ -1,0 +1,23 @@
+.stat-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: clamp(20px, 2.5vw, 28px);
+  background: var(--paper);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+}
+
+.stat-block__value {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2rem, 4vw, 2.6rem);
+  line-height: 1;
+  color: var(--blue);
+}
+
+.stat-block__label {
+  font-size: 0.85rem;
+  color: var(--muted);
+  max-width: 20ch;
+}

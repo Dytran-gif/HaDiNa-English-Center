@@ -1,0 +1,114 @@
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--header-h);
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100dvh;
+  min-width: 0;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--blue-dark);
+}
+
+::selection {
+  background: var(--blue-light);
+  color: var(--blue-dark);
+}
+
+/* ---- layout primitives ---- */
+
+.container {
+  width: 100%;
+  max-width: var(--max-w);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--blue);
+}
+
+.kicker::before {
+  content: "";
+  width: 1.4em;
+  height: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--blue);
+}
+
+/* ---- page shell ---- */
+
+.page-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.page-shell__main {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ---- pill tabs (category filters) ---- */
+
+.pill-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pill-tabs button {
+  padding: 10px 20px;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--line);
+  background: var(--paper);
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--muted);
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.pill-tabs button:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.pill-tabs button.is-active {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

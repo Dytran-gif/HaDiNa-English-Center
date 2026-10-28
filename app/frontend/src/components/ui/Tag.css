@@ -1,0 +1,26 @@
+.tag {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.4em 0.9em;
+  border-radius: var(--radius-pill);
+  background: var(--paper-alt);
+  color: var(--muted);
+}
+
+.tag--red {
+  background: var(--blue-light);
+  color: var(--blue);
+}
+
+.tag--yellow {
+  background: #fff4d6;
+  color: #92650a;
+}
+
+.tag--green {
+  background: #e3f8ec;
+  color: #0f7a44;
+}

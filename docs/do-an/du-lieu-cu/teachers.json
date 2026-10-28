@@ -1,0 +1,16 @@
+[
+  {
+    "teacher_id": 1,
+    "full_name": "Nguyễn Văn A",
+    "bio": "5 năm kinh nghiệm giảng dạy IELTS, chứng chỉ CELTA.",
+    "avatar_url": "../assets/images/teacher-1.jpg",
+    "rating_avg": 4.8
+  },
+  {
+    "teacher_id": 2,
+    "full_name": "Trần Thị B",
+    "bio": "Chuyên đào tạo giao tiếp cho người đi làm.",
+    "avatar_url": "../assets/images/teacher-2.jpg",
+    "rating_avg": 4.6
+  }
+]

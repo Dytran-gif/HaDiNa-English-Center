@@ -1,0 +1,71 @@
+.register-cta {
+  padding-block: var(--section-y);
+  background: var(--blue);
+  color: #fff;
+}
+
+.register-cta__inner {
+  display: grid;
+  gap: clamp(32px, 5vw, 64px);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 860px) {
+  .register-cta__inner {
+    grid-template-columns: 0.9fr 1.1fr;
+    align-items: start;
+  }
+}
+
+.register-cta__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.kicker--light {
+  color: #cfe0ff;
+}
+
+.kicker--light::before {
+  background: #cfe0ff;
+}
+
+.register-cta__copy h2 {
+  font-size: clamp(2rem, 4.5vw, 3rem);
+  color: #fff;
+}
+
+.register-cta__copy p {
+  max-width: 50ch;
+  color: #dbe8ff;
+}
+
+.register-cta__form {
+  background: var(--paper);
+  color: var(--ink);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft-lg);
+  padding: clamp(24px, 3vw, 36px);
+}
+
+.register-cta__form form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.register-cta__submit {
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
+.register-cta__success h3 {
+  font-size: 1.5rem;
+  margin-bottom: 12px;
+}
+
+.register-cta__success p {
+  color: var(--muted);
+  margin-bottom: 20px;
+}

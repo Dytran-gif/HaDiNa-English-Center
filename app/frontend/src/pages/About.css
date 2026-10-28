@@ -1,0 +1,58 @@
+.about-stats,
+.about-values,
+.about-teachers {
+  padding-block: var(--section-y);
+}
+
+.about-stats__grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.about-values__grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.about-values__item {
+  padding: clamp(20px, 2.5vw, 28px);
+  border-radius: var(--radius-lg);
+  background: var(--paper);
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.about-values__item > span {
+  font-family: var(--font-display);
+  font-weight: 800;
+  color: var(--blue);
+  font-size: 1.3rem;
+}
+
+.about-values__item h3 {
+  font-size: 1.15rem;
+  font-family: var(--font-body);
+  font-weight: 700;
+}
+
+.about-values__item ul {
+  color: var(--muted);
+  font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.about-teachers {
+  background: var(--paper-alt);
+}
+
+.about-teachers__grid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}

@@ -1,0 +1,32 @@
+[
+  {
+    "course_id": 1,
+    "course_name": "IELTS Cấp tốc 6.5+",
+    "description": "Khóa học luyện thi IELTS cấp tốc trong 3 tháng.",
+    "category_id": 2,
+    "teacher_id": 1,
+    "price": 5500000,
+    "duration_weeks": 12,
+    "level": "B2"
+  },
+  {
+    "course_id": 2,
+    "course_name": "Giao tiếp công sở",
+    "description": "Khóa học giao tiếp tiếng Anh dành cho người đi làm.",
+    "category_id": 1,
+    "teacher_id": 2,
+    "price": 3200000,
+    "duration_weeks": 8,
+    "level": "A2"
+  },
+  {
+    "course_id": 3,
+    "course_name": "TOEIC 750+",
+    "description": "Luyện thi TOEIC 2 kỹ năng Nghe - Đọc.",
+    "category_id": 3,
+    "teacher_id": 1,
+    "price": 4000000,
+    "duration_weeks": 10,
+    "level": "B1"
+  }
+]

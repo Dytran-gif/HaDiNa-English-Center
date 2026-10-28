@@ -1,0 +1,62 @@
+erDiagram
+  USER ||--o{ ENROLLMENT : "đăng ký"
+  COURSE ||--o{ ENROLLMENT : "được đăng ký"
+  TEACHER ||--o{ COURSE : "phụ trách"
+  CATEGORY ||--o{ COURSE : "thuộc danh mục"
+  ENROLLMENT ||--|| PAYMENT : "có"
+  USER ||--o{ REVIEW : "viết"
+  TEACHER ||--o{ REVIEW : "được đánh giá"
+
+  USER {
+    int user_id PK
+    string full_name
+    string email
+    string password
+    string phone
+    string role
+    datetime created_at
+  }
+  COURSE {
+    int course_id PK
+    string course_name
+    text description
+    int category_id FK
+    int teacher_id FK
+    decimal price
+    int duration_weeks
+    string level
+  }
+  CATEGORY {
+    int category_id PK
+    string category_name
+  }
+  TEACHER {
+    int teacher_id PK
+    string full_name
+    text bio
+    string avatar_url
+    float rating_avg
+  }
+  ENROLLMENT {
+    int enrollment_id PK
+    int user_id FK
+    int course_id FK
+    date enroll_date
+    string status
+  }
+  PAYMENT {
+    int payment_id PK
+    int enrollment_id FK
+    decimal amount
+    string payment_method
+    datetime paid_at
+    string status
+  }
+  REVIEW {
+    int review_id PK
+    int user_id FK
+    int teacher_id FK
+    int rating
+    text comment
+    datetime created_at
+  }

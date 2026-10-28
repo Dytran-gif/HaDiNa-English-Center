@@ -1,0 +1,81 @@
+.teacher-detail {
+  padding-block: var(--section-y);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 720px;
+}
+
+.teacher-detail__back {
+  align-self: flex-start;
+}
+
+.teacher-detail__head {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.teacher-detail__head h1 {
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+}
+
+.teacher-detail__title {
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+.teacher-detail__rating {
+  font-weight: 600;
+  color: var(--blue);
+  margin-top: 6px;
+}
+
+.teacher-detail__bio {
+  font-size: 1.05rem;
+  color: var(--muted);
+}
+
+.teacher-detail h2 {
+  font-size: 1.4rem;
+  font-family: var(--font-body);
+  font-weight: 700;
+  margin-top: 8px;
+}
+
+.teacher-detail__credentials li {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.teacher-courses {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-radius: var(--radius-lg);
+  background: var(--paper-alt);
+  overflow: hidden;
+}
+
+.teacher-courses__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.teacher-courses__item:last-child {
+  border-bottom: none;
+}
+
+.teacher-courses .btn--ghost {
+  padding: 0;
+  justify-content: flex-start;
+}
+
+.teacher-courses span {
+  font-size: 0.85rem;
+  color: var(--muted);
+}

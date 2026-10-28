@@ -1,0 +1,15 @@
+.page-banner {
+  padding-block: clamp(40px, 6vw, 72px);
+  background: var(--blue-light);
+}
+
+.page-banner h1 {
+  margin-top: 14px;
+  font-size: clamp(2.1rem, 4.6vw, 3.2rem);
+}
+
+.page-banner p {
+  margin-top: 14px;
+  max-width: 62ch;
+  color: var(--muted);
+}

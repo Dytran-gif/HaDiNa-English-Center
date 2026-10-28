@@ -1,0 +1,465 @@
+/* =====================================================
+   STUDENT HEADER
+===================================================== */
+
+.student-header {
+    --primary: #3b82f6;
+    --primary-light: #dbeafe;
+    --accent: #10b981;
+
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+
+    --border: #e2e8f0;
+    --surface: #ffffff;
+    --surface-hover: #f8fafc;
+
+    /* color use for icons */
+    --first-icon-color: #cbd41d;
+
+    width: 100%;
+    height: 70px;
+    padding: 0 36px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    box-sizing: border-box;
+
+    background-color: var(--surface);
+    border-bottom: 1px solid var(--border);
+
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+
+/* =====================================================
+   TITLE
+===================================================== */
+
+.header-title {
+    min-width: 0;
+    overflow: hidden;
+}
+
+.header-title h1 {
+    margin: 0;
+
+    color: var(--text-main);
+
+    font-size: 28px;
+    line-height: 1.2;
+    font-weight: 700;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.header-title p {
+    margin: 6px 0 0;
+
+    color: var(--text-muted);
+
+    font-size: 14px;
+    line-height: 1.4;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.fa-hand-sparkles{
+    color: var(--first-icon-color);
+}
+/* =====================================================
+   RIGHT SIDE
+===================================================== */
+
+.header-right {
+    display: flex;
+    align-items: center;
+
+    gap: 24px;
+
+    flex-shrink: 0;
+}
+
+
+/* =====================================================
+   SEARCH
+===================================================== */
+
+.header-search {
+    position: relative;
+    width: 150px;
+    height: 30px;
+
+    display: flex;
+    align-items: center;
+
+    padding: 0 12px 0 16px;
+
+    box-sizing: border-box;
+
+    background-color: var(--surface-hover);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+
+    transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.header-search:focus-within {
+    background-color: var(--surface);
+
+    border-color: #93c5fd;
+
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+
+/* Search input */
+
+.header-search input {
+    flex: 1;
+    min-width: 0;
+
+    height: 100%;
+    padding: 0;
+    padding-right: 22px;
+    border: none;
+    outline: none;
+
+    background: transparent;
+
+    color: var(--text-main);
+
+    font-family: inherit;
+    font-size: 13px;
+}
+
+.header-search input::placeholder {
+    color: var(--text-muted);
+}
+
+
+/* Search button / link */
+
+.search-link {
+    width: 25px;
+    height: 25px;
+
+    display: flex;
+    justify-content: center;
+    text-decoration: none;
+    border-radius: 50%;
+
+    transition: background-color 0.2s ease;
+    position: absolute;
+    right: 3px;
+}
+
+.search-link:hover {
+    background-color: var(--primary-light);
+}
+
+.search-icon {
+    color: var(--text-muted);
+    font-size: 15px;
+    transition: color 0.2s ease;
+}
+
+.search-link:hover .search-icon {
+    color: var(--primary);
+}
+
+
+/* =====================================================
+   NOTIFICATION
+===================================================== */
+
+.notification-button {
+    position: relative;
+
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    padding: 0;
+
+    border: none;
+    border-radius: 10px;
+
+    background: transparent;
+
+    color: var(--accent);
+
+    font-size: 20px;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.notification-button:hover {
+    background-color: var(--surface-hover);
+
+    transform: translateY(-1px);
+}
+
+.notification-button:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+
+/* Notification badge */
+
+.notification-badge {
+    position: absolute;
+
+    top: 0;
+    right: 0;
+
+    min-width: 18px;
+    height: 18px;
+
+    padding: 0 4px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-sizing: border-box;
+
+    border: 2px solid var(--surface);
+    border-radius: 999px;
+
+    background-color: var(--accent);
+    color: #ffffff;
+
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+
+/* =====================================================
+   USER
+===================================================== */
+
+.header-user {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+
+    padding: 5px 8px 5px 5px;
+
+    border-radius: 12px;
+
+    cursor: pointer;
+
+    transition: background-color 0.2s ease;
+}
+
+.header-user:hover {
+    background-color: var(--surface-hover);
+}
+
+
+/* =====================================================
+   USER AVATAR
+===================================================== */
+
+.user-avatar {
+    width: 30px;
+    height: 30px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+
+    background-color: var(--primary-light);
+
+    font-size: 24px;
+}
+
+
+/* =====================================================
+   USER INFO
+===================================================== */
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+
+    gap: 3px;
+
+    min-width: 110px;
+    overflow: hidden;
+}
+
+.user-info strong {
+    color: var(--text-main);
+
+    font-size: 14px;
+    line-height: 1.2;
+    font-weight: 700;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-info span {
+    color: var(--text-muted);
+
+    font-size: 11px;
+    line-height: 1.2;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+/* =====================================================
+   USER ARROW
+===================================================== */
+
+.user-arrow {
+    margin-left: 4px;
+
+    color: var(--text-muted);
+
+    font-size: 18px;
+    line-height: 1;
+}
+
+
+/* =====================================================
+   RESPONSIVE - TABLET
+===================================================== */
+
+@media (max-width: 1100px) {
+    .student-header {
+        padding: 0 24px;
+    }
+
+    .header-right {
+        gap: 14px;
+    }
+
+    .header-search {
+        width: 190px;
+    }
+
+    .user-info {
+        display: none;
+    }
+}
+
+
+/* =====================================================
+   RESPONSIVE - MOBILE
+===================================================== */
+
+@media (max-width: 768px) {
+    .student-header {
+        height: 80px;
+        padding: 0 16px;
+    }
+
+    .header-title {
+        max-width: 45%;
+    }
+
+    .header-title h1 {
+        font-size: 22px;
+    }
+
+    .header-title p {
+        font-size: 12px;
+    }
+
+    .header-right {
+        gap: 8px;
+    }
+
+    .header-search {
+        width: 42px;
+        height: 42px;
+
+        padding: 0;
+
+        justify-content: center;
+    }
+
+    .header-search input {
+        display: none;
+    }
+
+    .search-link {
+        width: 42px;
+        height: 42px;
+    }
+
+    .notification-button {
+        width: 42px;
+        height: 42px;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        font-size: 21px;
+    }
+
+    .user-arrow {
+        display: none;
+    }
+}
+
+
+/* =====================================================
+   SMALL MOBILE
+===================================================== */
+
+@media (max-width: 480px) {
+    .student-header {
+        padding: 0 12px;
+    }
+
+    .header-title {
+        max-width: 40%;
+    }
+
+    .header-title h1 {
+        font-size: 18px;
+    }
+
+    .header-title p {
+        display: none;
+    }
+
+    .header-right {
+        gap: 4px;
+    }
+}

@@ -1,0 +1,74 @@
+.cert-mock {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 220px;
+}
+
+.cert-mock__card {
+  position: absolute;
+  width: 82%;
+  max-width: 320px;
+  background: #fff;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft-lg);
+  padding: 18px 20px;
+}
+
+.cert-mock__card--back {
+  top: 6%;
+  left: 2%;
+  transform: rotate(-7deg);
+  opacity: 0.75;
+}
+
+.cert-mock__card--front {
+  top: 18%;
+  left: 16%;
+  transform: rotate(4deg);
+}
+
+.cert-mock__header {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.4rem;
+  margin-bottom: 14px;
+}
+
+.cert-mock__badge {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  opacity: 0.85;
+}
+
+.cert-mock__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cert-mock__photo {
+  flex-shrink: 0;
+  width: 44px;
+  height: 54px;
+  border-radius: 6px;
+  background: #e2e6ee;
+}
+
+.cert-mock__lines {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cert-mock__lines span {
+  display: block;
+  height: 7px;
+  border-radius: var(--radius-pill);
+  background: #e2e6ee;
+}

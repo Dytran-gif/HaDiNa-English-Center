@@ -1,0 +1,296 @@
+/* CourseMain.css */
+
+.course-main-section {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+/* HEADER */
+.cm-header {
+    margin-bottom: 24px;
+}
+
+.cm-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e3a8a;
+    margin: 0 0 8px 0;
+}
+
+.cm-subtitle {
+    font-size: 12px;
+    color: #6b7280;
+    margin: 0;
+}
+
+/* FILTER BARS */
+.cm-filters-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.cm-filter-row-1 {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.cm-level-tabs {
+    display: flex;
+    gap: 8px;
+}
+
+.cm-level-btn {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    color: #4b5563;
+    padding: 8px 16px;
+    border-radius: 9999px;
+    font-size: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cm-level-btn:hover {
+    background-color: #f3f4f6;
+}
+
+.cm-level-btn.active {
+    background-color: #2563eb;
+    color: #ffffff;
+    border-color: #2563eb;
+}
+
+.cm-search-box {
+    display: flex;
+    align-items: center;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 3px 15px;
+    width: 150px;
+}
+
+.cm-search-box i {
+    color: #9ca3af;
+    margin-right: 8px;
+}
+
+.cm-search-box input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 14px;
+    color: #1f2937;
+}
+
+.cm-filter-row-2 {
+    display: flex;
+    gap: 12px;
+}
+
+.cm-dropdown select {
+    appearance: none;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 5px 30px 8px 10px;
+    font-size: 12px;
+    color: #4b5563;
+    cursor: pointer;
+    outline: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239ca3af%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px top 50%;
+    background-size: 10px auto;
+}
+
+/* KHU VỰC DANH SÁCH KHÓA HỌC & THANH TRƯỢT */
+.cm-course-list-wrapper {
+    /* Đặt chiều cao tối đa khoảng 2 hàng rưỡi để kích hoạt scrollbar nếu > 6 thẻ */
+    max-height: 400px; 
+    overflow-y: auto;
+    padding-right: 12px;
+    padding-bottom: 20px;
+}
+
+/* Custom Scrollbar */
+.cm-course-list-wrapper::-webkit-scrollbar {
+    width: 6px;
+}
+.cm-course-list-wrapper::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 8px;
+}
+.cm-course-list-wrapper::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 8px;
+}
+
+.cm-course-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+/* THẺ KHÓA HỌC CÁ NHÂN */
+.cm-course-card {
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* HIỆU ỨNG HOVER THEO YÊU CẦU (-4px để dịch sang TRÁI, -4px để dịch LÊN TRÊN) */
+.cm-course-card:hover {
+    transform: translate(-4px, -4px);
+    box-shadow: 6px 6px 15px rgba(0, 0, 0, 0.08);
+}
+
+.cm-card-image {
+    position: relative;
+    width: 100%;
+    height: 80px;
+}
+
+.cm-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.cm-badge {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 8px;
+    font-weight: 700;
+    color: #ffffff;
+}
+.badge-beginner { background-color: #22c55e; }
+.badge-intermediate { background-color: #3b82f6; }
+.badge-advanced { background-color: #a855f7; }
+
+.cm-card-content {
+    padding: 12px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.cm-card-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 4px 0;
+}
+
+.cm-card-desc {
+    font-size: 10px;
+    color: #6b7280;
+    line-height: 1.4;
+    flex: 1; /* Đẩy các nội dung bên dưới xuống đáy */
+    padding-bottom: 20px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; 
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.cm-card-meta {
+    display: flex;
+    gap: 16px;
+    font-size: 10px;
+    color: #4b5563;
+    margin-bottom: 6px;
+}
+.cm-card-meta i {
+    margin-right: 4px;
+}
+
+.cm-card-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.cm-skill-tag {
+    background-color: #eff6ff;
+    color: #2563eb;
+    font-size: 8px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 9999px;
+}
+
+/* FOOTER THẺ (Price & Nút) */
+.cm-card-footer {
+    display: block;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.cm-price {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1f2937;
+}
+.cm-card-actions {
+    display: flex;
+    gap: 15px; 
+}
+.cm-register-btn {
+    background-color: #2563eb;
+    color: #ffffff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cm-register-btn:hover {
+    background-color: #1d4ed8;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+.cm-view-btn {
+    background-color: #ffffff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cm-view-btn:hover {
+    background-color: #eff6ff;
+    border-color: #2563eb;
+}
+
+.cm-no-results {
+    grid-column: span 3;
+    text-align: center;
+    padding: 40px;
+    color: #6b7280;
+    font-size: 14px;
+}

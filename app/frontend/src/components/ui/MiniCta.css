@@ -1,0 +1,39 @@
+.mini-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: clamp(20px, 2.5vw, 26px);
+  background: var(--blue-light);
+  border-radius: var(--radius-lg);
+}
+
+.mini-cta h3 {
+  font-size: 1.25rem;
+  font-family: var(--font-body);
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.mini-cta p {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.mini-cta__btn {
+  align-self: flex-start;
+}
+
+.mini-cta__contact {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 12px;
+  margin-top: 4px;
+  border-top: 1px solid #cfe0ff;
+  font-size: 0.88rem;
+  color: var(--blue-dark);
+}
+
+.mini-cta__contact a:hover {
+  text-decoration: underline;
+}

@@ -1,0 +1,30 @@
+Task name,Status,Assignee,Due,Priority,Tags,Project
+Viết Problem Statement,Done,Duy,2026-07-08,High,Research,Xác định vấn đề & Nghiên cứu
+Research 2 web tham khảo (ILA + WSE),Done,Hoàng,2026-07-09,Medium,Research,Xác định vấn đề & Nghiên cứu
+Research thêm + đề xuất tính năng mới,Done,Duy,2026-07-10,Medium,Research,Xác định vấn đề & Nghiên cứu
+Họp nhóm chốt vấn đề + tính năng,Not Started,Duy,2026-07-12,Medium,Meeting,Xác định vấn đề & Nghiên cứu
+Lập danh sách Requirements (Functional/Security/UI/Perf),In Progress,Hoàng,2026-07-15,High,Design,Thiết kế hệ thống & Giao diện
+Chốt tech stack (framework/styling),Not Started,Duy,2026-07-15,High,Design,Thiết kế hệ thống & Giao diện
+Vẽ User Tree,Done,Duy,2026-07-17,Medium,Design,Thiết kế hệ thống & Giao diện
+Vẽ Activity Diagram,Done,Hoàng,2026-07-19,High,Design,Thiết kế hệ thống & Giao diện
+Thiết kế ERD,Done,Duy,2026-07-22,High,Design,Thiết kế hệ thống & Giao diện
+Chuẩn hóa dữ liệu (Normalization),Done,Duy,2026-07-23,Medium,Design,Thiết kế hệ thống & Giao diện
+Vẽ Wireframe/Mockup Figma,Not Started,Hoàng,2026-07-25,High,Design,Thiết kế hệ thống & Giao diện
+Chốt style guide chung (màu/font),Not Started,Duy,2026-07-26,Low,Design,Thiết kế hệ thống & Giao diện
+Header/Footer/Navbar dùng chung,Not Started,Duy,2026-07-28,High,Coding,Code giao diện
+Trang chủ (Home),Not Started,Duy,2026-07-30,High,Coding,Code giao diện
+Trang chi tiết khóa học,Not Started,Hoàng,2026-07-30,High,Coding,Code giao diện
+Trang danh sách khóa học + lọc,Not Started,Duy,2026-08-01,High,Coding,Code giao diện
+Trang Đăng nhập/Đăng ký,Not Started,Hoàng,2026-08-01,High,Coding,Code giao diện
+Trang cá nhân học viên,Not Started,Duy,2026-08-05,Medium,Coding,Code giao diện
+Trang giáo viên,Not Started,Hoàng,2026-08-05,Medium,Coding,Code giao diện
+Trang Blog/Tin tức,Not Started,Duy,2026-08-07,Low,Coding,Code giao diện
+Trang Liên hệ/Form tư vấn,Not Started,Hoàng,2026-08-07,Low,Coding,Code giao diện
+Ghép các trang thành 1 project,Not Started,Duy,2026-08-11,High,Testing,Ghép nối & Kiểm thử
+Kiểm tra responsive mobile/tablet,Not Started,Hoàng,2026-08-13,Medium,Testing,Ghép nối & Kiểm thử
+Kiểm tra luồng chức năng end-to-end,Not Started,Duy,2026-08-13,High,Testing,Ghép nối & Kiểm thử
+Fix bug + tối ưu tốc độ,Not Started,Duy,2026-08-16,Medium,Testing,Ghép nối & Kiểm thử
+Viết báo cáo Phân tích - Thiết kế,Not Started,Duy,2026-08-19,High,Report,Báo cáo & Bảo vệ
+Viết báo cáo Công nghệ - Triển khai,Not Started,Hoàng,2026-08-19,High,Report,Báo cáo & Bảo vệ
+Làm slide thuyết trình,Not Started,Hoàng,2026-08-21,Medium,Report,Báo cáo & Bảo vệ
+Tập thuyết trình thử,Not Started,Duy,2026-08-22,Medium,Report,Báo cáo & Bảo vệ

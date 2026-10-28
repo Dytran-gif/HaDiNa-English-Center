@@ -1,0 +1,225 @@
+/* CourseBottom.css */
+
+.course-bottom-section {
+    display: flex;
+    gap: 24px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 2px dashed #e5e7eb; /* Đường kẻ phân cách Khu vực 1 và Khu vực 2 */
+    align-items: flex-start;
+}
+
+/* --- CỘT TRÁI: DANH SÁCH KHÓA HỌC --- */
+.cb-left-panel {
+    flex: 1;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+.cb-panel-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 16px 0;
+}
+
+/* Khung bọc danh sách để tạo scrollbar nếu > 10 khóa (Giả sử 1 thẻ cao ~120px) */
+.cb-list-wrapper {
+    max-height: 300px; 
+    overflow-y: auto;
+    padding-right: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cb-list-wrapper::-webkit-scrollbar {
+    width: 6px;
+}
+.cb-list-wrapper::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 8px;
+}
+.cb-list-wrapper::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 8px;
+}
+
+/* Từng dòng khóa học */
+.cb-course-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 16px;
+    border: 1px solid #f1f5f9;
+    border-radius: 12px;
+    background-color: #f8fafc;
+}
+
+/* 1. Thông tin (Ảnh + Chữ) */
+.cb-course-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 2; /* Chiếm nhiều không gian hơn */
+}
+
+.cb-img {
+    width: 80px;
+    height: 60px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.cb-info-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.cb-level {
+    font-size: 10px;
+    font-weight: 700;
+    color: #ffffff;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    align-self: flex-start;
+    margin-bottom: 4px;
+}
+.badge-beginner { background-color: #22c55e; }
+.badge-intermediate { background-color: #3b82f6; }
+.badge-advanced { background-color: #a855f7; }
+
+.cb-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 4px 0;
+}
+
+.cb-meta {
+    font-size: 12px;
+    color: #6b7280;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.cb-price-item {
+    font-weight: 600;
+    color: #1e3a8a;
+}
+
+/* 2. Chọn lớp học */
+.cb-class-selection {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+}
+
+.cb-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #4b5563;
+    margin-bottom: 6px;
+}
+
+.cb-select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #1f2937;
+    outline: none;
+    background-color: #ffffff;
+}
+
+.cb-view-schedule {
+    font-size: 12px;
+    color: #2563eb;
+    text-decoration: none;
+    margin-top: 8px;
+    align-self: flex-end;
+}
+.cb-view-schedule i {
+    font-size: 10px;
+}
+
+/* 3. Nút Xóa */
+.cb-delete-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background-color: #fef2f2;
+    color: #ef4444;
+    border: 1px solid #fee2e2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.cb-delete-btn:hover {
+    background-color: #ef4444;
+    color: #ffffff;
+}
+
+/* --- CỘT PHẢI: TỔNG TIỀN VÀ NÚT REGISTER --- */
+.cb-right-panel {
+    width: 280px;
+    flex-shrink: 0;
+}
+
+.cb-summary-card {
+    background-color: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+}
+
+.cb-summary-label {
+    font-size: 14px;
+    color: #4b5563;
+    margin-bottom: 8px;
+}
+
+.cb-summary-price {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 24px;
+}
+
+.cb-register-btn {
+    background-color: #2563eb;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-bottom: 16px;
+}
+
+.cb-register-btn:hover {
+    background-color: #1d4ed8;
+}
+
+.cb-summary-note {
+    font-size: 11px;
+    color: #6b7280;
+    text-align: center;
+    line-height: 1.5;
+    margin: 0;
+}

@@ -1,0 +1,17 @@
+.news-blog {
+  padding-block: var(--section-y);
+}
+
+.news-blog__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.news-blog__grid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
