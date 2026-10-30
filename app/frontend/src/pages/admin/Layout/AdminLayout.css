@@ -1,7 +1,7 @@
 ﻿.admin-layout { min-height: 100dvh; background: var(--admin-canvas); }
 .admin-layout .admin-main { display: flex; flex-direction: column; min-width: 0; min-height: 100dvh; margin-inline-start: var(--admin-sidebar-width); }
-.admin-layout .admin-content { flex: 1; min-width: 0; padding: var(--admin-space-8); box-sizing: border-box; }
-.admin-layout .admin-skip-link { position: fixed; inset-inline-start: var(--admin-space-4); top: var(--admin-space-4); z-index: 2200; padding: var(--admin-space-3) var(--admin-space-4); background: var(--admin-surface); color: var(--admin-primary-ink); border: 1px solid var(--admin-primary); border-radius: var(--admin-radius-control); transform: translateY(-200%); }
-.admin-layout .admin-skip-link:focus { transform: none; }
+.admin-layout .admin-content { flex: 1; min-width: 0; padding: var(--admin-space-8); padding-block-start: var(--admin-space-6); box-sizing: border-box; }
+.admin-layout .admin-skip-link { position: fixed; inset-inline-start: var(--admin-space-4); top: var(--admin-space-4); z-index: 2200; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; background: var(--admin-surface); color: var(--admin-primary-ink); border-radius: var(--admin-radius-control); }
+.admin-layout .admin-skip-link:focus { width: auto; height: auto; padding: var(--admin-space-3) var(--admin-space-4); overflow: visible; clip-path: none; border: 1px solid var(--admin-primary); }
 @media (max-width: 64em) { .admin-layout .admin-content { padding: var(--admin-space-6); } }
-@media (max-width: 48em) { .admin-layout .admin-main { margin-inline-start: 0; } .admin-layout .admin-content { padding: var(--admin-space-4); } }
+@media (max-width: 48em) { .admin-layout .admin-main { margin-inline-start: 0; } .admin-layout .admin-content { padding: var(--admin-space-4); padding-block-start: var(--admin-space-6); } }

@@ -1,4 +1,29 @@
 # Nhật ký bàn giao
+## [2026-10-30] Codex — Dashboard/Cài đặt, plan 25
+
+**Đã xong**
+- QuickActions flex trái/gap12/nút40/icon SVG, dưới640 một cột; giữ đúng ba đích action=create. KPI một Link/thẻ, grid4/2/1, không lồng Card/StatBlock. Recent courses một SectionCard, ghost link và Badge neutral.
+- Gộp hai banner demo/minh họa thành một Notice info; main padding-top24. Sửa skip-link clipping khi ẩn để tránh lộ viền ở góc, vẫn hiện khi Tab.
+- Settings dùng hai SectionCard đồng bộ, heading18/600/gap16, input44/radius10/placeholder, disabled không nhạt cả form; footer cùng đáy, password help/match, dirty save. Retry trong Notice lỗi thực; demo không có lỗi đăng nhập đỏ giả trong Settings.
+- Shared composition/style ở Ui/QuickActions, SectionCard, AdminPanels.css; token bổ sung chỉ Admin. Không sửa BE/API/route/auth/services/deps hoặc vùng khác.
+- Build/lint qua từng nhóm, 0 lỗi (1 warning AuthContext có sẵn); 28 kiểm tra UI +27 API/session cũ PASS, 12 assertions SSR mục tiêu đạt. Docs/tracker cập nhật.
+
+**Đang dở**
+- Không có browser tool nên chưa chụp/đo viewport thực tế. Nguồn skip-link xác định từ code; chưa xác nhận trên ảnh người dùng.
+- Việc6 mới có tiêu đề NHỊP, không có nội dung để triển khai. Các bảng/trang khác còn cần EmptyState/thông báo demo trung tính; không đánh F3-A.1 toàn bộ xong.
+
+**Việc tiếp theo**
+1. Khóa học mẫu F3-A.2: toolbar/skeleton/badge/icon action/ConfirmDialog.
+2. Áp dụng trạng thái demo/rỗng/lỗi và toast mutation cho các bảng/trang còn lại.
+3. Khi browser host sẵn sàng: QA tương tác/ảnh ở1440/1024/390, gồm dirty form/password/retry, link/keyboard/skip-link.
+
+**Bẫy cần biết**
+- Dashboard còn dữ liệu minh họa, không có API mới. Không sửa Dashboard.css vì Reports còn dùng class cũ; composition mới dùng AdminPanels.css.
+- Padding20 KPI và radius10/12 là yêu cầu cụ thể được token hóa; khoảng cách còn lại thang4/8. Nút nhanh40, controls/form44.
+- Không xóa skip-link, chỉ ẩn an toàn khi chưa focus. Không đổi route/logic auth để sửa UI.
+- PowerShell dùng npm.cmd. Warning Fast Refresh AuthContext vẫn ngoài phạm vi, không suppress.
+
+---
 ## [2026-10-30] Codex — FE Admin UI, đợt 1 F2 (plan 24)
 
 **Đã xong**

@@ -33,10 +33,15 @@
   --admin-space-16: 64px;
   --admin-radius-control: 8px;
   --admin-radius-panel: 16px;
+  --admin-radius-input: 10px;
+  --admin-radius-icon: 12px;
   --admin-shadow-1: 0 2px 8px rgb(15 23 42 / 5%);
   --admin-shadow-2: 0 12px 40px rgb(15 23 42 / 14%);
   --admin-font-xs: .75rem;
   --admin-font-sm: .875rem;
+  --admin-font-caption: .8125rem;
+  --admin-font-section: 1.125rem;
+  --admin-font-stat: 2rem;
   --admin-font-md: 1rem;
   --admin-font-lg: 1.25rem;
   --admin-font-xl: 1.5rem;

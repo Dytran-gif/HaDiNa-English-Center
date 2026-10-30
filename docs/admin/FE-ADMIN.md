@@ -59,3 +59,6 @@ Dashboard có lối tắt `?action=create` tới thêm HV/tạo lớp/tạo phi�
 
 ## Cải thiện UI — plan 24, đợt 1
 Bộ token/Admin UI foundation đã có dưới pages/admin/Components/Ui, Header hiển thị tên/email/logout, Sidebar SVG thống nhất/5 nhóm/drawer mobile. F3 demo/Khóa học/Cài đặt là đợt tiếp theo, chưa coi đã xử lý thông báo trùng hoặc form dirty. Xem docs/design/DESIGN-SYSTEM.md và ADMIN-FE-TRACKER.md.
+
+## Dashboard/Cài đặt — plan 25
+Dashboard dùng QuickActions canh trái, KPI một lớp link tới các trang hiện có và recent courses có badge; số liệu vẫn minh họa. Layout chỉ một Notice demo/minh họa. Settings dùng SectionCard đồng bộ, retry trong thông báo lỗi mạng/server thực; khi demo không phát lỗi đăng nhập đỏ và không cho lưu dữ liệu giả. Giữ API/route/login hiện có. Skip-link clipping khi ẩn, chỉ hiện khi focus để không để lộ viền ở góc.

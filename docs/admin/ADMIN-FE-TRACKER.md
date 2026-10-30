@@ -1,8 +1,8 @@
 # ADMIN FE TRACKER
 
-Cập nhật lần cuối: 2026-10-30 — đợt 1
+Cập nhật lần cuối: 2026-10-30 — đợt 2 (Dashboard/Cài đặt theo yêu cầu mới)
 
-Đợt tiếp theo: Đợt 2 — demo state, trang Khóa học và Cài đặt (F3-A.1–3).
+Đợt tiếp theo: Khóa học mẫu (F3-A.2) và trạng thái bảng demo còn lại, sau đó các trang/QA responsive.
 
 ⬜ chưa làm · 🔵 đang làm · ✅ xong (build + lint 0 lỗi, docs cập nhật) · ⚠️ một phần · ⏸ bị chặn.
 
@@ -23,9 +23,9 @@ Code đã xác minh có đủ 11 trang menu, trong đó 8 trang dùng API và Da
 | F2.pagination | Pagination | ✅ | Components/Ui/Pagination.tsx | Trang x/y · N bản ghi; disabled xám. |
 | F2.sidebar | Sidebar | ✅ | Components/Sidebar | 5 nhóm/SVG/drawer mobile; chưa QA ảnh thật. |
 | F2.header | Header | ✅ | Components/Header | Tên/email/logout từ context cũ; không đổi auth. |
-| F3-A.1 | Demo/chưa có token | ⬜ | AdminLayout, Feedback, bảng | Còn ba thông báo chồng; xử lý đợt 2. |
+| F3-A.1 | Demo/chưa có token | ⚠️ | AdminLayout, Settings | Đã gộp 2 banner layout thành một Notice; Settings không có lỗi đăng nhập giả. Bảng/trang khác còn cần EmptyState trung tính. |
 | F3-A.2 | Khóa học mẫu | ⬜ | Courses, ResourcePage | Tìm kiếm đã debounce; còn skeleton, badge, icon action/confirm. |
-| F3-A.3 | Cài đặt chung | ⬜ | Settings | Còn dirty form, match khi gõ, khoảng cách/state. |
+| F3-A.3 | Cài đặt chung | ✅ | Settings, SectionCard, AdminPanels.css | Retry trong Notice lỗi thật, tiêu đề/nhãn/input đồng bộ, footer cùng đáy, dirty form, match khi gõ/help; build/lint/doc khớp. |
 | F3-A.4.teachers | Giáo viên | ⬜ | Teachers, ResourcePage | Đợt 3 áp dụng mẫu. |
 | F3-A.4.students | Học viên | ⬜ | Students, ResourcePage | Đợt 3. |
 | F3-A.4.classes | Lớp học | ⬜ | Classes | Đợt 3. |
@@ -34,7 +34,7 @@ Code đã xác minh có đủ 11 trang menu, trong đó 8 trang dùng API và Da
 | F3-A.4.blog | Tin tức/Blog | ⬜ | Blog | Đợt 3; API chưa có, phải giữ nhãn demo. |
 | F3-A.4.requests | Đơn giáo viên | ⬜ | TeacherRequests | Đợt 3. |
 | F3-A.4.reports | Báo cáo | ⬜ | Reports | Đợt 3; dữ liệu minh họa. |
-| F3-A.4.dashboard | Dashboard | ⬜ | Dashboard | KPI/chart/empty lớp hôm nay/sắp đầy; BE chưa có. |
+| F3-A.4.dashboard | Dashboard | ⚠️ | Dashboard, StatsOverview, QuickActions, SectionCard, AdminPanels.css | Quick actions/KPI đơn/recent đã xong; chart/lớp hôm nay/sắp đầy chưa làm, vẫn dữ liệu minh họa có nhãn. |
 | F3-A.5 | Toast cho từng mutation | ⬜ | Các trang Admin | Đợt 3; foundation không tính đã tích hợp mọi thao tác. |
 | F3-A.6 | Responsive/accessibility | ⬜ | Admin | Đợt 4 QA 1440/1024/390, focus/contrast/screen reader. |
 | F3-B.1 | Bốn ô môi trường học tập | ⏸ | components/sections/AboutTeaser.tsx | Ownership Public thuộc Hoàng; đề xuất tiêu đề/mô tả/icon 01–04. |
@@ -50,6 +50,17 @@ Code đã xác minh có đủ 11 trang menu, trong đó 8 trang dùng API và Da
 | F4.handoff | Bàn giao | ✅ | docs/BAN-GIAO.md | Khối mới đầu file. |
 | F4.plans | Bảng plans | ✅ | plans/README.md | Thêm plan 24 và chỉ đánh xong đợt 1. |
 
+## Tinh chỉnh theo yêu cầu mới — plan 25
+
+| Mã | Hạng mục | Trạng thái | File đã sửa | Ghi chú |
+|---|---|---|---|---|
+| P25.1 | Thao tác nhanh | ✅ | QuickActions, Dashboard, AdminPanels.css | Canh trái/gap12/nút40/icon SVG; dưới640 một cột; link giữ nguyên. |
+| P25.2.notice | Thông báo demo | ✅ | AdminLayout, Notice hiện có | Một info, action đăng nhập; main padding-top24 mọi breakpoint. |
+| P25.2.skip | Viền góc trên trái | ✅ | AdminLayout.css | Nguồn code phù hợp là skip-link fixed có border/radius, trước chỉ ẩn transform; đổi clipping khi không focus, vẫn hiện khi Tab. Chưa có browser xác nhận ảnh. |
+| P25.3 | Thẻ KPI | ✅ | StatsOverview, AdminPanels.css | Một Link/thẻ, không StatBlock bọc Card; grid4/2/1 theo1200/640, gap16. |
+| P25.4 | Khóa học gần đây | ✅ | Dashboard, SectionCard, Badge, AdminPanels.css | Một card, ghost link, row≥48/divider/hover/badge neutral. |
+| P25.5 | Cài đặt | ✅ | Settings, SectionCard, AdminPanels.css | Hai thẻ stretch, input44/radius10/placeholder, help/password, footer cân bằng; API/auth giữ nguyên. |
+
 ## Quyết định đã chốt
 - Chỉ một đợt mỗi lần. Không sửa route/auth/API/BE/Public.
 - Token nằm trong vùng .admin-layout, bộ UI là adapter của nền dùng chung; icon tự viết thống nhất.
@@ -63,3 +74,6 @@ Code đã xác minh có đủ 11 trang menu, trong đó 8 trang dùng API và Da
 
 ## Kết quả đợt 1
 Đã hoàn tất F2 (13 dòng) và F4 trong phạm vi code/build/docs; F3-A giữ chưa làm, F3-B chờ chủ vùng. 28 kiểm tra UI SSR/contrast và 27 kiểm tra API/session cũ PASS. Chưa có ảnh trước/sau; không coi đã QA trình duyệt hoặc responsive toàn bộ.
+
+## Kết quả tinh chỉnh plan 25
+Việc1–5 đã viết/build/lint/doc. Việc6 chỉ có tiêu đề NHỊP, không tự suy diễn. 12 kiểm tra SSR mục tiêu đạt, 28 kiểm tra UI và 27 kiểm tra API/session cũ vẫn PASS. Không có browser tool để chụp hoặc đo viewport; không tuyên bố đã QA trực quan.

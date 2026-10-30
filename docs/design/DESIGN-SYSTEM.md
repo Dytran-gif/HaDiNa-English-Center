@@ -62,3 +62,18 @@ Dưới 48em, sidebar desktop ẩn và nút menu mở dialog dạng drawer: back
 Build + lint 0 lỗi (1 warning AuthContext có sẵn, không sửa auth). verify-ui.mjs: 28 kiểm tra SSR/semantic/token contrast; verify-admin.mjs: 27 kiểm tra API/session/render cũ vẫn PASS. Các cặp chữ phụ/surface, chữ phụ/canvas, trắng/primary, danger/error-soft, success/soft, warning/soft, disabled/gray đạt ít nhất 4.5:1 theo công thức sRGB. Đây không thay thế đo layout/contrast thực tế trong trình duyệt.
 
 Native pipe/browser host không kết nối được nên chưa có ảnh trước/sau hoặc kiểm tra keyboard thật/viewport 1440, 1024, 390. Không đánh F3-A.6 hoàn tất. Foundation Confirm/Drawer dùng native dialog; khi mở khóa cuộn body và trả style khi đóng; drawer tự đóng khi chuyển viewport sang desktop.
+
+## Dashboard/Cài đặt — chỉnh nhịp 2026-10-30 (plan 25)
+
+- QuickActions dùng chung: flex canh trái, gap/row-gap12, nút40px/padding ngang16/font14-600/icon plus20 cùng bộ SVG; nhãn13, margin-bottom24. Dưới640px thành một cột đầy chiều rộng.
+- KPI dashboard dùng một Link làm thẻ, không Card/StatBlock lồng nhau; padding20 theo yêu cầu cụ thể, radius16/shadow1, icon40/radius12; giá trị32/700. Grid4 cột từ1200px,2 từ640px,1 phía dưới; gap16 và cách recent24. Không thay số liệu minh họa hoặc route đích.
+- SectionCard dùng chung cho recent và settings: padding24, heading18/600/màu chữ chính, header→body16, body flex để canh footer. Recent có ghost/link Xem tất cả, row min48, badge neutral, divider trừ hàng cuối.
+- Layout chỉ render một Notice info cho demo/minh họa; vẫn có nút đăng nhập khi không token. Padding-top của main24 ở mọi breakpoint.
+- Phần góc trái phù hợp nguồn skip-link fixed có border/radius, trước chỉ ẩn transform. Nay clip/overflow/1px khi không focus; chỉ phục hồi đầy đủ khi focus. Chưa có browser để xác nhận hình ảnh của phần tử người dùng thấy.
+- Token bổ sung cho yêu cầu cụ thể: font-caption13, font-section18, font-stat32, radius-input10, radius-icon12; không thay chuẩn control44 hay token của vùng khác.
+
+### Cài đặt chung — plan 25
+
+Hai SectionCard dùng heading18/600, gap header→body16, grid align stretch; body/fieldset/form flex cho footer submit nằm cùng đáy. Controls44px, radius10, label14/600, placeholder và disabled xám không giảm opacity cả form. Logo chỉ preview nếu có URL, giữ ghi chú chưa upload.
+
+Chưa có token: chỉ Notice demo của layout, không thêm lỗi đăng nhập đỏ trong Cài đặt; form bị khóa. Có token và lỗi tải thực: Notice error chứa message và nút Thử lại bên trong, cách nội dung12px. Các lỗi thao tác vẫn hiển thị message thật. Thông tin trung tâm chỉ bật lưu khi dirty; mật khẩu có help, match khi gõ/khác mật khẩu cũ và nút hiện/ẩn từ FormField. Endpoint, payload, token trả về và replaceToken giữ nguyên.

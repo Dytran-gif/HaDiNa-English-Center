@@ -1,4 +1,4 @@
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
 
@@ -6,11 +6,14 @@ import Header from "../Components/Header/Header";
 import Sidebar from "../Components/Sidebar/Sidebar";
 import ToastProvider from "../Components/Ui/ToastProvider";
 import Dialog from "../Components/Ui/Dialog";
+import Button from "../Components/Ui/Button";
+import Notice from "../Components/Ui/Notice";
 
 import "./AdminLayout.css";
 import "../Components/Api/AdminApi.css";
 import "../Components/Ui/AdminTokens.css";
 import "../Components/Ui/AdminUi.css";
+import "../Components/Ui/AdminPanels.css";
 
 function AdminLayout() {
     const { token } = useAuth();
@@ -34,8 +37,9 @@ function AdminLayout() {
             <div className="admin-main">
                 <Header menuOpen={menuOpen} onOpenMenu={() => setMenuOpen(true)}/>
                 <main className="admin-content" id="admin-main-content" tabIndex={-1}>
-                    {!token && <div className="admin-api-notice admin-api-demo">Bạn đang xem chế độ demo. Các trang quản lý dữ liệu thật cần <Link to="/dang-nhap">đăng nhập bằng máy chủ</Link> để tải và lưu.</div>}
-                    {illustrative && <p className="admin-api-notice">Trang này hiện dùng dữ liệu minh họa, chưa kết nối với dữ liệu quản lý thật.</p>}
+                    {(!token || illustrative) && <div className="admin-content-notice"><Notice tone="info" action={!token ? <Button to="/dang-nhap" variant="secondary">Đăng nhập tài khoản thật</Button> : undefined}>
+                        {!token ? `Bạn đang xem chế độ demo.${illustrative ? " Dữ liệu trên trang này chỉ để minh họa." : ""} Đăng nhập bằng máy chủ để xem và lưu dữ liệu thật.` : "Dữ liệu trên trang này chỉ để minh họa, chưa kết nối với dữ liệu quản lý thật."}
+                    </Notice></div>}
                     <Outlet />
                 </main>
             </div>
