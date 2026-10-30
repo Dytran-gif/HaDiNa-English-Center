@@ -11,12 +11,12 @@ Muốn thêm hoặc đổi thư viện (npm hay NuGet) thì bàn nhóm trước,
 - oxlint: lint
 
 ### Styling
-- CSS THUẦN + design tokens (`src/styles/tokens.css`)
+- CSS THUẦN + root tokens (src/styles/tokens.css); Admin có token scoped --admin-* tại pages/admin/Components/Ui/AdminTokens.css, adapter UI nền và SVG tự viết; không thêm thư viện.
 - KHÔNG dùng Tailwind, KHÔNG dùng Bootstrap (docs cũ từng ghi hai cái này là phương án cân nhắc, nay đã bỏ)
 
 ### Dữ liệu
-- Hiện tại: mock trong `src/data/*.ts`
-- Đích: gọi API backend qua `src/services/` (plan 01). Dùng `fetch` có sẵn, **không** axios
+- Admin: 8 trang API thật (Khóa/GV/HV/Lớp/Đơn/Học phí/Phòng/Cài đặt); Dashboard/Blog/Reports còn minh họa. Các vùng khác vẫn có demo trong src/data.
+- API hiện qua src/services/apiClient.ts và admin/useAdminApi.ts, dùng fetch sẵn có; không axios. Có script kiểm tra SSR/contract/contrast bằng Node + Vite, chưa thêm test runner.
 
 ### Chưa dùng (nếu cần sẽ bàn nhóm)
 - State library (Redux / Zustand…)

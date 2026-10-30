@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
-import Button from "../../../components/ui/Button";
+import Button from "../Components/Ui/Button";
 import Card from "../../../components/ui/Card";
-import { InputField } from "../../../components/ui/FormField";
+import { InputField } from "../Components/Ui/FormField";
 import { useAuth } from "../../../context/AuthContext";
 import { assetUrl } from "../../../services/apiClient";
 import { useAdminApi, useAdminQuery } from "../../../services/admin/useAdminApi";

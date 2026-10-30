@@ -1,3 +1,5 @@
+> Tài liệu lịch sử giai đoạn FE-only; các mô tả mock/chưa có server bên dưới không phải hiện trạng 2026-10-30. Admin hiện có 8 trang API thật, Dashboard/Blog/Reports minh họa. Xem docs/admin/FE-ADMIN.md và ADMIN-FE-TRACKER.md.
+
 # 📝 XÁC ĐỊNH VẤN ĐỀ (PROBLEM STATEMENT)
 ### Đồ án: Website Front-end Trung tâm Tiếng Anh
 

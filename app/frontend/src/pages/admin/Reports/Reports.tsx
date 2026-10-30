@@ -1,7 +1,7 @@
 import "../admin-shared.css";
 import "../Dashboard/Dashboard.css";
 import Card from "../../../components/ui/Card";
-import Button from "../../../components/ui/Button";
+import Button from "../Components/Ui/Button";
 import StatBlock from "../../../components/ui/StatBlock";
 import { adminPayments } from "../../../data/AdminData/payments";
 import { adminMockUsers } from "../../../data/AdminData/mockUsers";

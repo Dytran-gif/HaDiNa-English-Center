@@ -1,9 +1,9 @@
 import { useState } from "react";
 import "../admin-shared.css";
 import Card from "../../../components/ui/Card";
-import Button from "../../../components/ui/Button";
+import Button from "../Components/Ui/Button";
 import Modal from "../../../components/ui/Modal";
-import { InputField, SelectField, TextareaField } from "../../../components/ui/FormField";
+import { InputField, SelectField, TextareaField } from "../Components/Ui/FormField";
 import { blogPosts as blogSeed } from "../../../data/blogPosts";
 import { useLocalCollection, nextId } from "../../../hooks/useLocalCollection";
 import type { BlogPost } from "../../../types";

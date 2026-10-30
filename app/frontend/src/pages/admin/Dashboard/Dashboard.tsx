@@ -1,7 +1,7 @@
 import "./Dashboard.css";
 import StatsOverview from "./Components/StatsOverview";
 import Card from "../../../components/ui/Card";
-import Button from "../../../components/ui/Button";
+import Button from "../Components/Ui/Button";
 import { courses } from "../../../data/courses";
 
 export default function AdminDashboard() {

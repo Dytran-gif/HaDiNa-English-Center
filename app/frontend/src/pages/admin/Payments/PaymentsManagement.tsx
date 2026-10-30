@@ -1,9 +1,9 @@
 import { useState, type FormEvent } from "react";
 import { useSearchParams } from "react-router-dom";
-import Button from "../../../components/ui/Button";
+import Button from "../Components/Ui/Button";
 import Card from "../../../components/ui/Card";
 import Modal from "../../../components/ui/Modal";
-import { InputField, SelectField, TextareaField } from "../../../components/ui/FormField";
+import { InputField, SelectField, TextareaField } from "../Components/Ui/FormField";
 import { assetUrl } from "../../../services/apiClient";
 import { useAdminApi, useAdminQuery } from "../../../services/admin/useAdminApi";
 import type { AdminRecord, PagedResponse, PaymentResponse, ReceiptResponse, StudentResponse } from "../../../types/adminApi";

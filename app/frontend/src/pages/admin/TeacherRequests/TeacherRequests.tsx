@@ -1,8 +1,8 @@
 import { useState, type FormEvent } from "react";
-import Button from "../../../components/ui/Button";
+import Button from "../Components/Ui/Button";
 import Card from "../../../components/ui/Card";
 import Modal from "../../../components/ui/Modal";
-import { SelectField, TextareaField } from "../../../components/ui/FormField";
+import { SelectField, TextareaField } from "../Components/Ui/FormField";
 import { useAdminApi, useAdminQuery } from "../../../services/admin/useAdminApi";
 import type { TeacherRequestResponse } from "../../../types/adminApi";
 import { Feedback } from "../Components/Api/AdminUi";

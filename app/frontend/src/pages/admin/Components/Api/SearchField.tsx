@@ -1,5 +1,5 @@
 ﻿import { useEffect, useRef, useState } from "react";
-import { InputField } from "../../../../components/ui/FormField";
+import { InputField } from "../Ui/FormField";
 export default function SearchField({ label, value, onSearch }: { label: string; value: string; onSearch: (value: string) => void }) {
   const [draft, setDraft] = useState(value);
   const callback = useRef(onSearch);

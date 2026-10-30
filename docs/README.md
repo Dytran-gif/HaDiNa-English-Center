@@ -6,6 +6,8 @@
 | [`api/`](./api/README.md) | Hợp đồng API FE ↔ BE (nguồn sự thật) | Người code BE, trong cùng PR |
 | [`conventions/`](./conventions/) | Quy ước code [FE](./conventions/FRONTEND.md), [BE](./conventions/BACKEND.md), [tech stack](./conventions/TECH-STACK.md) | Cả nhóm chốt |
 | [`do-an/`](./do-an/) | Tài liệu báo cáo đồ án: problem statement, research, sơ đồ hệ thống, ERD, phân công, tiến độ, Tasks.csv | Theo báo cáo |
+| [design/DESIGN-SYSTEM.md](./design/DESIGN-SYSTEM.md) | Token, UI và trạng thái Admin | Người sửa FE Admin |
+| [admin/ADMIN-FE-TRACKER.md](./admin/ADMIN-FE-TRACKER.md) | Tiến độ cải thiện UI theo từng đợt | Người sửa FE Admin |
 | `do-an/du-lieu-cu/` | JSON mock cũ, **app không dùng** (giữ để tham khảo) | — |
 
 Kế hoạch công việc: `../plans/`. Báo cáo thực hiện / review: `../reports/`.

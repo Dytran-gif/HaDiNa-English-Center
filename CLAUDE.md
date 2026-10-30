@@ -64,8 +64,8 @@ Có 3 vai trò: `admin` · `teacher` · `student`. Khách (chưa đăng nhập) 
 **Frontend**
 - Trang theo vai trò nằm ở `src/pages/<role>/<Feature>/<Feature>.tsx`, khai báo route trong `src/routes.tsx`, bọc `<ProtectedRoute role="...">`.
 - Lấy user bằng `useAuth()`, không tạo context/auth mới.
-- Màu, khoảng cách, font chỉ lấy từ `src/styles/tokens.css`. Không Tailwind/Bootstrap, **không tự cài thư viện**.
-- Dữ liệu hiện là mock trong `src/data/`, type nằm trong `src/types/`. Khi nối API, gọi qua `src/services/` (xem plan `01`), không gọi `fetch` thẳng trong page.
+- Nền dùng src/styles/tokens.css; Admin dùng thêm token --admin-* scoped .admin-layout ở pages/admin/Components/Ui/AdminTokens.css. Không đổi token Public/Teacher/Student để sửa Admin. Không Tailwind/Bootstrap hoặc tự cài thư viện.
+- Admin đã nối API cho Khóa/GV/HV/Lớp/Đơn/Học phí/Phòng/Cài đặt; Dashboard/Blog/Reports còn minh họa. Gọi qua src/services, không fetch trong page. Design Admin scoped trong pages/admin/Components/Ui; xem docs/design/DESIGN-SYSTEM.md.
 
 ---
 
@@ -126,6 +126,6 @@ Chạy cả bộ bằng `/validate` trước khi mở PR. Hook Stop tự chạy 
 - DB chưa có bảng cho chức năng Teacher: phải chạy migration `TeacherFeatures` (plan `00`). Nếu chưa có, API khởi động sẽ lỗi ở `TeacherSeeder`.
 - Lỗi validate DTO (`[Required]`, `[Range]`…) do `[ApiController]` trả dạng **ProblemDetails** `{ title, errors: { Field: [..] } }`, **không** phải `{ message }`. FE phải xử lý cả hai dạng.
 - `ClassSession.Status` trong DB chỉ có `Scheduled | Cancelled`. `Upcoming/Ongoing/Done` là trạng thái **tính ra** (`SessionService.StatusOf`), không lưu.
-- Backend **chưa bật CORS**, nên FE ở cổng 5173 gọi sang sẽ bị chặn (plan `01`).
-- FE vẫn đăng nhập bằng mock (`src/data/users.ts`), chưa gọi `POST /api/auth/login`.
-- `app/frontend` đang lỗi typecheck sẵn ở `src/pages/student/Course` (plan `02`). Hook Stop sẽ chặn cho tới khi sửa xong.
+- Backend chưa bật CORS cho request chéo origin. FE dev có Vite proxy /api và /uploads tới localhost:5220; production cần reverse proxy hoặc CORS phù hợp.
+- FE mặc định đăng nhập thật qua POST /api/auth/login, có lựa chọn demo khi chưa có DB. Token chỉ nằm trong session AuthContext.
+- Sáu lỗi typecheck cũ ở Student/import/export đã được sửa tối thiểu trong plan 23; lint còn một warning Fast Refresh ở AuthContext, không có lỗi.

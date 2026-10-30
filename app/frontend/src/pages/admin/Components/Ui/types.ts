@@ -1,0 +1,2 @@
+﻿export type Tone = "info" | "success" | "warning" | "error" | "neutral";
+export type IconName = "dashboard" | "book" | "teachers" | "students" | "classes" | "requests" | "blog" | "payments" | "reports" | "rooms" | "settings" | "menu" | "close" | "logout" | "plus" | "check" | "info" | "warning" | "error" | "trash" | "edit" | "eye" | "eye-off" | "search" | "refresh" | "chevron-left" | "chevron-right" | "empty";

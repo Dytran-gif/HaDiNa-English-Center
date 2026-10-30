@@ -1,4 +1,34 @@
 # Nhật ký bàn giao
+## [2026-10-30] Codex — FE Admin UI, đợt 1 F2 (plan 24)
+
+**Đã xong**
+- Tạo token scoped --admin-* trong Components/Ui/AdminTokens.css; primary xanh/disabled xám/danger đúng ngữ cảnh. Adapter Button/FormField/Tag nền, không đổi token hoặc UI Public/Teacher/Student.
+- Bộ SVG thống nhất; Button 4 biến thể/loading/icon; FormField help/error/aria/hiện-ẩn mật khẩu; Notice, EmptyState, TableSkeleton, Badge, Pagination, ToastProvider và ConfirmDialog/native Dialog.
+- Các page Admin đổi import Button/FormField sang adapter (không đổi API/validation nghiệp vụ). Feedback/Pager tái dùng Notice/Pagination; toast foundation chưa gắn mọi mutation.
+- Sidebar chia 5 nhóm, drawer mobile, focus/Escape/native dialog; header tên/email/logout từ context cũ; không sửa auth/routes/BE.
+- Build/lint qua từng nhóm, không lỗi; lint giữ 1 warning Fast Refresh AuthContext có sẵn. 28 kiểm tra UI SSR/contrast và 27 kiểm tra API/session/render cũ PASS.
+- Tạo ADMIN-FE-TRACKER, DESIGN-SYSTEM; sửa tài liệu hiện trạng API/demo, token/đường dẫn. Tài liệu đồ án cũ thêm nhãn lịch sử, không viết lại lịch sử bàn giao.
+
+**Đang dở**
+- Đúng phạm vi: lần này chỉ đợt 1. Thông báo demo bị trùng, mẫu Khóa học, form Cài đặt thuộc đợt 2; chưa đánh xong.
+- Không có ảnh trước/sau: cua_repl báo native pipe và browser access host unavailable. Chưa QA hình ảnh/keyboard ở 1440/1024/390.
+
+**Việc tiếp theo**
+1. F3-A.1: gom demo/chưa token thành một info + nút đăng nhập, EmptyState trung tính; lỗi mạng/server thật có thử lại.
+2. F3-A.2: mẫu Khóa học với toolbar/search/skeleton/badge/icon action/ConfirmDialog/409.
+3. F3-A.3: Cài đặt có dirty form, nhãn/khoảng cách, match mật khẩu khi gõ, ghi chú logo.
+
+**Bẫy cần biết**
+- Không sửa backend/API/auth/route, không thêm thư viện. Token UI ở Admin, không đổi global Button đang dùng đỏ ở vùng khác.
+- ConfirmDialog onConfirm phải reject khi server lỗi, không nuốt lỗi rồi đóng. Đợt 2/3 mới thay các window.confirm và gắn toast mutation.
+- Native dialog giữ trong DOM Admin để kế thừa token; menu tự đóng khi chọn route hoặc về viewport desktop. Hạ tầng chưa có DB thì chỉ kiểm tra FE, không khởi động BE auto migrate/seed.
+- Một warning AuthContext ngoài phạm vi không được suppress hoặc sửa auth để làm số warning bằng 0.
+
+**Cần người khác làm / chờ**
+- F3-B Public thuộc Hoàng theo ownership, ghi cả 6 đề xuất ⏸ trong ADMIN-FE-TRACKER; không sửa trang chủ.
+- Cần browser host để chụp trước/sau và QA tương tác; cần DB cho E2E nghiệp vụ sau.
+
+---
 ## [2026-10-30] Codex — FE Admin theo API hiện có (plan 23)
 
 **Đã xong**

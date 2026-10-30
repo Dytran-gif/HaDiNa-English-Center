@@ -1,62 +1,38 @@
-# Frontend — React + Vite + CSS thuần
+﻿# Frontend — React + Vite + CSS thuần
 
-Gốc: `app/frontend/`. Quy ước đầy đủ: `docs/conventions/FRONTEND.md`. Tech stack: `docs/conventions/TECH-STACK.md`.
+Gốc: app/frontend. Quy ước: docs/conventions/FRONTEND.md. Design Admin: docs/design/DESIGN-SYSTEM.md. Hiện trạng xác minh 2026-10-30.
 
-## Cấu trúc
+## Cấu trúc và vùng
 
-```
-src/
-├── main.tsx · App.tsx · routes.tsx     # entry + toàn bộ route (routes.tsx là file DÙNG CHUNG)
-├── context/AuthContext.tsx             # useAuth() — DÙNG CHUNG
-├── components/
-│   ├── ProtectedRoute.tsx
-│   ├── ui/          # component dùng chung: Button, Card, Modal, FormField, Tag, StatBlock…
-│   ├── layout/      # Header, Footer, PageShell (trang public)
-│   └── sections/    # khối trang chủ (Hero, CourseSurvey, …)
-├── pages/
-│   ├── *.tsx                      # trang public (Home, Courses, Blog…)
-│   ├── admin/<Feature>/…          # mỗi feature 1 thư mục, có Layout/ và Components/ riêng
-│   ├── teacher/<Feature>/…
-│   └── student/<Feature>/…
-├── services/        # (plan 01) lớp gọi API — page KHÔNG gọi fetch trực tiếp
-├── hooks/useLocalCollection.ts    # CRUD mock trên localStorage (sẽ bỏ khi nối API)
-├── data/            # mock: chung ở gốc; AdminData/ TeacherData/ StudentData/ theo vùng
-├── types/           # type theo entity, export qua index.ts (barrel)
-└── styles/          # tokens.css (DÙNG CHUNG), global, reset, public-theme
-```
+- src/routes.tsx giữ route/ProtectedRoute theo role, là file dùng chung.
+- src/context/AuthContext.tsx giữ user/token/loginApi/login demo/logout/replaceToken; không tạo context auth thứ hai.
+- src/components/ui là nền dùng chung Public/Teacher/Student/Admin.
+- src/pages/admin/Components/Ui là adapter Admin: Button, FormField, Notice, EmptyState, TableSkeleton, Badge, Pagination, Dialog/ConfirmDialog và ToastProvider/useToast. Icon SVG tự viết thống nhất.
+- src/pages/admin/Layout, Components/Sidebar, Components/Header là shell Admin; sidebar 5 nhóm, drawer dưới 48em, header có tên/email/logout.
+- src/pages/admin/Components/Api chứa ResourcePage, resourceConfigs, SearchField, adminFormat và adapter Feedback/Pager.
+- src/services/apiClient.ts gọi fetch/chuẩn hóa lỗi; services/admin/useAdminApi.ts nhận token context, gắn Bearer, logout 401, query có abort/loading/error. Type API: src/types/adminApi.ts.
+- src/data giữ demo theo vùng; hooks/useLocalCollection còn dùng ở trang minh họa.
 
-## Thêm một trang trong dashboard
+## Hiện trạng dữ liệu
 
-1. `src/pages/<role>/<Feature>/<Feature>.tsx` (+ `<Feature>.css`). Component con riêng của trang để trong `<Feature>/Components/`.
-2. Thêm `<Route path="<feature>" element={...} />` vào nhánh `/<role>` trong `src/routes.tsx` (file dùng chung, báo nhóm).
-3. Thêm mục menu vào `src/data/<Role>Data/sidebarMenuItems.ts` và tiêu đề vào `pageTitles.ts`.
-4. Tái dùng `src/components/ui/` trước khi tạo component mới.
+8 trang Admin dùng API thật: Khóa học, Giáo viên, Học viên, Lớp học, Đơn giáo viên, Học phí, Phòng học, Cài đặt. Dashboard/Blog/Reports còn minh họa có nhãn; không mô tả toàn bộ Admin là mock hoặc đã nối hết.
+
+/admin/users redirect sang /admin/students. Đăng nhập thật mặc định gọi POST /api/auth/login; lựa chọn demo để xem UI khi chưa có DB, không giả lưu API thành công. Demo hiện còn thông báo trùng; F3-A.1 đợt 2 mới gom một info/EmptyState.
 
 ## Styling
 
-- Chỉ dùng biến trong `src/styles/tokens.css` (`var(--blue)`, khoảng cách, font). Không hardcode màu hay px tùy tiện.
-- Dashboard dùng CSS chung theo vùng: `admin-shared.css`, `teacher-shared.css`, `student/General.css`.
-- Trang public đổi màu trong `public-theme.css`, giới hạn trong `.page-shell`. Không sửa token gốc.
-- Không Tailwind, không Bootstrap, không thư viện UI.
+CSS thuần. Root tokens tại src/styles/tokens.css cho nền; Admin có một nguồn riêng tại pages/admin/Components/Ui/AdminTokens.css, selector .admin-layout, biến --admin-* và alias nội bộ. Không đổi root hoặc Public/Teacher/Student để sửa Admin.
 
-## Dữ liệu
+Tái dùng Button/FormField/Tag nền qua adapter Admin. Primary xanh, danger chỉ xóa/lỗi, disabled xám, focus rõ. Chi tiết API và thang 4/8px trong DESIGN-SYSTEM. Không thêm thư viện icon/UI.
 
-- **Hiện tại**: mock trong `src/data/`. Trang CRUD dùng `useLocalCollection(key, seed)`.
-- **Khi nối API** (xem `api-contract.md`): page gọi `src/services/<vùng>/<ten>.ts`. Service gọi `apiClient` rồi map dữ liệu API (camelCase) sang type FE.
-- Type FE cũ đang dùng `snake_case` (`assignment_id`, `full_name`), còn API trả `camelCase`. **Chỉ map trong service**, không đổi tên field rải rác trong page.
-- Mỗi page nối API phải xử lý đủ 3 trạng thái: đang tải · lỗi (hiện `message`) · rỗng.
+## Thêm/sửa trang
+
+Route mới cần đúng vùng/ProtectedRoute, cập nhật menu/title. Tái dùng Ui/Api của Admin. Page không fetch trực tiếp; xử lý loading/rỗng/lỗi, không dùng any. Model snake_case cũ giữ nguyên; trang API mới dùng camelCase. Tiền vi-VN/VND, ngày dd/MM/yyyy; không đổi DateOnly/TimeOnly sang UTC.
+
+ApiError có status/message/fieldErrors; nhận cả message/errors và ProblemDetails errors. FormField nhận error/help nối aria-describedby. Mỗi tình huống chỉ một thông báo. Toast cho từng mutation áp dụng ở F3 đợt 3; Foundation F2 không đồng nghĩa đã gắn mọi thao tác.
 
 ## Kiểm tra
 
-```
-npm run lint        # oxlint
-npm run typecheck   # tsc -b --noEmit
-npm run build
-```
+Tại app/frontend: npm.cmd run lint; npm.cmd run typecheck; npm.cmd run build. Dùng npm.cmd nếu PowerShell chặn npm.ps1. node scripts/verify-admin.mjs kiểm tra API/session/SSR. node src/pages/admin/Components/Ui/verify-ui.mjs kiểm tra UI SSR/contrast. Không thay thế browser/E2E.
 
-## Không làm
-
-- Không cài thư viện (axios, redux, react-query, zustand, form lib…) khi chưa bàn nhóm.
-- Không tạo context/auth riêng. Không tự làm Sidebar/Button mới khi `ui/` hoặc layout của vùng đã có.
-- Không import `/data/*.json` cũ (đã chuyển sang `docs/do-an/du-lieu-cu/`).
-- Không lưu token ở chỗ nào khác ngoài `AuthContext`.
+Vite proxy /api và /uploads tới localhost:5220 ở dev. Production cần reverse proxy hoặc VITE_API_URL + CORS. Không khởi động BE để test FE nếu DB chưa sẵn sàng vì BE tự migrate/seed.

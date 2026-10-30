@@ -1,4 +1,4 @@
-﻿# Chạy thử FE Admin với BE
+# Chạy thử FE Admin với BE
 
 Cập nhật 2026-10-30. Các trang mới dùng API thật; không giả lập lưu thành công khi chưa có BE/DB.
 
@@ -41,7 +41,7 @@ Không tự chạy BE trong lần sửa này: Program.cs hiện tự MigrateAsyn
 | Cài đặt | /admin/settings | GET/PUT settings/center, POST settings/change-password |
 | Đường dẫn cũ | /admin/users | Redirect sang /admin/students |
 
-Dashboard có lối tắt `?action=create` tới thêm HV/tạo lớp/tạo phiếu. Menu/title đã bổ sung, sidebar trên màn hình nhỏ chuyển thành hàng cuộn ngang. Nền auth/demo Teacher/Student cũ vẫn dùng được qua lựa chọn demo.
+Dashboard có lối tắt `?action=create` tới thêm HV/tạo lớp/tạo phiếu. Menu/title đã bổ sung, sidebar gồm 5 nhóm, trên màn hình nhỏ mở bằng menu trượt. Nền auth/demo Teacher/Student cũ vẫn dùng được qua lựa chọn demo.
 
 ## Những giới hạn còn lại
 
@@ -56,3 +56,6 @@ Dashboard có lối tắt `?action=create` tới thêm HV/tạo lớp/tạo phi�
 ## Kiểm tra đã chạy
 
 `npm.cmd run lint`: PASS (1 warning Fast Refresh đã có trong AuthContext). `npm.cmd run typecheck`: PASS. `npm.cmd run build`: PASS. `node scripts/verify-admin.mjs`: 27/27 PASS (service/error/session/server render, không kết nối DB).
+
+## Cải thiện UI — plan 24, đợt 1
+Bộ token/Admin UI foundation đã có dưới pages/admin/Components/Ui, Header hiển thị tên/email/logout, Sidebar SVG thống nhất/5 nhóm/drawer mobile. F3 demo/Khóa học/Cài đặt là đợt tiếp theo, chưa coi đã xử lý thông báo trùng hoặc form dirty. Xem docs/design/DESIGN-SYSTEM.md và ADMIN-FE-TRACKER.md.
