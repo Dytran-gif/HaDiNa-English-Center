@@ -75,3 +75,8 @@
   color-scheme: light;
 }
 @media (max-width: 64em) { .admin-layout { --admin-sidebar-width: 240px; } }
+.admin-layout {
+  --admin-post-thumbnail-width: 56px;
+  --admin-post-title-width: 36ch;
+  --admin-post-table-width: 56em;
+}

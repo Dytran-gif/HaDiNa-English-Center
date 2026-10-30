@@ -41,6 +41,7 @@ Việc mới thì lấy số trống tiếp theo trong dải của vùng, ví d�
 | 23 | [FE Admin: trang còn thiếu + nối API](./23-fe-admin-trang-va-noi-api.md) | Admin | Duy / Codex | API hiện có; phần còn lại chờ 21–22 | 🟡 FE hiện có đã build xanh; chờ QA trình duyệt/DB và API còn thiếu |
 | 24 | [FE Admin: design system và trải nghiệm](./24-fe-admin-design-system.md) | Admin | Codex | 23 | 🔵 F2 xong; Dashboard/Cài đặt đã chỉnh ở plan25, còn Khóa học/trang khác/QA |
 | 25 | [FE Admin: Dashboard và Cài đặt](./25-fe-admin-dashboard-settings-polish.md) | Admin | Codex | 24 | ✅ Việc1–5 code/build/doc; QA trực quan chưa thực hiện |
+| 26 | [FE Admin Blog: danh sách và soạn theo đợt](./26-fe-admin-blog-list.md) | Admin | Codex | 24; API thật chờ21 | 🔵 Đợt1 danh sách demo xong; tiếp editor đợt2 |
 | 30 | [FE Teacher: trang còn thiếu + nối API](./30-fe-teacher-trang-va-noi-api.md) | Teacher | Duy | 00, 01, 03 | ⬜ |
 | 40 | [BE Public: khóa học, giáo viên, blog, thông tin trung tâm](./40-be-public-api.md) | Public | Hoàng | — | ⬜ |
 | 41 | [FE Public: nối trang public vào API](./41-fe-public-noi-api.md) | Public | Hoàng | 01, 40 | ⬜ |

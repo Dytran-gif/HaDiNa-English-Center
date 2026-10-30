@@ -65,3 +65,11 @@
 .admin-layout .admin-toast-close { position: absolute; top: var(--admin-space-1); inset-inline-end: var(--admin-space-1); }
 @keyframes admin-pulse { 50% { opacity: .4; } }
 @media (prefers-reduced-motion: reduce) { .admin-layout .admin-skeleton-line { animation: none; } }
+.admin-layout .admin-notice--inline { align-items: center; }
+.admin-layout .admin-notice--inline > .admin-notice-content { flex: 1; }
+.admin-layout .admin-notice--inline > .admin-notice-action { margin-block-start: 0; margin-inline-start: auto; flex-shrink: 0; }
+@media (max-width: 48em) {
+  .admin-layout .admin-notice--inline { flex-wrap: wrap; }
+  .admin-layout .admin-notice--inline > .admin-notice-content { flex-basis: calc(100% - var(--admin-icon-size) - var(--admin-space-3)); }
+  .admin-layout .admin-notice--inline > .admin-notice-action { margin-inline-start: calc(var(--admin-icon-size) + var(--admin-space-3)); max-width: 100%; }
+}

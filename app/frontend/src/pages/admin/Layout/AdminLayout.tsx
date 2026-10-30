@@ -37,8 +37,8 @@ function AdminLayout() {
             <div className="admin-main">
                 <Header menuOpen={menuOpen} onOpenMenu={() => setMenuOpen(true)}/>
                 <main className="admin-content" id="admin-main-content" tabIndex={-1}>
-                    {(!token || illustrative) && <div className="admin-content-notice"><Notice tone="info" action={!token ? <Button to="/dang-nhap" variant="secondary">Đăng nhập tài khoản thật</Button> : undefined}>
-                        {!token ? `Bạn đang xem chế độ demo.${illustrative ? " Dữ liệu trên trang này chỉ để minh họa." : ""} Đăng nhập bằng máy chủ để xem và lưu dữ liệu thật.` : "Dữ liệu trên trang này chỉ để minh họa, chưa kết nối với dữ liệu quản lý thật."}
+                    {(!token || illustrative) && <div className="admin-content-notice"><Notice tone="info" inlineAction={pathname === "/admin/blog"} action={!token ? <Button to="/dang-nhap" variant="secondary">Đăng nhập tài khoản thật</Button> : undefined}>
+                        {pathname === "/admin/blog" ? "Dữ liệu bài viết hiện chỉ lưu minh họa trên trình duyệt, chưa đồng bộ với máy chủ." : !token ? `Bạn đang xem chế độ demo.${illustrative ? " Dữ liệu trên trang này chỉ để minh họa." : ""} Đăng nhập bằng máy chủ để xem và lưu dữ liệu thật.` : "Dữ liệu trên trang này chỉ để minh họa, chưa kết nối với dữ liệu quản lý thật."}
                     </Notice></div>}
                     <Outlet />
                 </main>

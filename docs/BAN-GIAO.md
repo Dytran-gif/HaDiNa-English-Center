@@ -1,4 +1,30 @@
 # Nhật ký bàn giao
+## [2026-10-30] Codex — Blog đợt1 danh sách (plan26)
+
+**Đã xong**
+- Danh sách Blog mới: cover/fallback, search300ms/filterstatus, Badge/category legacy/date, icon actions, skeleton/empty/pagination; xác nhận xóa nêu tên bài và Toast thành công/lỗi.
+- Kho demo v2 đọc admin_blog cũ, giữ backup, không giả lưu khi storage hỏng/đầy. Không có posts/Admin upload controller nên không gọi API giả; 8 yêu cầu BE trong BE-YEU-CAU-FE.md.
+- Nút thêm/sửa sang màn compose trên route /admin/blog bằng query; giữ form demo văn bản cũ khỏi modal. Draft giữ compose, Published về list. Preview văn bản React escape, không HTML không sạch.
+- Notice Blog một info; action cùng hàng desktop/xuống mobile. Ui props thêm đều optional, không đổi auth/routes/BE/deps.
+- Build/lint qua nhóm, 0 lỗi (1 warning AuthContext có sẵn). 16 kiểm tra Blog và55 kiểm tra cũ PASS. Docs/tracker/design/plans cập nhật.
+
+**Đang dở**
+- Đúng phạm vi chỉ Việc1+6. Việc2 editor2 cột/toolbar/excerpt/cover/unsaved warning chưa xong; form hiện tại tối giản để giữ thao tác demo. Việc3 ảnh/HTML preview và Việc5 gallery sang đợt3/4.
+- API posts/detail/mutations, upload, homepage-images và public chưa có; Category/Excerpt/Slug/ThumbnailAlt chưa thuộc entity hiện tại.
+- Chưa có browser tool để ảnh/keyboard/viewport1440/1024/390; không coi SSR là QA tương tác.
+
+**Việc tiếp theo**
+1. Blog đợt2: editor 2 cột, title/excerpt theo BE chốt, không chèn hình.
+2. Toolbar contentEditable/validate/focus/unsaved warning.
+3. Save/load/404/error và trạng thái gửi đầy đủ; khi BE có API thật mới nối, rồi đợt3 ảnh+HTML preview.
+
+**Bẫy cần biết**
+- Không thêm Tiptap/DOMPurify lúc này vì convention cấm dependencies. Preview đợt1 là plain text React escape; sanitizer allowlist phải làm/kiểm tra trước HTML đợt3.
+- Danh mục legacy chỉ demo, form ẩn, không gửi field giả lên BE. Chưa upload: không dùng endpoint Teacher thay Admin.
+- Không reset seed khi storage lỗi; admin_blog_v2 chỉ ghi sau mutation và giữ admin_blog cũ.
+- ConfirmDialog onFailure Blog đóng trước rồi toast để không bị native modal che; các callers cũ giữ lỗi inline mặc định.
+
+---
 ## [2026-10-30] Codex — Dashboard/Cài đặt, plan 25
 
 **Đã xong**

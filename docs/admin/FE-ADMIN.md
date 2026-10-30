@@ -62,3 +62,11 @@ Bộ token/Admin UI foundation đã có dưới pages/admin/Components/Ui, Heade
 
 ## Dashboard/Cài đặt — plan 25
 Dashboard dùng QuickActions canh trái, KPI một lớp link tới các trang hiện có và recent courses có badge; số liệu vẫn minh họa. Layout chỉ một Notice demo/minh họa. Settings dùng SectionCard đồng bộ, retry trong thông báo lỗi mạng/server thực; khi demo không phát lỗi đăng nhập đỏ và không cho lưu dữ liệu giả. Giữ API/route/login hiện có. Skip-link clipping khi ẩn, chỉ hiện khi focus để không để lộ viền ở góc.
+
+## Tin tức / Blog — đợt 1 mới (plan26)
+
+Danh sách có ảnh bìa/fallback, title2 dòng, danh mục từ dữ liệu demo cũ, Nháp/Đã đăng, ngày và icon actions; tìm300ms/filter/pagination/confirm/toast. Chưa có API posts/Admin upload trong BE, nên Blog luôn ghi rõ minh họa kể cả đăng nhập thật, không gọi endpoint giả. Yêu cầu BE trong BE-YEU-CAU-FE.md.
+
+Kho demo mới admin_blog_v2 đọc dữ liệu cũ admin_blog khi chưa có bản mới, chỉ ghi v2 khi có thao tác; giữ nguyên backup cũ. Nếu dữ liệu hỏng hoặc không lưu được, báo lỗi thay vì âm thầm thay seed/giả thành công.
+
+Giữ /admin/blog, màn soạn tối giản dùng query compose=new hoặc compose=id, không sửa route/auth. Đợt1 chỉ chuyển form demo văn bản ra khỏi modal để thêm/sửa hoạt động; editor2 cột/contentEditable/ảnh/chưa lưu vẫn đợt2–3. Lưu nháp giữ màn, Published quay lại list; toast nói rõ lưu trình duyệt. Preview hiện là văn bản React escape, không HTML; không thay trang public.

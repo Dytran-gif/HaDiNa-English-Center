@@ -1,8 +1,8 @@
 # ADMIN FE TRACKER
 
-Cập nhật lần cuối: 2026-10-30 — đợt 2 (Dashboard/Cài đặt theo yêu cầu mới)
+Cập nhật lần cuối: 2026-10-30 — Blog đợt 1 (Việc 1 + 6)
 
-Đợt tiếp theo: Khóa học mẫu (F3-A.2) và trạng thái bảng demo còn lại, sau đó các trang/QA responsive.
+Đợt tiếp theo: Blog đợt 2 — trình soạn đầy đủ, chưa chèn hình; các việc Admin khác giữ trạng thái riêng.
 
 ⬜ chưa làm · 🔵 đang làm · ✅ xong (build + lint 0 lỗi, docs cập nhật) · ⚠️ một phần · ⏸ bị chặn.
 
@@ -31,7 +31,7 @@ Code đã xác minh có đủ 11 trang menu, trong đó 8 trang dùng API và Da
 | F3-A.4.classes | Lớp học | ⬜ | Classes | Đợt 3. |
 | F3-A.4.rooms | Phòng học | ⬜ | Rooms, ResourcePage | Đợt 3. |
 | F3-A.4.payments | Học phí | ⬜ | Payments | Đợt 3; chưa thay nghiệp vụ. |
-| F3-A.4.blog | Tin tức/Blog | ⬜ | Blog | Đợt 3; API chưa có, phải giữ nhãn demo. |
+| F3-A.4.blog | Tin tức/Blog | ⚠️ | Blog, Ui/AdminContent.css | Danh sách demo mới đã xong; editor/image/gallery và API còn thiếu, xem nhóm BLOG bên dưới. |
 | F3-A.4.requests | Đơn giáo viên | ⬜ | TeacherRequests | Đợt 3. |
 | F3-A.4.reports | Báo cáo | ⬜ | Reports | Đợt 3; dữ liệu minh họa. |
 | F3-A.4.dashboard | Dashboard | ⚠️ | Dashboard, StatsOverview, QuickActions, SectionCard, AdminPanels.css | Quick actions/KPI đơn/recent đã xong; chart/lớp hôm nay/sắp đầy chưa làm, vẫn dữ liệu minh họa có nhãn. |
@@ -61,6 +61,38 @@ Code đã xác minh có đủ 11 trang menu, trong đó 8 trang dùng API và Da
 | P25.4 | Khóa học gần đây | ✅ | Dashboard, SectionCard, Badge, AdminPanels.css | Một card, ghost link, row≥48/divider/hover/badge neutral. |
 | P25.5 | Cài đặt | ✅ | Settings, SectionCard, AdminPanels.css | Hai thẻ stretch, input44/radius10/placeholder, help/password, footer cân bằng; API/auth giữ nguyên. |
 
+## Blog mới — plan 26, từng đợt theo yêu cầu
+
+| Mã | Hạng mục | Trạng thái | File đã sửa | Ghi chú |
+|---|---|---|---|---|
+| BLOG.1.toolbar | Tiêu đề/số lượng/tìm/lọc | ✅ | BlogManagement, SearchField, AdminContent.css | Search300ms có icon/placeholder; status kết hợp trang; local demo. |
+| BLOG.1.table | Bảng bài viết | ✅ | BlogManagement, AdminContent.css, placeholder.svg | Cover56x40/fallback, title2 dòng, category legacy demo, Badge/status, dd/MM/yyyy và Draft —, icon có label/tooltip. |
+| BLOG.1.paging | Pagination/skeleton/empty | ✅ | BlogManagement, Pagination | Trang x/y · N bài viết, loading/disabled, empty khác nhau khi lọc hoặc chưa có bài. |
+| BLOG.1.delete | Xóa/confirm/toast | ✅ | demoPosts, BlogManagement, ConfirmDialog | Nêu tên bài, thành công/lỗi Toast, lỗi lưu không giả thành công/không mất dữ liệu. |
+| BLOG.1.entry | Nút thêm/sửa sang màn riêng | ✅ | DemoPostEntry, query compose trên /admin/blog | Giữ form demo văn bản cũ để không làm mất thao tác, không modal; editor đầy đủ đợt2. |
+| BLOG.1.notice | Notice demo gọn | ✅ | Notice, AdminUi.css, AdminLayout | Một Notice; action cùng hàng desktop, xuống hàng mobile. |
+| BLOG.1.api | API posts thật | ⏸ | BE-YEU-CAU-FE | Chưa có controller; không gọi endpoint giả dù đăng nhập thật. |
+| BLOG.2.layout | Editor2 cột≥1024 | ⬜ | Chưa làm | Đợt2, không coi form văn bản tối giản là editor mới. |
+| BLOG.2.fields | Title/excerpt/counter | ⚠️ | DemoPostEntry | Title250/counter có; excerpt chưa có trong entity, cần BE chốt. |
+| BLOG.2.toolbar | Toolbar/rich text/sticky | ⬜ | Chưa làm | Dự kiến contentEditable vì không thêm thư viện. |
+| BLOG.2.publish | Thẻ đăng bài/status/date | ⚠️ | DemoPostEntry | Demo có draft/publish, draft giữ màn/Published về list; UI2 cột/settings còn đợt2. |
+| BLOG.2.cover | Cover/drop/alt/5MB | ⬜ | Chưa làm | Đợt2; upload thật chờ BE. |
+| BLOG.2.category | Danh mục trong form | ⏸ | BE-YEU-CAU-FE | Post không có category, không hiện form danh mục/không gửi field giả; bảng giữ legacy mock. |
+| BLOG.2.validation | Validate/focus | ⚠️ | DemoPostEntry | Basic title/content có; hoàn thiện editor đợt2. |
+| BLOG.2.unsaved | Cảnh báo chưa lưu | ⬜ | Chưa làm | Đợt2. |
+| BLOG.2.load | GET edit/404 từ API | ⏸ | BE-YEU-CAU-FE | Có lỗi không tìm thấy demo; API detail chưa có. |
+| BLOG.3.insert | Hộp chèn hình/alt | ⬜ | Chưa làm | Đợt3. |
+| BLOG.3.clipboard | Paste/drop ảnh | ⬜ | Chưa làm | Đợt3. |
+| BLOG.3.upload | Upload URL/tiến trình/lỗi | ⏸ | BE-YEU-CAU-FE | Admin posts/images chưa có. |
+| BLOG.3.demo-images | Blob demo/khóa Published | ⬜ | Chưa làm | Đợt3, không base64 vào nội dung. |
+| BLOG.3.image-edit | Chọn ảnh/alt/căn/size/xóa | ⬜ | Chưa làm | Đợt3. |
+| BLOG.4.preview | Xem trước HTML sạch | ⚠️ | PostTextPreview | Đợt1 chỉ preview plain text React escape; HTML allowlist ở đợt3, không dangerouslySetInnerHTML. |
+| BLOG.5.grid | Lưới ảnh trang chủ | ⬜ | Chưa làm | Đợt4. |
+| BLOG.5.upload | Upload nhiều ảnh | ⏸ | BE-YEU-CAU-FE | Chưa có Admin homepage-images. |
+| BLOG.5.order | PUT order | ⏸ | BE-YEU-CAU-FE | API chưa có, chỉ đề xuất. |
+| BLOG.5.delete | Xóa/confirm/alt gallery | ⬜ | Chưa làm | Đợt4. |
+| BLOG.6.docs | Tài liệu/tracker/bàn giao | ✅ | DESIGN-SYSTEM, BE-YEU-CAU-FE, tracker, plans/handoff | Cập nhật cùng đợt1. |
+
 ## Quyết định đã chốt
 - Chỉ một đợt mỗi lần. Không sửa route/auth/API/BE/Public.
 - Token nằm trong vùng .admin-layout, bộ UI là adapter của nền dùng chung; icon tự viết thống nhất.
@@ -77,3 +109,6 @@ Code đã xác minh có đủ 11 trang menu, trong đó 8 trang dùng API và Da
 
 ## Kết quả tinh chỉnh plan 25
 Việc1–5 đã viết/build/lint/doc. Việc6 chỉ có tiêu đề NHỊP, không tự suy diễn. 12 kiểm tra SSR mục tiêu đạt, 28 kiểm tra UI và 27 kiểm tra API/session cũ vẫn PASS. Không có browser tool để chụp hoặc đo viewport; không tuyên bố đã QA trực quan.
+
+## Quyết định Blog đợt 1
+Không thêm Tiptap vì convention cấm dependencies mới; contentEditable tối giản dự kiến đợt2. Đợt1 không render HTML: React escape văn bản, không có dangerouslySetInnerHTML. Đợt3 mới viết sanitizer allowlist tương đương/kiểm tra kỹ trước HTML preview. Không dùng upload Teacher cho Admin. Kho v2 đọc admin_blog cũ, không ghi đè backup. Legacy category chỉ demo, không giả field BE. Sau Lưu nháp giữ compose, sau Published về list; mọi toast nói rõ lưu trên trình duyệt. Chưa QA browser1440/1024/390 do không có công cụ.

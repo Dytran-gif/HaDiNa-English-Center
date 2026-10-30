@@ -77,3 +77,19 @@ Native pipe/browser host không kết nối được nên chưa có ảnh trư�
 Hai SectionCard dùng heading18/600, gap header→body16, grid align stretch; body/fieldset/form flex cho footer submit nằm cùng đáy. Controls44px, radius10, label14/600, placeholder và disabled xám không giảm opacity cả form. Logo chỉ preview nếu có URL, giữ ghi chú chưa upload.
 
 Chưa có token: chỉ Notice demo của layout, không thêm lỗi đăng nhập đỏ trong Cài đặt; form bị khóa. Có token và lỗi tải thực: Notice error chứa message và nút Thử lại bên trong, cách nội dung12px. Các lỗi thao tác vẫn hiển thị message thật. Thông tin trung tâm chỉ bật lưu khi dirty; mật khẩu có help, match khi gõ/khác mật khẩu cũ và nút hiện/ẩn từ FormField. Endpoint, payload, token trả về và replaceToken giữ nguyên.
+
+## Blog — danh sách và soạn bài theo từng đợt
+
+Đợt1 (plan26) nâng cấp danh sách, kho demo v2 giữ dữ liệu cũ admin_blog, không gọi API chưa có. Model demo chuyển field cũ sang id/title/content/thumbnailUrl/status/publishedAt; legacyCategory chỉ hiển thị dữ liệu mock cũ, không gửi lên BE. Backend Post không có category/slug/excerpt; card danh mục trong soạn sẽ ẩn tới khi có hợp đồng.
+
+Không thêm thư viện vì quy ước cấm cài package. Đợt2 dự kiến contentEditable tối giản; đợt3 cần sanitizer allowlist p,h2,h3,ul,ol,li,strong,em,a,img,blockquote,br trước render HTML. Đợt1 chỉ preview văn bản qua React p (escape HTML), không dangerouslySetInnerHTML, không tự coi đã có preview HTML.
+
+Upload ảnh sẽ áp dụng jpg/png/webp≤5MB, cần endpoint Admin thực và URL trả về. Không dùng endpoint Teacher. Chưa upload: ảnh blob chỉ minh họa và không cho đăng bài chứa blob. Tiến trình/error/clipboard/drop, alt và bố cục ảnh ở đợt3, gallery/order ở đợt4. Xem BE-YEU-CAU-FE.md.
+
+### Danh sách Blog — đợt 1 hoàn tất
+
+`AdminContent.css` trong Ui là style dùng chung cho toolbar/filter/table/content actions. Thumbnail56x40/radius8 (SVG fallback cục bộ), title2 dòng, status Badge xanh/xám, ngày dd/MM/yyyy; Draft hiện —. Pagination có optional itemLabel (mặc định bản ghi), Blog dùng bài viết. SearchField thêm placeholder tương thích cũ, vẫn debounce300ms.
+
+`Notice.inlineAction` đặt action cạnh nội dung trên desktop, xuống dòng dưới48em; Layout chỉ bật cho Blog để tránh đổi các trang khác. ConfirmDialog thêm optional onFailure; Blog đóng dialog lỗi và phát một Toast để không trùng thông báo/không bị native dialog che toast; mặc định inline error của callers cũ giữ nguyên.
+
+Form demo cũ được giữ dưới màn compose riêng bằng query /admin/blog?compose=new hoặc compose=id, không thay route. Chỉ có title/nội dung văn bản/Lưu nháp/Đăng bài để list actions dùng được, chưa phải editor đợt2. Đợt2 mới có contentEditable, excerpt/cover/unsaved warning/skeleton404 chuẩn; field BE thiếu không tự gửi.
