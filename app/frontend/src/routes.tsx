@@ -19,11 +19,15 @@ import StudentCourse from "./pages/student/Course/Course";
 import AdminLayout from "./pages/admin/Layout/AdminLayout";
 import AdminDashboard from "./pages/admin/Dashboard/Dashboard";
 import CoursesManagement from "./pages/admin/Courses/CoursesManagement";
-import UsersManagement from "./pages/admin/Users/UsersManagement";
 import BlogManagement from "./pages/admin/Blog/BlogManagement";
 import PaymentsManagement from "./pages/admin/Payments/PaymentsManagement";
 import Reports from "./pages/admin/Reports/Reports";
 import RoomsManagement from "./pages/admin/Rooms/RoomsManagement";
+import TeachersManagement from "./pages/admin/Teachers/TeachersManagement";
+import StudentsManagement from "./pages/admin/Students/StudentsManagement";
+import ClassesManagement from "./pages/admin/Classes/ClassesManagement";
+import TeacherRequests from "./pages/admin/TeacherRequests/TeacherRequests";
+import Settings from "./pages/admin/Settings/Settings";
 import TeacherLayout from "./pages/teacher/Layout/TeacherLayout";
 import TeacherDashboard from "./pages/teacher/Dashboard/Dashboard";
 import TeacherClasses from "./pages/teacher/Classes/Classes";
@@ -82,11 +86,16 @@ export default function AppRoutes() {
                 <Route index element={<Navigate to="/admin/dashboard" replace />} />
                 <Route path="dashboard" element={<AdminDashboard />} />
                 <Route path="courses" element={<CoursesManagement />} />
-                <Route path="users" element={<UsersManagement />} />
+                <Route path="users" element={<Navigate to="/admin/students" replace />} />
                 <Route path="blog" element={<BlogManagement />} />
                 <Route path="payments" element={<PaymentsManagement />} />
                 <Route path="reports" element={<Reports />} />
                 <Route path="rooms" element={<RoomsManagement />} />
+                <Route path="teachers" element={<TeachersManagement />} />
+                <Route path="students" element={<StudentsManagement />} />
+                <Route path="classes" element={<ClassesManagement />} />
+                <Route path="teacher-requests" element={<TeacherRequests />} />
+                <Route path="settings" element={<Settings />} />
             </Route>
             <Route
                 path="/teacher"

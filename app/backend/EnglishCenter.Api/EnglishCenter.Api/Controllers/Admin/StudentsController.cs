@@ -158,6 +158,23 @@ public class StudentsController : ControllerBase
         return Ok(student);
     }
 
+    [HttpGet("{id:int}/payments")]
+    public async Task<IActionResult> GetPaymentsAsync(int id)
+    {
+        if (!await _db.Students.AnyAsync(s => s.Id == id))
+            return NotFound(new { message = "Không tìm thấy học viên" });
+
+        var items = await AdminPaymentQueries.Project(_db.Payments.AsNoTracking()
+            .Where(p => p.Enrollment.StudentId == id)
+            .OrderByDescending(p => p.PaidDate).ThenByDescending(p => p.Id)).ToListAsync();
+
+        return Ok(new StudentPaymentsResponse
+        {
+            Items = items,
+            TotalPaid = items.Sum(p => p.Amount)
+        });
+    }
+
     // POST api/admin/students
     [HttpPost]
     public async Task<IActionResult> Create(StudentCreateRequest req)

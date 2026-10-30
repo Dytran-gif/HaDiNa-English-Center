@@ -146,6 +146,32 @@ public class ClassesController : ControllerBase
         });
     }
 
+    [HttpGet("available")]
+    public async Task<IActionResult> GetAvailableAsync(string? search)
+    {
+        var today = AppTime.Today;
+        var items = await _db.Classes.AsNoTracking()
+            .Where(c => c.EndDate >= today && c.Enrollments.Count(e => e.Status == "Active") < c.MaxStudents)
+            .WhereContains(search, c => c.Name, c => c.Course.Name)
+            .OrderBy(c => c.Name).ThenBy(c => c.Id)
+            .Select(c => new AvailableClassResponse
+            {
+                Id = c.Id,
+                Name = c.Name,
+                CourseId = c.CourseId,
+                CourseName = c.Course.Name,
+                Enrolled = c.Enrollments.Count(e => e.Status == "Active"),
+                Capacity = c.MaxStudents,
+                Tuition = c.Course.Tuition,
+                DiscountPercent = c.Course.DiscountPercent
+            }).ToListAsync();
+
+        foreach (var item in items)
+            item.FinalTuition = item.Tuition - Math.Round(item.Tuition * item.DiscountPercent / 100, 2);
+
+        return Ok(items);
+    }
+
     // GET api/admin/classes/5
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)

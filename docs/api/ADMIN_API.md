@@ -105,6 +105,53 @@ Luật: ít nhất 1 lịch/tuần, giờ bắt đầu < giờ kết thúc, các
 
 | Nhóm | Plan |
 |---|---|
-| Học phí / thanh toán `api/admin/payments` | [plans/20](../../plans/20-be-admin-hoc-phi.md) |
 | Blog `api/admin/posts`, ảnh trang chủ `api/admin/homepage-images` | [plans/21](../../plans/21-be-admin-blog-trang-chu.md) |
 | Dashboard `api/admin/dashboard`, báo cáo `api/admin/reports/*` | [plans/22](../../plans/22-be-admin-bao-cao.md) |
+
+## 8. Học phí: `api/admin/payments` — đợt 1
+
+| Method | URL | Mô tả |
+|---|---|---|
+| GET | `/api/admin/payments?page=1&pageSize=10&search=` | Phiếu thu: PaidDate mới nhất trước, Id giảm dần nếu cùng ngày; tìm chứa tên/mã HV bằng Vietnamese_CI_AI. |
+| POST | `/api/admin/payments` | Tạo phiếu đóng đủ một lần, BE tính số tiền. |
+| GET | `/api/admin/payments/{id}` | Dữ liệu biên lai, cấu hình trung tâm và người lập. |
+| GET | `/api/admin/students/{id}/payments` | Lịch sử và tổng đã đóng của một HV. |
+| GET | `/api/admin/classes/available?search=` | Lớp còn chỗ và giá cho ghi danh mới. |
+
+GET trả `{ items: [{ id, enrollmentId, studentId, studentCode, studentName, classId, className, courseName, tuitionFee, discountPercent, discountAmount, amount, paidDate, method }], total, totalItems, page, pageSize, totalPages }`. Giá/giảm giá lấy snapshot ghi danh. Page mặc định 1, pageSize mặc định 10, tối đa 100; page quá lớn trả items rỗng. Không có PUT/DELETE phiếu thu.
+
+`PagedResult` dùng chung thêm `total = totalItems`; giữ `totalItems`, `totalPages` và field cũ cho Teacher/Admin. Các field danh sách khóa/lớp/HV/GV còn thiếu được theo dõi trong ADMIN-TRACKER.
+
+### Tạo phiếu — 6.3.1
+
+`POST /api/admin/payments` trả 201, Location `/api/admin/payments/{id}`, body là PaymentResponse như danh sách.
+
+```json
+{ "studentId": 1, "classId": 1, "method": "Cash", "paidDate": "2026-10-30", "note": "Đã xác nhận nhận đủ tiền" }
+```
+
+Hoặc `{ "enrollmentId": 1, "method": "Transfer" }`. Chỉ gửi một cách xác định ghi danh. Bỏ paidDate/null thì dùng AppTime.Today. Method bắt buộc đúng Cash/Transfer; note tối đa 500 ký tự. Không có field amount trong request; BE luôn lấy FinalTuitionFee đã chốt lúc ghi danh, không lấy giá khóa hiện tại. Admin chỉ gọi POST sau khi xác nhận đã nhận tiền.
+
+Lỗi: 401 token/claim thiếu; 404 không có ghi danh; 409 đã có phiếu (kể cả tạo đồng thời nhờ unique EnrollmentId); 400 ghi danh không Active, ngày tương lai hoặc DTO sai. Giao dịch bao gồm đọc ghi danh và lưu phiếu. Validation DTO còn ProblemDetails hiện tại (B3.f xử lý đợt 5); lỗi nghiệp vụ có message tiếng Việt.
+
+Giới hạn DB: Amount phải > 0, nên ghi danh miễn phí hiện trả 400, không tự tạo phiếu. Phần này ⏸ chờ quyết định trong DB-CAN-LAM.md.
+
+### Biên lai — 6.4.1
+
+`GET /api/admin/payments/{id}` trả `{ payment: PaymentResponse, center: { name, logoUrl, address, phone }, createdByUserId, createdByName, createdByEmail, note }`. payment có học viên/mã, lớp/khóa, tuitionFee, discountPercent, discountAmount, amount, method, paidDate. Giá là snapshot ghi danh; center lấy cấu hình hiện tại Id=1. Không trả entity/User/password/hash.
+
+404 nếu phiếu không tồn tại hoặc chưa có cấu hình trung tâm (message phân biệt). Giới hạn: User admin chưa có họ tên, nên createdByName tạm bằng createdByEmail. Phần họ tên ⏸ chờ DB-CAN-LAM.md; không coi email là tên thật.
+
+### Lịch sử học phí học viên — 4.6.3
+
+`GET /api/admin/students/{id}/payments` trả `{ items: [PaymentResponse], totalPaid }`, sắp PaidDate DESC, Id DESC. Tổng tính từ cùng danh sách trả về; gồm tất cả phiếu đã đóng kể cả ghi danh đã rút (Dropped). Không phân trang. HV tồn tại chưa có phiếu: `{ items: [], totalPaid: 0 }`; HV không tồn tại: 404 message.
+
+### Lớp còn chỗ — phần 4.5.1
+
+`GET /api/admin/classes/available?search=` trả mảng `[{ id, name, courseId, courseName, enrolled, capacity, tuition, discountPercent, finalTuition }]`, theo tên lớp rồi Id. Chỉ Upcoming/Ongoing (EndDate >= AppTime.Today), enrolled = số Enrollment.Active, enrolled < capacity. Tìm chứa tên lớp/khóa bằng Vietnamese_CI_AI. Không phân trang, không có kết quả trả `[]`.
+
+Giá là giá hiện tại của khóa dành cho ghi danh mới; finalTuition = tuition - Round(tuition * discountPercent / 100, 2), cùng cách làm tròn với EnrollmentService. Phiếu thu vẫn dùng snapshot giá cũ. Endpoint này chọn lớp để ghi danh; form thu tiền lấy ghi danh chưa thu từ chi tiết HV hiện có. Route ghi danh chuẩn còn thiếu, xem tracker.
+
+## FE Admin (2026-10-30)
+
+Các trang FE hiện gọi đúng API đã có: teachers, students, courses, classes, rooms, teacher-requests, payments và settings. /admin/users chuyển hướng sang /admin/students. Email update và logo upload chưa được FE gửi vì BE chưa hỗ trợ. Dashboard/Blog/Reports vẫn có nhãn minh họa. Chi tiết route, chạy thử và giới hạn: [FE-ADMIN.md](../admin/FE-ADMIN.md).

@@ -35,10 +35,26 @@
 
 .sidebar-menu {
     flex: 1;
+    min-height: 0;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 6px;
     padding: 0 18px;
+}
+
+@media (max-width: 48em) {
+    .admin-layout .admin-sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+    }
+    .admin-sidebar .sidebar-logo { padding: calc(var(--gutter) / 2); margin: 0; }
+    .admin-sidebar .sidebar-menu { flex-direction: row; overflow-x: auto; padding: calc(var(--gutter) / 2); }
+    .admin-sidebar .sidebar-item { flex-shrink: 0; }
+    .admin-sidebar .sidebar-bottom { padding: calc(var(--gutter) / 2); }
 }
 
 .sidebar-item {

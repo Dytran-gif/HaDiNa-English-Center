@@ -35,10 +35,10 @@ Việc mới thì lấy số trống tiếp theo trong dải của vùng, ví d�
 | 13 | [BE Student: điểm, chuyên cần, nhận xét, đánh giá GV](./13-be-student-ket-qua-hoc-tap.md) | Student | Nam | 10 | ⬜ |
 | 14 | [BE Student: học phí + thông báo](./14-be-student-hoc-phi-thong-bao.md) | Student | Nam | 10 | ⬜ |
 | 15 | [FE Student: trang còn thiếu + nối API](./15-fe-student-trang-va-noi-api.md) | Student | Nam | 01, 03, 10–14 | ⬜ |
-| 20 | [BE Admin: học phí / thanh toán](./20-be-admin-hoc-phi.md) | Admin | ⟨cần điền⟩ | — | ⬜ |
+| 20 | [BE Admin: học phí / thanh toán](./20-be-admin-hoc-phi.md) | Admin | Codex | — | 🔵 BE theo schema hiện có đã xong; 6.3.1/6.4.1 còn phần chờ DB |
 | 21 | [BE Admin: blog + ảnh trang chủ](./21-be-admin-blog-trang-chu.md) | Admin | ⟨cần điền⟩ | — | ⬜ |
 | 22 | [BE Admin: dashboard + báo cáo](./22-be-admin-bao-cao.md) | Admin | ⟨cần điền⟩ | 20 | ⬜ |
-| 23 | [FE Admin: trang còn thiếu + nối API](./23-fe-admin-trang-va-noi-api.md) | Admin | Duy | 01, 03, 20–22 | ⬜ |
+| 23 | [FE Admin: trang còn thiếu + nối API](./23-fe-admin-trang-va-noi-api.md) | Admin | Duy / Codex | API hiện có; phần còn lại chờ 21–22 | 🟡 FE hiện có đã build xanh; chờ QA trình duyệt/DB và API còn thiếu |
 | 30 | [FE Teacher: trang còn thiếu + nối API](./30-fe-teacher-trang-va-noi-api.md) | Teacher | Duy | 00, 01, 03 | ⬜ |
 | 40 | [BE Public: khóa học, giáo viên, blog, thông tin trung tâm](./40-be-public-api.md) | Public | Hoàng | — | ⬜ |
 | 41 | [FE Public: nối trang public vào API](./41-fe-public-noi-api.md) | Public | Hoàng | 01, 40 | ⬜ |

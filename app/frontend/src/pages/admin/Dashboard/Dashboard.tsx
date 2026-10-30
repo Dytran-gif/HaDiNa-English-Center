@@ -9,6 +9,11 @@ export default function AdminDashboard() {
 
     return (
         <div className="admin-dashboard">
+            <div className="admin-api-toolbar">
+                <Button to="/admin/students?action=create" variant="primary">+ Thêm học viên</Button>
+                <Button to="/admin/classes?action=create" variant="outline">+ Tạo lớp</Button>
+                <Button to="/admin/payments?action=create" variant="outline">+ Tạo phiếu thu</Button>
+            </div>
             <StatsOverview />
 
             <Card className="admin-recent-card">

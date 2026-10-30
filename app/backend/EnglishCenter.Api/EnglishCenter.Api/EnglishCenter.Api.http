@@ -254,3 +254,72 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hc
 ### Xóa lớp
 DELETE {{EnglishCenter.Api_HostAddress}}/api/admin/classes/2
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJhZG1pbkBkZW1vLmNvbSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6ImFkbWluIiwidG9rZW5WZXJzaW9uIjoiMiIsImV4cCI6MTc5Mjc5OTkyMSwiaXNzIjoiRW5nbGlzaENlbnRlci5BcGkiLCJhdWQiOiJFbmdsaXNoQ2VudGVyLkNsaWVudCJ9.u-C-aFDRoOcHWD3ZavgeWSSRe0c4eSBau0BcP5Uyti8
+### Phiếu thu: danh sách, tìm tên không dấu hoặc mã HV
+GET {{EnglishCenter.Api_HostAddress}}/api/admin/payments?page=1&pageSize=10&search=nguyen
+Authorization: Bearer {{token}}
+
+### Phiếu thu: trang vượt giới hạn trả items rỗng
+GET {{EnglishCenter.Api_HostAddress}}/api/admin/payments?page=2147483647&pageSize=100
+Authorization: Bearer {{token}}
+
+### Phiếu thu: không token (401)
+GET {{EnglishCenter.Api_HostAddress}}/api/admin/payments
+
+### Tạo phiếu sau khi xác nhận nhận tiền; bỏ paidDate để lấy hôm nay
+POST {{EnglishCenter.Api_HostAddress}}/api/admin/payments
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "studentId": 1, "classId": 1, "method": "Cash", "note": "Đã nhận đủ học phí" }
+
+### Tạo bằng enrollmentId; gửi lại cùng ghi danh phải 409
+POST {{EnglishCenter.Api_HostAddress}}/api/admin/payments
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "enrollmentId": 1, "method": "Transfer", "paidDate": "2026-10-30" }
+
+### Ngày tương lai: 400
+POST {{EnglishCenter.Api_HostAddress}}/api/admin/payments
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "enrollmentId": 1, "method": "Cash", "paidDate": "9999-12-31" }
+
+### Method sai: 400
+POST {{EnglishCenter.Api_HostAddress}}/api/admin/payments
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "enrollmentId": 1, "method": "Card" }
+
+### Xác định ghi danh không đủ: 400
+POST {{EnglishCenter.Api_HostAddress}}/api/admin/payments
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "studentId": 1, "method": "Cash" }
+
+### Biên lai (đổi 1 thành id phiếu thật)
+GET {{EnglishCenter.Api_HostAddress}}/api/admin/payments/1
+Authorization: Bearer {{token}}
+
+### Biên lai không tồn tại: 404
+GET {{EnglishCenter.Api_HostAddress}}/api/admin/payments/2147483647
+Authorization: Bearer {{token}}
+
+### Học phí của học viên: items + totalPaid (rỗng/tổng 0 nếu chưa thu)
+GET {{EnglishCenter.Api_HostAddress}}/api/admin/students/1/payments
+Authorization: Bearer {{token}}
+
+### Học phí học viên không tồn tại: 404
+GET {{EnglishCenter.Api_HostAddress}}/api/admin/students/2147483647/payments
+Authorization: Bearer {{token}}
+
+### Lớp chưa kết thúc và còn chỗ: kèm giá ghi danh mới
+GET {{EnglishCenter.Api_HostAddress}}/api/admin/classes/available?search=ielts
+Authorization: Bearer {{token}}
+
+### Tất cả lớp còn chỗ
+GET {{EnglishCenter.Api_HostAddress}}/api/admin/classes/available
+Authorization: Bearer {{token}}
