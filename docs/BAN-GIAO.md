@@ -1,4 +1,21 @@
 # Nhật ký bàn giao
+## [2026-10-31] Codex — Dashboard lớp học theo ngày
+
+**Đã xong**
+- Bỏ Khóa học gần đây, thêm TodayClasses với ngày mặc định giờ Việt Nam và ô chọn ngày. Ba cột: tên lớp, giáo viên, số học viên Active. Dùng API classes hiện có, tải hết trang, lọc lịch theo thứ 1–7 và khoảng ngày lớp; mỗi lớp một hàng, sắp theo giờ đầu tiên.
+- Reuse SectionCard/InputField/TableSkeleton/EmptyState/Notice; có lỗi/thử lại, không sửa backend/auth/route/dependency.
+- Build/typecheck PASS, lint 0 error/1 warning cũ. Mock kiểm tra 31/10 có3 lớp, 01/11 có0, 02/11 có5. Bản thử: http://127.0.0.1:5174/admin/dashboard .
+
+**Đang dở**
+- Chưa thực hiện đầy đủ 1.5 theo spec: chưa endpoint dashboard riêng/giờ/phòng/link chi tiết; không coi bảng ba cột này là hoàn tất audit.
+
+**Việc tiếp theo**
+- Mở Dashboard kiểm tra giao diện; tiếp tục audit Page3–5 khi được yêu cầu.
+
+**Bẫy cần biết**
+- API dayOfWeek Monday=1, Sunday=7, JavaScript Sunday=0; không lọc chỉ theo thứ mà bỏ ngày bắt đầu/kết thúc lớp.
+- Sĩ số là số Active hiện tại, không phải lịch sử điểm danh theo ngày. Giữ thay đổi Payment.cs và các tài liệu audit sẵn có của workspace.
+
 ## [2026-10-30] Codex — Audit ADMIN lượt 1/3, Page 1–2
 
 **Đã xong**

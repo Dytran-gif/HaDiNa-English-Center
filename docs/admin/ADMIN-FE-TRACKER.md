@@ -139,3 +139,13 @@ Các mã F2/F3/BLOG phía trên ghi tiến độ đợt UI, không phải chứn
 - Đơn giáo viên vẫn có menu/route, trái chủ trương FE hoãn; không xóa trong lượt audit.
 - Build FE PASS; lint 0 error, 1 warning AuthContext có sẵn. Không chạy app/browser.
 - Lượt tiếp theo: Page 3, 4, 5.
+
+## [2026-10-31] Dashboard — lớp học theo ngày
+
+| Mã | Hạng mục | Trạng thái | File | Ghi chú |
+|---|---|---|---|---|
+| Dashboard.today | Thay Khóa học gần đây bằng lớp theo ngày | ✅ | Dashboard/Dashboard.tsx, Dashboard/Components/TodayClasses.tsx, Dashboard/Dashboard.css | Mặc định hôm nay giờ Việt Nam; chọn ngày; lọc thứ Mon1–Sun7 và khoảng ngày lớp; mỗi lớp một hàng, sắp giờ buổi đầu; tên lớp/GV/sĩ số Active từ API classes. Lấy đủ các trang; skeleton/empty/error/retry. |
+
+- Đây là thay đổi FE theo yêu cầu ngày 2026-10-31, không sửa BE và không đánh dấu hoàn tất toàn task 1.5 của spec (chưa có endpoint today-classes, giờ/phòng và link chi tiết).
+- AUDIT-ADMIN.md là kết quả tại ngày audit 2026-10-30; phần ghi thiếu khối hôm nay là hiện trạng trước thay đổi này.
+- Validation: build/typecheck PASS; lint 0 error/1 warning AuthContext có sẵn. Kiểm tra dữ liệu mock 31/10: 3 lớp, 01/11: 0 lớp, 02/11: 5 lớp; module Vite HTTP200. Chưa QA hình ảnh trình duyệt.

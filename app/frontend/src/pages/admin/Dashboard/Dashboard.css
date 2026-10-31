@@ -1,3 +1,16 @@
+.admin-layout .admin-today-controls {
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: var(--admin-space-3);
+}
+
+.admin-layout .admin-today-summary {
+    align-self: center;
+    color: var(--admin-muted);
+    font-size: var(--admin-font-sm);
+}
+
 .admin-stats-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
