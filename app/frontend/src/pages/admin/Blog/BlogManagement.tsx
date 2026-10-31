@@ -1,215 +1,69 @@
-import { useState } from "react";
-import "../admin-shared.css";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import Card from "../../../components/ui/Card";
-import Button from "../../../components/ui/Button";
-import Modal from "../../../components/ui/Modal";
-import { InputField, SelectField, TextareaField } from "../../../components/ui/FormField";
-import { blogPosts as blogSeed } from "../../../data/blogPosts";
-import { useLocalCollection, nextId } from "../../../hooks/useLocalCollection";
-import type { BlogPost } from "../../../types";
-
-const formatter = new Intl.DateTimeFormat("vi-VN", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-});
-
-const categoryOptions = [
-    "Tips luyện thi - du học",
-    "IELTS Reading",
-    "IELTS Speaking",
-    "IELTS Writing",
-    "Ngữ pháp",
-    "Tin tức trung tâm",
-];
-
-type FormState = {
-    title: string;
-    slug: string;
-    excerpt: string;
-    content: string;
-    category: string;
-    published_at: string;
-};
-
-function emptyForm(): FormState {
-    return {
-        title: "",
-        slug: "",
-        excerpt: "",
-        content: "",
-        category: categoryOptions[0],
-        published_at: new Date().toISOString().slice(0, 10),
-    };
-}
+import Button, { IconButton } from "../Components/Ui/Button";
+import Badge from "../Components/Ui/Badge";
+import Icon from "../Components/Ui/Icon";
+import Notice from "../Components/Ui/Notice";
+import ConfirmDialog from "../Components/Ui/ConfirmDialog";
+import Dialog from "../Components/Ui/Dialog";
+import EmptyState from "../Components/Ui/EmptyState";
+import Pagination from "../Components/Ui/Pagination";
+import TableSkeleton from "../Components/Ui/TableSkeleton";
+import { SelectField } from "../Components/Ui/FormField";
+import useToast from "../Components/Ui/useToast";
+import SearchField from "../Components/Api/SearchField";
+import placeholder from "../Components/Ui/assets/post-placeholder.svg";
+import { deleteDemoPost, listDemoPosts } from "./demoPosts";
+import type { DemoPost, DemoPostPage } from "./postTypes";
+import DemoPostEntry from "./DemoPostEntry";
+import PostTextPreview from "./PostTextPreview";
+import "../admin-shared.css";
+import "../Components/Ui/AdminContent.css";
 
 export default function BlogManagement() {
-    const { items: posts, add, update, remove } = useLocalCollection<BlogPost>(
-        "admin_blog",
-        blogSeed
-    );
-
-    const [modalOpen, setModalOpen] = useState(false);
-    const [editingId, setEditingId] = useState<number | null>(null);
-    const [form, setForm] = useState<FormState>(emptyForm());
-
-    function openAddModal() {
-        setEditingId(null);
-        setForm(emptyForm());
-        setModalOpen(true);
-    }
-
-    function openEditModal(post: BlogPost) {
-        setEditingId(post.post_id);
-        setForm({
-            title: post.title,
-            slug: post.slug,
-            excerpt: post.excerpt,
-            content: post.content.join("\n\n"),
-            category: post.category,
-            published_at: post.published_at,
-        });
-        setModalOpen(true);
-    }
-
-    function handleDelete(postId: number) {
-        if (!window.confirm("Xóa bài viết này? Hành động không thể hoàn tác.")) return;
-        remove((p) => p.post_id === postId);
-    }
-
-    function handleSubmit() {
-        if (!form.title.trim() || !form.slug.trim()) {
-            window.alert("Vui lòng nhập tiêu đề và slug.");
-            return;
-        }
-
-        const contentParagraphs = form.content
-            .split("\n\n")
-            .map((p) => p.trim())
-            .filter(Boolean);
-
-        if (editingId !== null) {
-            update(
-                (p) => p.post_id === editingId,
-                (p) => ({
-                    ...p,
-                    title: form.title,
-                    slug: form.slug,
-                    excerpt: form.excerpt,
-                    content: contentParagraphs,
-                    category: form.category,
-                    published_at: form.published_at,
-                })
-            );
-        } else {
-            const newPost: BlogPost = {
-                post_id: nextId(posts, (p) => p.post_id),
-                title: form.title,
-                slug: form.slug,
-                excerpt: form.excerpt,
-                content: contentParagraphs,
-                category: form.category,
-                published_at: form.published_at,
-            };
-            add(newPost);
-        }
-        setModalOpen(false);
-    }
-
-    return (
-        <div className="admin-table-page">
-            <div className="admin-table-toolbar">
-                <p className="admin-table-count">{posts.length} bài viết</p>
-                <Button variant="primary" onClick={openAddModal}>
-                    + Thêm bài viết
-                </Button>
-            </div>
-
-            <Card>
-                <table className="admin-table">
-                    <thead>
-                        <tr>
-                            <th>Tiêu đề</th>
-                            <th>Danh mục</th>
-                            <th>Ngày đăng</th>
-                            <th>Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {posts.map((post) => (
-                            <tr key={post.post_id}>
-                                <td>{post.title}</td>
-                                <td>{post.category}</td>
-                                <td>{formatter.format(new Date(post.published_at))}</td>
-                                <td>
-                                    <div className="admin-row-actions">
-                                        <button type="button" className="admin-action-link" onClick={() => openEditModal(post)}>
-                                            Sửa
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className="admin-action-link admin-action-danger"
-                                            onClick={() => handleDelete(post.post_id)}
-                                        >
-                                            Xóa
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                        {posts.length === 0 && (
-                            <tr>
-                                <td colSpan={4} className="admin-table-empty">
-                                    Chưa có bài viết nào.
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            </Card>
-
-            <Modal
-                title={editingId !== null ? "Sửa bài viết" : "Thêm bài viết mới"}
-                open={modalOpen}
-                onClose={() => setModalOpen(false)}
-                footer={
-                    <>
-                        <Button variant="ghost" onClick={() => setModalOpen(false)}>
-                            Hủy
-                        </Button>
-                        <Button variant="primary" onClick={handleSubmit}>
-                            {editingId !== null ? "Lưu thay đổi" : "Thêm bài viết"}
-                        </Button>
-                    </>
-                }
-            >
-                <InputField label="Tiêu đề" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
-                <InputField label="Slug" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} />
-                <TextareaField
-                    label="Tóm tắt"
-                    value={form.excerpt}
-                    onChange={(e) => setForm({ ...form, excerpt: e.target.value })}
-                    rows={2}
-                />
-                <TextareaField
-                    label="Nội dung (mỗi đoạn cách nhau 1 dòng trống)"
-                    value={form.content}
-                    onChange={(e) => setForm({ ...form, content: e.target.value })}
-                    rows={5}
-                />
-                <SelectField
-                    label="Danh mục"
-                    value={form.category}
-                    onChange={(e) => setForm({ ...form, category: e.target.value })}
-                    options={categoryOptions.map((c) => ({ value: c, label: c }))}
-                />
-                <InputField
-                    label="Ngày đăng"
-                    type="date"
-                    value={form.published_at}
-                    onChange={(e) => setForm({ ...form, published_at: e.target.value })}
-                />
-            </Modal>
-        </div>
-    );
+  const [params, setParams] = useSearchParams(); const { notify } = useToast();
+  const search = params.get("search") ?? "";
+  const status = ["Draft", "Published"].includes(params.get("status") ?? "") ? params.get("status")! : "";
+  const page = Math.max(1, Number(params.get("page")) || 1);
+  const compose = params.get("compose");
+  const [result, setResult] = useState<DemoPostPage>(); const [loading, setLoading] = useState(true); const [error, setError] = useState("");
+  const [revision, setRevision] = useState(0); const [deleting, setDeleting] = useState<DemoPost | null>(null); const [preview, setPreview] = useState<DemoPost | null>(null);
+  useEffect(() => {
+    let active = true; setLoading(true); setError("");
+    listDemoPosts({ search, status, page, pageSize: 10 }).then(data => { if (active) setResult(data); }).catch(reason => { if (active) setError(reason instanceof Error ? reason.message : "Không tải được bài viết."); }).finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [search, status, page, revision]);
+  function changeQuery(key: string, value: string) {
+    setParams(previous => { const next = new URLSearchParams(previous); if (value) next.set(key, value); else next.delete(key); if (key !== "page") next.set("page", "1"); return next; });
+  }
+  function composePost(id: number | "new") { setParams(previous => { const next = new URLSearchParams(previous); next.set("compose", String(id)); return next; }); }
+  function back() { setParams(previous => { const next = new URLSearchParams(previous); next.delete("compose"); return next; }); }
+  async function remove() {
+    if (!deleting) return;
+    await deleteDemoPost(deleting.id);
+    setRevision(value => value + 1);
+    notify({ title: "Đã xóa bài viết minh họa trên trình duyệt.", tone: "success" });
+  }
+  const addButton = <Button variant="primary" icon="plus" onClick={() => composePost("new")}>Thêm bài viết</Button>;
+  if (compose) return <DemoPostEntry key={compose} selector={compose} back={back} saved={post => { setRevision(value => value + 1); if (post.status === "Published") back(); else composePost(post.id); }}/>;
+  const filtered = Boolean(search || status);
+  return <div className="admin-content-manager">
+    <div className="admin-content-toolbar"><div><h2>Danh sách bài viết</h2><p>{loading ? "Đang tải danh sách…" : error ? "Chưa tải được dữ liệu" : `${result?.total ?? 0} bài viết`}</p></div>{addButton}</div>
+    <div className="admin-content-filters"><div className="admin-content-search"><Icon name="search"/><SearchField label="Tìm theo tiêu đề" placeholder="Nhập tiêu đề bài viết…" value={search} onSearch={value => changeQuery("search", value)}/></div><SelectField label="Trạng thái" value={status} onChange={event => changeQuery("status", event.target.value)} options={[{value:"",label:"Tất cả"},{value:"Published",label:"Đã đăng"},{value:"Draft",label:"Nháp"}]}/><Button icon="refresh" loading={loading} onClick={() => setRevision(value => value + 1)}>Tải lại</Button></div>
+    {error && <Notice tone="error" action={<Button icon="refresh" onClick={() => setRevision(value => value + 1)}>Thử lại</Button>}>{error}</Notice>}
+    <Card padded={false}><div className="admin-content-table" role="region" aria-label="Danh sách bài viết" tabIndex={0}><table className="admin-table"><thead><tr><th>Ảnh bìa</th><th>Tiêu đề</th><th>Danh mục</th><th>Trạng thái</th><th>Ngày đăng</th><th>Thao tác</th></tr></thead><tbody>
+      {loading ? <TableSkeleton columns={6}/> : error ? <tr><td colSpan={6}><EmptyState title="Chưa tải được bài viết" description="Dữ liệu cục bộ vẫn được giữ nguyên. Hãy thử tải lại."/></td></tr> : !result?.items.length ? <tr><td colSpan={6}><EmptyState title={filtered ? "Không tìm thấy bài viết phù hợp" : "Chưa có bài viết nào"} description={filtered ? "Thử một từ khóa khác hoặc xóa bộ lọc để xem tất cả." : "Tạo bài viết đầu tiên để bắt đầu quản lý nội dung."} action={filtered ? <Button onClick={() => setParams({})}>Xóa bộ lọc</Button> : addButton}/></td></tr> : result.items.map(post => <tr key={post.id}>
+        <td><img className="admin-post-thumbnail" src={post.thumbnailUrl ?? placeholder} alt={`Ảnh bìa: ${post.title}`} loading="lazy" onError={event => { if (event.currentTarget.getAttribute("src") !== placeholder) event.currentTarget.src = placeholder; }}/></td>
+        <td><span className="admin-post-title" title={post.title}>{post.title}</span></td>
+        <td>{post.legacyCategory ? <Badge tone="neutral">{post.legacyCategory}</Badge> : "—"}</td>
+        <td><Badge status={post.status}/></td>
+        <td className="admin-content-date">{post.status === "Published" && post.publishedAt ? post.publishedAt.split("-").reverse().join("/") : "—"}</td>
+        <td><div className="admin-content-actions"><IconButton icon="edit" label={`Sửa bài: ${post.title}`} onClick={() => composePost(post.id)}/><IconButton icon="eye" label={`Xem trước bài: ${post.title}`} onClick={() => setPreview(post)}/><IconButton icon="trash" label={`Xóa bài: ${post.title}`} variant="ghost" onClick={() => setDeleting(post)}/></div></td>
+      </tr>)}
+    </tbody></table></div></Card>
+    <Pagination page={result?.page ?? page} total={result?.total ?? 0} itemLabel="bài viết" loading={loading || Boolean(error)} onChange={value => changeQuery("page", String(value))}/>
+    <ConfirmDialog open={Boolean(deleting)} title="Xóa bài viết" confirmLabel="Xóa bài viết" onClose={() => setDeleting(null)} onConfirm={remove} onFailure={reason => { setDeleting(null); notify({ title: reason instanceof Error ? reason.message : "Không xóa được bài viết.", tone: "error" }); }}><p>Bạn có muốn xóa bài “{deleting?.title}” khỏi dữ liệu minh họa trên trình duyệt?</p></ConfirmDialog>
+    <Dialog open={Boolean(preview)} title="Bản xem trước · văn bản minh họa" onClose={() => setPreview(null)}>{preview && <PostTextPreview post={preview}/>}</Dialog>
+  </div>;
 }

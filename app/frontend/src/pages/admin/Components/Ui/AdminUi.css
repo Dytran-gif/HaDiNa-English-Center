@@ -1,0 +1,75 @@
+﻿.admin-layout .admin-icon { width: var(--admin-icon-size); height: var(--admin-icon-size); flex-shrink: 0; vertical-align: middle; }
+.admin-layout .admin-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+.admin-layout :where(button,a,input,select,textarea):focus-visible { outline: 2px solid var(--admin-primary); outline-offset: var(--admin-space-1); }
+.admin-layout .btn--primary { background: var(--admin-primary); color: var(--admin-surface); }
+.admin-layout .btn--primary:hover { background: var(--admin-primary-hover); }
+.admin-layout .admin-button { justify-content: center; min-height: var(--admin-control-height); gap: var(--admin-space-2); padding: var(--admin-space-2) var(--admin-space-4); border: 1px solid var(--admin-border); border-radius: var(--admin-radius-control); font-size: var(--admin-font-sm); line-height: var(--admin-leading); font-weight: 600; text-decoration: none; transition: background var(--admin-motion), border-color var(--admin-motion), box-shadow var(--admin-motion); }
+.admin-layout .admin-button:hover { transform: none; box-shadow: none; text-decoration: none; }
+.admin-layout .admin-button--primary { color: var(--admin-surface); background: var(--admin-primary); border-color: var(--admin-primary); }
+.admin-layout .admin-button--primary:hover { background: var(--admin-primary-hover); border-color: var(--admin-primary-hover); }
+.admin-layout .admin-button--secondary { background: var(--admin-surface); color: var(--admin-text); border-color: var(--admin-border); }
+.admin-layout .admin-button--secondary:hover { background: var(--admin-canvas); border-color: var(--admin-muted); }
+.admin-layout .admin-button--danger { background: var(--admin-danger); border-color: var(--admin-danger); color: var(--admin-surface); }
+.admin-layout .admin-button--danger:hover { background: var(--admin-danger-hover); border-color: var(--admin-danger-hover); }
+.admin-layout .admin-button--ghost { background: transparent; border-color: transparent; color: var(--admin-muted); }
+.admin-layout .admin-button--ghost:hover { background: var(--admin-primary-soft); color: var(--admin-primary-ink); }
+.admin-layout .btn:disabled, .admin-layout .admin-button:disabled { background: var(--admin-disabled-bg); border-color: var(--admin-border); color: var(--admin-disabled-text); opacity: 1; cursor: not-allowed; transform: none; box-shadow: none; }
+.admin-layout .admin-icon-button { width: var(--admin-control-height); padding: var(--admin-space-2); }
+.admin-layout .admin-icon-button > span:last-child:has(.admin-sr-only) { display: contents; }
+.admin-layout .admin-spinner { width: var(--admin-icon-size); height: var(--admin-icon-size); border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: admin-spin 800ms linear infinite; flex-shrink: 0; }
+.admin-layout .admin-field { position: relative; display: flex; flex-direction: column; gap: var(--admin-space-2); min-width: 0; }
+.admin-layout .field { gap: var(--admin-space-2); }
+.admin-layout .field__label { font-size: var(--admin-font-sm); line-height: var(--admin-leading); color: var(--admin-text); font-weight: 600; }
+.admin-layout .field__control { box-sizing: border-box; width: 100%; min-height: var(--admin-control-height); padding: var(--admin-space-2) var(--admin-space-3); border: 1px solid var(--admin-border); border-radius: var(--admin-radius-control); color: var(--admin-text); background: var(--admin-surface); font-size: var(--admin-font-sm); line-height: var(--admin-leading); }
+.admin-layout .field__control::placeholder { color: var(--admin-muted); opacity: 1; }
+.admin-layout .field__control:hover:not(:disabled) { border-color: var(--admin-muted); }
+.admin-layout .field__control:focus-visible { outline: 2px solid var(--admin-primary); outline-offset: 2px; border-color: var(--admin-primary); box-shadow: none; }
+.admin-layout .field__control[aria-invalid="true"] { border-color: var(--admin-danger); }
+.admin-layout .field__control:disabled { background: var(--admin-disabled-bg); color: var(--admin-disabled-text); cursor: not-allowed; opacity: 1; }
+.admin-layout .field__control--textarea { min-height: calc(var(--admin-control-height) * 3); }
+.admin-layout .field__error, .admin-layout .admin-field-help { margin: 0; font-size: var(--admin-font-xs); line-height: var(--admin-leading); }
+.admin-layout .field__error { color: var(--admin-danger); }
+.admin-layout .admin-field-help { color: var(--admin-muted); }
+.admin-layout .admin-password-field .field__control { padding-inline-end: calc(var(--admin-control-height) + var(--admin-space-3)); }
+.admin-layout .admin-password-toggle { position: absolute; inset-inline-end: var(--admin-space-1); top: calc(var(--admin-font-sm) * var(--admin-leading) + var(--admin-space-2)); }
+.admin-layout .admin-tone--info { --admin-tone-ink: var(--admin-primary-ink); --admin-tone-bg: var(--admin-primary-soft); }
+.admin-layout .admin-tone--success { --admin-tone-ink: var(--admin-success); --admin-tone-bg: var(--admin-success-soft); }
+.admin-layout .admin-tone--warning { --admin-tone-ink: var(--admin-warning); --admin-tone-bg: var(--admin-warning-soft); }
+.admin-layout .admin-tone--error { --admin-tone-ink: var(--admin-danger); --admin-tone-bg: var(--admin-danger-soft); }
+.admin-layout .admin-tone--neutral { --admin-tone-ink: var(--admin-muted); --admin-tone-bg: var(--admin-disabled-bg); }
+.admin-layout .admin-notice { display: flex; align-items: flex-start; gap: var(--admin-space-3); padding: var(--admin-space-4); margin: 0; border: 1px solid currentColor; border-radius: var(--admin-radius-control); background: var(--admin-tone-bg); color: var(--admin-tone-ink); font-size: var(--admin-font-sm); overflow-wrap: anywhere; }
+.admin-layout .admin-notice > .admin-icon { margin-block-start: var(--admin-space-1); }
+.admin-layout .admin-notice-content { display: grid; gap: var(--admin-space-1); min-width: 0; }
+.admin-layout .admin-notice-action { margin-block-start: var(--admin-space-3); }
+@keyframes admin-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .admin-layout *, .admin-layout *::before, .admin-layout *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; scroll-behavior: auto !important; } }
+.admin-layout .admin-empty-state { display: grid; justify-items: center; gap: var(--admin-space-3); padding: var(--admin-space-10) var(--admin-space-6); text-align: center; color: var(--admin-muted); }
+.admin-layout .admin-empty-state h3 { margin: 0; color: var(--admin-text); font-size: var(--admin-font-md); }
+.admin-layout .admin-empty-state p { margin: 0; max-width: 48ch; font-size: var(--admin-font-sm); }
+.admin-layout .admin-empty-icon { display: grid; place-items: center; width: var(--admin-space-12); height: var(--admin-space-12); background: var(--admin-canvas); border: 1px solid var(--admin-border); border-radius: var(--admin-radius-panel); }
+.admin-layout .admin-empty-action { margin-block-start: var(--admin-space-1); }
+.admin-layout .admin-skeleton-line { display: block; height: var(--admin-space-4); min-width: var(--admin-space-12); background: var(--admin-disabled-bg); border-radius: var(--admin-radius-control); animation: admin-pulse 1400ms ease-in-out infinite; }
+.admin-layout .admin-badge { display: inline-flex; }
+.admin-layout .admin-badge .tag { display: inline-flex; padding: var(--admin-space-1) var(--admin-space-2); border-radius: var(--admin-radius-control); background: var(--admin-tone-bg); color: var(--admin-tone-ink); font-size: var(--admin-font-xs); font-weight: 600; line-height: var(--admin-leading); white-space: nowrap; }
+.admin-layout .admin-pagination { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--admin-space-4); padding-block: var(--admin-space-4); color: var(--admin-muted); font-size: var(--admin-font-sm); }
+.admin-layout .admin-pagination-actions { display: flex; gap: var(--admin-space-2); }
+.admin-layout .admin-dialog { position: fixed; inset: 0; width: min(var(--admin-dialog-width), calc(100vw - var(--admin-space-8))); max-height: calc(100dvh - var(--admin-space-8)); max-width: none; padding: 0; border: 1px solid var(--admin-border); border-radius: var(--admin-radius-panel); background: var(--admin-surface); color: var(--admin-text); box-shadow: var(--admin-shadow-2); overflow-y: auto; }
+.admin-layout .admin-dialog::backdrop { background: var(--admin-overlay); }
+.admin-layout .admin-dialog-header { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--admin-space-4); padding: var(--admin-space-5) var(--admin-space-6); border-bottom: 1px solid var(--admin-border); }
+.admin-layout .admin-dialog-header h2 { margin: 0; font-size: var(--admin-font-lg); font-family: var(--font-display); }
+.admin-layout .admin-dialog-body { display: grid; gap: var(--admin-space-4); padding: var(--admin-space-6); }
+.admin-layout .admin-dialog-footer { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: var(--admin-space-3); padding: var(--admin-space-4) var(--admin-space-6); border-top: 1px solid var(--admin-border); }
+.admin-layout .admin-toast-stack { position: fixed; bottom: var(--admin-space-6); inset-inline-end: var(--admin-space-6); width: min(var(--admin-toast-width), calc(100vw - var(--admin-space-8))); display: grid; gap: var(--admin-space-3); z-index: 2100; pointer-events: none; }
+.admin-layout .admin-toast { position: relative; pointer-events: auto; border-radius: var(--admin-radius-control); box-shadow: var(--admin-shadow-2); }
+.admin-layout .admin-toast .admin-notice { padding-inline-end: calc(var(--admin-control-height) + var(--admin-space-2)); }
+.admin-layout .admin-toast-close { position: absolute; top: var(--admin-space-1); inset-inline-end: var(--admin-space-1); }
+@keyframes admin-pulse { 50% { opacity: .4; } }
+@media (prefers-reduced-motion: reduce) { .admin-layout .admin-skeleton-line { animation: none; } }
+.admin-layout .admin-notice--inline { align-items: center; }
+.admin-layout .admin-notice--inline > .admin-notice-content { flex: 1; }
+.admin-layout .admin-notice--inline > .admin-notice-action { margin-block-start: 0; margin-inline-start: auto; flex-shrink: 0; }
+@media (max-width: 48em) {
+  .admin-layout .admin-notice--inline { flex-wrap: wrap; }
+  .admin-layout .admin-notice--inline > .admin-notice-content { flex-basis: calc(100% - var(--admin-icon-size) - var(--admin-space-3)); }
+  .admin-layout .admin-notice--inline > .admin-notice-action { margin-inline-start: calc(var(--admin-icon-size) + var(--admin-space-3)); max-width: 100%; }
+}

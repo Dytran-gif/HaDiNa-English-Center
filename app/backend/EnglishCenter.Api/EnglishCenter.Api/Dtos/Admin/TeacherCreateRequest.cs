@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace EnglishCenter.Api.Dtos.Admin;
 
@@ -30,6 +30,6 @@ public class TeacherCreateRequest
     public string Status { get; set; } = "Teaching";
 
     [Required(ErrorMessage = "Mật khẩu tạm là bắt buộc")]
-    [MinLength(6, ErrorMessage = "Mật khẩu tối thiểu 6 ký tự")]
+    [MinLength(8, ErrorMessage = "Mật khẩu tối thiểu 8 ký tự")]
     public string TempPassword { get; set; } = "";
 }

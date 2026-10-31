@@ -11,7 +11,7 @@ Doc này được **tổng hợp từ code hiện tại** (`Controllers/Admin/`)
 | GET | `/api/admin/courses/{id}` | Chi tiết |
 | POST | `/api/admin/courses` | Tạo. 409 "Tên khóa học đã tồn tại" |
 | PUT | `/api/admin/courses/{id}` | Sửa. 409 trùng tên |
-| DELETE | `/api/admin/courses/{id}` | Xóa. 409 "Khóa học đã có lớp, không thể xóa" |
+| DELETE | `/api/admin/courses/{id}` | Xóa. 409 kèm số lớp đang dùng khóa; lỗi FK đồng thời cũng trả 409 |
 
 ```json
 { "name": "IELTS 6.5", "description": "...", "bandFrom": 5.0, "bandTo": 6.5,
@@ -83,13 +83,9 @@ Luật: ít nhất 1 lịch/tuần, giờ bắt đầu < giờ kết thúc, các
   "degree": "IELTS 8.0, TESOL", "hireDate": "2026-01-10", "status": "Teaching", "tempPassword": "123456" }
 ```
 
-## 6. Đơn của giáo viên: `api/admin/teacher-requests`
+## 6. Đơn giáo viên — đã gỡ khỏi Admin
 
-| Method | URL | Mô tả |
-|---|---|---|
-| GET | `/api/admin/teacher-requests?status=Pending&type=Leave\|Reschedule\|AttendanceUnlock` | Danh sách đơn |
-| POST | `/api/admin/teacher-requests/{id}/approve` | `{ "note" }`. Nghỉ/đổi buổi: hủy buổi cũ, tạo buổi bù (nếu có đề xuất), báo học viên. Mở điểm danh: cho sửa trong 24 giờ. 409 nếu đã xử lý / trùng phòng / trùng lịch |
-| POST | `/api/admin/teacher-requests/{id}/reject` | `{ "reason" }` (bắt buộc) |
+Theo yêu cầu ngày 2026-10-31, đã xóa GET /api/admin/teacher-requests và POST approve/reject. Không còn controller hay API thay thế cho chức năng duyệt đơn trong Admin. Entity/DB và luồng gửi đơn của cổng Giáo viên vẫn còn; không có migration hay xóa dữ liệu trong thay đổi này.
 
 ## 7. Cài đặt: `api/admin/settings`
 
@@ -105,6 +101,72 @@ Luật: ít nhất 1 lịch/tuần, giờ bắt đầu < giờ kết thúc, các
 
 | Nhóm | Plan |
 |---|---|
-| Học phí / thanh toán `api/admin/payments` | [plans/20](../../plans/20-be-admin-hoc-phi.md) |
 | Blog `api/admin/posts`, ảnh trang chủ `api/admin/homepage-images` | [plans/21](../../plans/21-be-admin-blog-trang-chu.md) |
-| Dashboard `api/admin/dashboard`, báo cáo `api/admin/reports/*` | [plans/22](../../plans/22-be-admin-bao-cao.md) |
+| Dashboard còn lại (học viên mới/lớp sắp đầy); báo cáo mở rộng `api/admin/reports/*` | [plans/22](../../plans/22-be-admin-bao-cao.md) |
+
+## 8. Học phí: `api/admin/payments` — đợt 1
+
+| Method | URL | Mô tả |
+|---|---|---|
+| GET | `/api/admin/payments?page=1&pageSize=10&search=` | Phiếu thu: PaidDate mới nhất trước, Id giảm dần nếu cùng ngày; tìm chứa tên/mã HV bằng Vietnamese_CI_AI. |
+| POST | `/api/admin/payments` | Tạo phiếu đóng đủ một lần, BE tính số tiền. |
+| GET | `/api/admin/payments/{id}` | Dữ liệu biên lai, cấu hình trung tâm và người lập. |
+| GET | `/api/admin/students/{id}/payments` | Lịch sử và tổng đã đóng của một HV. |
+| GET | `/api/admin/classes/available?search=` | Lớp còn chỗ và giá cho ghi danh mới. |
+
+GET trả `{ items: [{ id, enrollmentId, studentId, studentCode, studentName, classId, className, courseName, tuitionFee, discountPercent, discountAmount, amount, paidDate, method }], total, totalItems, page, pageSize, totalPages }`. Giá/giảm giá lấy snapshot ghi danh. Page mặc định 1, pageSize mặc định 10, tối đa 100; page quá lớn trả items rỗng. Không có PUT/DELETE phiếu thu.
+
+`PagedResult` dùng chung thêm `total = totalItems`; giữ `totalItems`, `totalPages` và field cũ cho Teacher/Admin. Các field danh sách khóa/lớp/HV/GV còn thiếu được theo dõi trong ADMIN-TRACKER.
+
+### Tạo phiếu — 6.3.1
+
+`POST /api/admin/payments` trả 201, Location `/api/admin/payments/{id}`, body là PaymentResponse như danh sách.
+
+```json
+{ "studentId": 1, "classId": 1, "method": "Cash", "paidDate": "2026-10-30", "note": "Đã xác nhận nhận đủ tiền" }
+```
+
+Hoặc `{ "enrollmentId": 1, "method": "Transfer" }`. Chỉ gửi một cách xác định ghi danh. Bỏ paidDate/null thì dùng AppTime.Today. Method bắt buộc đúng Cash/Transfer; note tối đa 500 ký tự. Không có field amount trong request; BE luôn lấy FinalTuitionFee đã chốt lúc ghi danh, không lấy giá khóa hiện tại. Admin chỉ gọi POST sau khi xác nhận đã nhận tiền.
+
+Lỗi: 401 token/claim thiếu; 404 không có ghi danh; 409 đã có phiếu (kể cả tạo đồng thời nhờ unique EnrollmentId); 400 ghi danh không Active, ngày tương lai hoặc DTO sai. Giao dịch bao gồm đọc ghi danh và lưu phiếu. Validation DTO còn ProblemDetails hiện tại (B3.f xử lý đợt 5); lỗi nghiệp vụ có message tiếng Việt.
+
+Giới hạn DB: Amount phải > 0, nên ghi danh miễn phí hiện trả 400, không tự tạo phiếu. Phần này ⏸ chờ quyết định trong DB-CAN-LAM.md.
+
+### Biên lai — 6.4.1
+
+`GET /api/admin/payments/{id}` trả `{ payment: PaymentResponse, center: { name, logoUrl, address, phone }, createdByUserId, createdByName, createdByEmail, note }`. payment có học viên/mã, lớp/khóa, tuitionFee, discountPercent, discountAmount, amount, method, paidDate. Giá là snapshot ghi danh; center lấy cấu hình hiện tại Id=1. Không trả entity/User/password/hash.
+
+404 nếu phiếu không tồn tại hoặc chưa có cấu hình trung tâm (message phân biệt). Giới hạn: User admin chưa có họ tên, nên createdByName tạm bằng createdByEmail. Phần họ tên ⏸ chờ DB-CAN-LAM.md; không coi email là tên thật.
+
+### Lịch sử học phí học viên — 4.6.3
+
+`GET /api/admin/students/{id}/payments` trả `{ items: [PaymentResponse], totalPaid }`, sắp PaidDate DESC, Id DESC. Tổng tính từ cùng danh sách trả về; gồm tất cả phiếu đã đóng kể cả ghi danh đã rút (Dropped). Không phân trang. HV tồn tại chưa có phiếu: `{ items: [], totalPaid: 0 }`; HV không tồn tại: 404 message.
+
+### Lớp còn chỗ — phần 4.5.1
+
+`GET /api/admin/classes/available?search=` trả mảng `[{ id, name, courseId, courseName, enrolled, capacity, tuition, discountPercent, finalTuition }]`, theo tên lớp rồi Id. Chỉ Upcoming/Ongoing (EndDate >= AppTime.Today), enrolled = số Enrollment.Active, enrolled < capacity. Tìm chứa tên lớp/khóa bằng Vietnamese_CI_AI. Không phân trang, không có kết quả trả `[]`.
+
+Giá là giá hiện tại của khóa dành cho ghi danh mới; finalTuition = tuition - Round(tuition * discountPercent / 100, 2), cùng cách làm tròn với EnrollmentService. Phiếu thu vẫn dùng snapshot giá cũ. Endpoint này chọn lớp để ghi danh; form thu tiền lấy ghi danh chưa thu từ chi tiết HV hiện có. Route ghi danh chuẩn còn thiếu, xem tracker.
+
+## FE Admin (2026-10-30)
+
+Các trang FE hiện gọi đúng API đã có: teachers, students, courses, classes, rooms, payments và settings. /admin/users chuyển hướng sang /admin/students. Email update và logo upload chưa được FE gửi vì BE chưa hỗ trợ. Dashboard KPI và Reports dùng API dashboard; Blog còn minh họa. Chi tiết route, chạy thử và giới hạn: [FE-ADMIN.md](../admin/FE-ADMIN.md).
+
+## 9. Dashboard / nguồn số liệu Báo cáo — 2026-10-31
+
+Tất cả endpoint dưới đây yêu cầu Bearer token với role admin, không có endpoint public tương ứng.
+
+| Method | URL | Response / quy tắc |
+|---|---|---|
+| GET | `/api/admin/dashboard/kpis` | `{ activeStudents, openClasses, teachers, monthlyRevenue, totalRevenue }`. Học viên trạng thái Studying; lớp EndDate >= hôm nay (Upcoming + Ongoing, đồng nhất Courses hiện có); teachers tổng hồ sơ; doanh thu SUM Amount theo PaidDate. monthlyRevenue trong tháng hiện tại; totalRevenue toàn bộ lịch sử. Không phiếu trả 0. |
+| GET | `/api/admin/dashboard/revenue-by-month?months=12` | Mảng `{ month: "yyyy-MM", revenue }`, tăng dần, gồm tháng hiện tại; tháng thiếu phiếu trả 0. months từ 1–36, ngoài khoảng trả 400 `{message}`. Khoảng query từ đầu tháng đầu tiên đến trước đầu tháng tiếp theo, dùng giờ Việt Nam. |
+
+FE Dashboard và Reports gọi chung hai API này qua useAdminQuery; lỗi hiển thị -- và Notice/thử lại, không coi lỗi tải là doanh thu0. Reports xuất CSV doanh thu đúng 12 tháng đang hiển thị; không tái thêm xuất chi tiết/công nợ/đơn giáo viên. Bảng lớp theo ngày tiếp tục dùng GET classes có schedules và tải đủ các trang.
+
+### Các sửa hợp đồng Admin trong cùng đợt
+
+- GET courses/teachers/students tìm kiếm qua Vietnamese_CI_AI; status sai ở teachers/students trả400 (Teaching/OnLeave và Studying/OnHold/Dropped). Phân trang cực lớn trả items rỗng, giữ total/page/pageSize, không nhân int tràn.
+- Course bandFrom/bandTo/tuition bắt buộc có property JSON; 0 là hợp lệ, bỏ trường bị400 từ JSON formatter. Các trường số buổi thiếu vẫn bị400 bởi Range; discountPercent mặc định0. Lỗi trùng name409 có `{ message, errors: { name: [...] } }`, gồm trường hợp đua unique khi SaveChanges.
+- Tạo/reset tài khoản và đổi mật khẩu Admin yêu cầu tối thiểu8 ký tự. Đăng nhập tài khoản demo cũ vẫn chấp nhận mật khẩu đang có; không đổi dữ liệu/hash của tài khoản cũ. Đổi mật khẩu trùng mật khẩu hiện tại bị400 với errors.NewPassword.
+- AppTime dùng UTC+7 cố định, trả DateTime Unspecified, không phụ thuộc timezone server; không cập nhật hồi tố dữ liệu thời gian cũ.
+- Request thủ công: `app/backend/EnglishCenter.Api/EnglishCenter.Api/Admin.http`. Chưa chạy API/DB vì Program tự migrate/seed khi khởi động.

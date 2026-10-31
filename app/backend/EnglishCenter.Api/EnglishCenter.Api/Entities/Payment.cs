@@ -10,7 +10,6 @@ public class Payment
     public DateOnly PaidDate { get; set; }
     public string? Note { get; set; }
     public DateTime CreatedAt { get; set; }
-
     public Enrollment Enrollment { get; set; } = null!;
     public User CreatedByUser { get; set; } = null!;
 }

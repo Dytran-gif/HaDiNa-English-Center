@@ -10,9 +10,11 @@ public class CourseRequest : IValidatableObject
 
     public string? Description { get; set; }
 
+    [System.Text.Json.Serialization.JsonRequired]
     [Range(0, 9, ErrorMessage = "Band từ phải trong khoảng 0.0-9.0")]
     public decimal BandFrom { get; set; }
 
+    [System.Text.Json.Serialization.JsonRequired]
     [Range(0, 9, ErrorMessage = "Band đến phải trong khoảng 0.0-9.0")]
     public decimal BandTo { get; set; }
 
@@ -22,6 +24,7 @@ public class CourseRequest : IValidatableObject
     [Range(1, 7, ErrorMessage = "Số buổi mỗi tuần từ 1 đến 7")]
     public int SessionsPerWeek { get; set; }
 
+    [System.Text.Json.Serialization.JsonRequired]
     [Range(0, 1000000000, ErrorMessage = "Học phí không hợp lệ")]
     public decimal Tuition { get; set; }
 

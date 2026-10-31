@@ -5,7 +5,7 @@
 ```
 Trình duyệt (React, :5173)
   └─ page  src/pages/<role>/<Feature>/<Feature>.tsx
-       └─ service  src/services/<vùng>/<tài-nguyên>.ts      ← (plan 01: chưa có, hiện page đọc mock src/data/)
+       └─ service  src/services/<vùng>/<tài-nguyên>.ts      ← Admin đã dùng services/admin/useAdminApi.ts
             └─ apiClient  src/services/apiClient.ts          ← gắn "Authorization: Bearer <token>", parse lỗi
                  │  HTTP JSON (camelCase)
                  ▼
@@ -20,7 +20,7 @@ ASP.NET Core API (:5220)
 | Vùng | Route FE | Thư mục FE | Prefix API | Thư mục BE | Trạng thái |
 |---|---|---|---|---|---|
 | Public (khách) | `/`, `/khoa-hoc`, `/giao-vien`, `/blog`, `/lien-he`, `/dang-nhap` | `src/pages/*.tsx`, `src/components/sections/` | `api/public/...` | `Controllers/Public/` | FE xong (mock), **BE chưa có** |
-| Admin | `/admin/*` | `src/pages/admin/` | `api/admin/...` | `Controllers/Admin/` | FE xong (mock), BE có một phần |
+| Admin | `/admin/*` | `src/pages/admin/` | `api/admin/...` | `Controllers/Admin/` | 8 trang FE dùng API thật; Dashboard/Blog/Reports minh họa, BE còn một phần |
 | Teacher | `/teacher/*` | `src/pages/teacher/` | `api/teacher/...` | `Controllers/TeacherPortal/` | FE xong (mock), BE đầy đủ (`docs/api/TEACHER_API.md`) |
 | Student | `/student/*` | `src/pages/student/` | `api/student/...` | `Controllers/StudentPortal/` | FE một phần, **BE chưa có** |
 | Chung | — | `src/context/`, `src/components/ui/` | `api/auth/...` | `Controllers/AuthController.cs`, `Services/` | Có |
@@ -50,5 +50,5 @@ Không phải tính năng nào cũng đủ 10 bước. Ví dụ FE thuần chỉ
 | `.../Data/AppDbContext.cs` + `AppDbContext.Teacher.cs` | DbSet + cấu hình, chia partial theo vùng |
 | `.../Data/DbSeeder.cs`, `TeacherSeeder.cs` | Dữ liệu demo |
 | `app/frontend/src/routes.tsx` | Khai báo toàn bộ route FE |
-| `app/frontend/src/context/AuthContext.tsx` | Đăng nhập (đang mock) |
+| `app/frontend/src/context/AuthContext.tsx` | Đăng nhập API thật + lựa chọn demo, token trong context |
 | `app/frontend/src/hooks/useLocalCollection.ts` | CRUD tạm trên localStorage, sẽ thay bằng service |

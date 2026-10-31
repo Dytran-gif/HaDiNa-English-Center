@@ -11,11 +11,13 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [demo, setDemo] = useState(false);
+  const [busy, setBusy] = useState(false);
 
-  const { login } = useAuth();
+  const { login, loginApi } = useAuth();
   const navigate = useNavigate();
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     if (email === "" || password === "") {
@@ -23,21 +25,20 @@ export default function Login() {
       return;
     }
 
-    const user = login(email, password);
-    if (!user) {
-      setError("Sai email hoặc mật khẩu.");
-      return;
-    }
-
-    setError("");
-    navigate(`/${user.role}`); // student → /student, teacher → /teacher, admin → /admin
+    setBusy(true); setError("");
+    try {
+      const user = demo ? login(email, password) : await loginApi(email, password);
+      if (!user) { setError("Sai email hoặc mật khẩu demo."); return; }
+      navigate(`/${user.role}`);
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Không đăng nhập được."); }
+    finally { setBusy(false); }
   }
 
   return (
     <PageShell>
       <div className="auth-page container">
         <Card className="auth-card">
-          <span className="kicker">Học viên</span>
+          <span className="kicker">HaDiNa English Center</span>
           <h1>Đăng nhập</h1>
 
           <form onSubmit={handleSubmit}>
@@ -55,9 +56,10 @@ export default function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            {error && <p className="auth-error">{error}</p>}
-            <Button type="submit" variant="primary">
-              Đăng nhập
+            <label className="field"><span><input type="checkbox" checked={demo} disabled={busy} onChange={e => setDemo(e.target.checked)} /> Xem giao diện bằng tài khoản demo (không cần máy chủ)</span></label>
+            {error && <p className="auth-error" role="alert">{error}</p>}
+            <Button type="submit" variant="primary" disabled={busy}>
+              {busy ? "Đang đăng nhập…" : "Đăng nhập"}
             </Button>
           </form>
 

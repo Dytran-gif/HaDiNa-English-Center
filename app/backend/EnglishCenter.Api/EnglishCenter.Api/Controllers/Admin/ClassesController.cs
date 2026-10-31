@@ -28,7 +28,7 @@ public class ClassesController : ControllerBase
         _notify = notify;
     }
 
-    private static DateOnly Today() => DateOnly.FromDateTime(DateTime.Now);
+    private static DateOnly Today() => AppTime.Today;
 
     private static string StatusOf(DateOnly start, DateOnly end, DateOnly today)
     {
@@ -131,7 +131,7 @@ public class ClassesController : ControllerBase
         var total = await query.CountAsync();
 
         var items = await Project(query.OrderByDescending(c => c.StartDate).ThenBy(c => c.Id)
-                .Skip((page - 1) * pageSize).Take(pageSize))
+                .SlicePage(page, pageSize, total))
             .ToListAsync();
 
         foreach (var item in items)
@@ -144,6 +144,32 @@ public class ClassesController : ControllerBase
             Page = page,
             PageSize = pageSize
         });
+    }
+
+    [HttpGet("available")]
+    public async Task<IActionResult> GetAvailableAsync(string? search)
+    {
+        var today = AppTime.Today;
+        var items = await _db.Classes.AsNoTracking()
+            .Where(c => c.EndDate >= today && c.Enrollments.Count(e => e.Status == "Active") < c.MaxStudents)
+            .WhereContains(search, c => c.Name, c => c.Course.Name)
+            .OrderBy(c => c.Name).ThenBy(c => c.Id)
+            .Select(c => new AvailableClassResponse
+            {
+                Id = c.Id,
+                Name = c.Name,
+                CourseId = c.CourseId,
+                CourseName = c.Course.Name,
+                Enrolled = c.Enrollments.Count(e => e.Status == "Active"),
+                Capacity = c.MaxStudents,
+                Tuition = c.Course.Tuition,
+                DiscountPercent = c.Course.DiscountPercent
+            }).ToListAsync();
+
+        foreach (var item in items)
+            item.FinalTuition = item.Tuition - Math.Round(item.Tuition * item.DiscountPercent / 100, 2);
+
+        return Ok(items);
     }
 
     // GET api/admin/classes/5

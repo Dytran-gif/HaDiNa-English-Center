@@ -14,7 +14,7 @@ dotnet run                               # http://localhost:5220  (OpenAPI: /ope
 Chuỗi kết nối: `appsettings.json` → `ConnectionStrings:Default` (mặc định SQL Server `localhost`, Windows auth).
 Máy dùng LocalDB / SQL Express thì đổi trong `appsettings.Development.json` trên máy mình, **đừng commit** chuỗi riêng.
 
-Khi khởi động: `Program.cs` tự `MigrateAsync()`, seed tài khoản demo, và (Development) seed dữ liệu demo cho `teacher@demo.com`.
+Khi khởi động mặc định chỉ kết nối DB hiện có, không migrate/seed. Chỉ bật Database:InitializeOnStartup=true khi chủ động khởi tạo DB; không bật cho DB thật đang thử nghiệm.
 
 ## Bản đồ
 

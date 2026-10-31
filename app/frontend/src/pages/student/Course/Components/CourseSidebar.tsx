@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { courseFeaturesData } from '../../../../data/StudentData/OtherData';
 import './CourseSidebar.css';
 import BookBanner from "../../../../assets/images/BookBanner.png";

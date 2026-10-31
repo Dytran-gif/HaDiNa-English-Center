@@ -1,21 +1,7 @@
-# src/services/: lớp gọi API (CHƯA CÓ CODE, plan 01)
+﻿# src/services — giao tiếp API
 
-Thư mục giữ chỗ. Khi làm plan `01` thì xóa file này hoặc thay bằng hướng dẫn thật.
+`apiClient.ts`: fetch, gắn token được truyền từ AuthContext, chuẩn hóa message và ProblemDetails, xử lý 204, network và abort. `admin/useAdminApi.ts`: API Admin có token, logout khi 401, hook query có loading/error/abort và tùy chọn tải hết trang cho danh mục chọn.
 
-```
-services/
-├── apiClient.ts      # (DÙNG CHUNG) fetch + token + chuẩn hóa lỗi ApiError + xử lý 401
-├── auth.ts           # login(), me()            (plan 03)
-├── public/           # courses.ts, teachers.ts…  (plan 41)
-├── admin/            # rooms.ts, courses.ts…     (plan 23, rooms.ts làm mẫu ở plan 01)
-├── teacher/          # dashboard.ts, classes.ts… (plan 30)
-└── student/          # dashboard.ts, schedule.ts…(plan 15)
-```
+Các trang Admin dùng type camelCase riêng trong `src/types/adminApi.ts`, không thay model snake_case cũ của Teacher/Student. Không thêm thư viện. Đăng nhập thật gọi API qua apiClient trong AuthContext; login demo cũ vẫn giữ để xem giao diện khi chưa có DB.
 
-Luật:
-- 1 file / tài nguyên. Hàm đặt tên động từ + danh từ: `getRooms`, `createRoom`, `submitAssignment`.
-- Service trả **type FE** (`src/types/`). Map camelCase của API sang field FE **ở đây**, không làm trong page.
-- Page chỉ `await service()` và xử lý loading / lỗi / rỗng.
-- Không thêm thư viện (axios…). Chỉ dùng `fetch`.
-
-Hợp đồng: `docs/api/`. Chi tiết: `.claude/context/api-contract.md`.
+Development dùng Vite proxy /api, /uploads tới http://localhost:5220; production cần reverse proxy tương ứng hoặc VITE_API_URL và CORS phù hợp. Xem docs/admin/FE-ADMIN.md.

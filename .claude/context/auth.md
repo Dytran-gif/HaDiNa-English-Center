@@ -19,18 +19,13 @@ Admin tạo giáo viên/học viên kèm `TempPassword`. Reset mật khẩu: `PO
 
 Tài khoản demo (seed, mật khẩu `123456`): `admin@demo.com`, `teacher@demo.com`, `student@demo.com`.
 
-## Frontend (đang mock, plan 03 chuyển sang API)
+## Frontend — hiện trạng 2026-10-30
 
-- `src/context/AuthContext.tsx`: `useAuth()` trả `{ user, login, logout }`. User lưu ở `localStorage["ecw_auth_user"]`.
-- `login()` hiện tra `src/data/users.ts` (mock) và chạy **đồng bộ**.
-- `ProtectedRoute role="teacher"`: chưa đăng nhập thì về `/dang-nhap`, sai vai trò thì về `/`.
-
-### Khi chuyển sang API (plan 03)
-- `login` thành `async`: gọi `POST /api/auth/login`, lưu `{ token, role, email, userId }`, sau đó lấy hồ sơ (vd `GET /api/teacher/profile`) để có `fullName`.
-- `apiClient` đọc token từ cùng chỗ lưu và gắn `Authorization: Bearer`.
-- Gặp 401 thì `logout()` rồi chuyển về `/dang-nhap`.
-- Giữ nguyên chữ ký `useAuth()` để các page không phải sửa (chỉ `Login.tsx` cần `await`).
-
+- AuthContext hiện có user/token/loginApi/login/logout/replaceToken. Session {user,token} cùng khóa ecw_auth_user; đọc được session demo cũ.
+- Login mặc định loginApi gửi POST /api/auth/login; checkbox demo dùng login đồng bộ tra src/data/users.ts. Không tạo context/token store thứ hai.
+- services/admin/useAdminApi nhận token context, gắn Bearer, logout khi 401. ProtectedRoute vẫn giữ role/redirect ban đầu.
+- Đổi mật khẩu Admin nhận token mới và gọi replaceToken; không dùng token cũ. Username admin hiện có thể là email vì BE chưa có họ tên; UI không bịa tên thật.
+- Đợt UI plan 24 không thay auth/phân quyền hoặc route; chỉ hiển thị thông tin user/logout có sẵn.
 ## Luật
 
 - Route mới ở BE bắt buộc có `[Authorize]` (qua base hoặc attribute). Endpoint public phải ghi rõ `[AllowAnonymous]` và nằm trong `Controllers/Public/`.

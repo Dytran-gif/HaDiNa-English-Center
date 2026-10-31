@@ -1,10 +1,10 @@
 import { useState } from "react";
 import "../admin-shared.css";
 import Card from "../../../components/ui/Card";
-import Button from "../../../components/ui/Button";
+import Button from "../Components/Ui/Button";
 import Tag from "../../../components/ui/Tag";
 import Modal from "../../../components/ui/Modal";
-import { InputField, SelectField } from "../../../components/ui/FormField";
+import { InputField, SelectField } from "../Components/Ui/FormField";
 import { adminMockUsers } from "../../../data/AdminData/mockUsers";
 import { useLocalCollection, nextId } from "../../../hooks/useLocalCollection";
 import type { User, UserRole } from "../../../types";

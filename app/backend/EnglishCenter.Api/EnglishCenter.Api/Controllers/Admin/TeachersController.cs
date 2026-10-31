@@ -60,13 +60,9 @@ public class TeachersController : ControllerBase
         if (pageSize < 1) pageSize = 10;
         if (pageSize > 100) pageSize = 100;
 
-        var query = _db.Teachers.AsQueryable();
-
-        if (!string.IsNullOrWhiteSpace(search))
-        {
-            var kw = search.Trim();
-            query = query.Where(t => t.FullName.Contains(kw));
-        }
+        if (!string.IsNullOrWhiteSpace(status) && status != "Teaching" && status != "OnLeave")
+            return BadRequest(new { message = "status phải là Teaching hoặc OnLeave" });
+        var query = _db.Teachers.AsNoTracking().WhereContains(search, t => t.FullName);
         if (!string.IsNullOrWhiteSpace(specialty))
             query = query.Where(t => t.Specialty == specialty);
         if (!string.IsNullOrWhiteSpace(status))
@@ -75,7 +71,7 @@ public class TeachersController : ControllerBase
         var total = await query.CountAsync();
 
         var items = await Project(query.OrderBy(t => t.FullName).ThenBy(t => t.Id)
-                .Skip((page - 1) * pageSize).Take(pageSize))
+                .SlicePage(page, pageSize, total))
             .ToListAsync();
 
         return Ok(new PagedResult<TeacherResponse>
@@ -101,7 +97,7 @@ public class TeachersController : ControllerBase
             .Select(c => new { c.Id, c.Name, CourseName = c.Course.Name, c.StartDate, c.EndDate })
             .ToListAsync();
 
-        var today = DateOnly.FromDateTime(DateTime.Now);
+        var today = EnglishCenter.Api.Services.AppTime.Today;
         teacher.Classes = classes.Select(c => new TeacherClassItem
         {
             Id = c.Id,

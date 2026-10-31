@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import "../General.css";
 import CourseMainFE from "./Components/CourseMain";
 import CourseSidebarFE from "./Components/CourseSidebar";
 import CourseBottomFE from "./Components/CourseBottom";
-import type { Course } from '../../../types/StudentTypes/CoursesTypes'; 
+import type { Course } from '../../../types/StudentTypes/MainTypes';
 
 export default function StudentCourse() {
     // 1. Tạo state để lưu danh sách các khóa học người dùng đã chọn

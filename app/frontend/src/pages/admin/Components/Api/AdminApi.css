@@ -1,0 +1,30 @@
+﻿.admin-api-toolbar, .admin-api-actions { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: calc(var(--gutter) / 2); margin-block: calc(var(--gutter) / 2); }
+.admin-api-filters { display: flex; align-items: end; flex-wrap: wrap; gap: calc(var(--gutter) / 2); }
+.admin-api-filters .field { flex: 1; margin: 0; min-width: 10em; }
+.admin-api-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16em), 1fr)); gap: calc(var(--gutter) / 2); }
+.admin-api-error, .admin-api-notice { padding: calc(var(--gutter) / 2); border-radius: var(--radius-sm); overflow-wrap: anywhere; }
+.admin-api-error { color: var(--red); background: var(--paper); border: 1px solid var(--red); }
+.admin-api-notice { color: var(--blue-dark); background: var(--blue-light); }
+.admin-api-table { overflow-x: auto; }
+.admin-api-table .admin-row-actions { flex-wrap: wrap; }
+.admin-api-stack { display: grid; gap: calc(var(--gutter) / 2); }
+.admin-api-stack > .field { margin: 0; }
+.admin-api-muted { color: var(--muted); }
+.admin-api-detail { display: grid; grid-template-columns: minmax(7em, 1fr) 2fr; gap: calc(var(--gutter) / 3); overflow-wrap: anywhere; }
+.admin-api-detail dt { color: var(--muted); }
+.admin-api-detail dd { margin: 0; }
+.admin-api-schedule { border: 1px solid var(--line); border-radius: var(--radius-sm); padding: calc(var(--gutter) / 2); margin-block: calc(var(--gutter) / 2); }
+.admin-api-logo { max-width: 10em; max-height: 5em; object-fit: contain; }
+.admin-api-receipt { color: var(--ink); background: var(--paper); }
+.admin-api-receipt h2 { font-family: var(--font-display); }
+.admin-api-demo { margin-block-end: calc(var(--gutter) / 2); }
+@media print {
+  body:has(.admin-api-receipt) * { visibility: hidden; }
+  body:has(.admin-api-receipt) .admin-api-receipt, body:has(.admin-api-receipt) .admin-api-receipt * { visibility: visible; }
+  .admin-api-receipt { position: absolute; inset: 0; padding: var(--gutter); }
+  body:has(.admin-api-receipt) .modal-overlay { position: static; background: transparent; padding: 0; }
+  body:has(.admin-api-receipt) .modal-panel { overflow: visible; max-height: none; box-shadow: none; }
+}
+.admin-main, .admin-content, .admin-api-stack { min-width: 0; }
+.admin-api-fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.admin-api-fieldset:disabled { opacity: .65; }

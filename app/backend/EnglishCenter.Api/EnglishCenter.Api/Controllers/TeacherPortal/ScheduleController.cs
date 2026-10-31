@@ -232,7 +232,7 @@ public class ScheduleController : TeacherControllerBase
         _notify.Add(adminIds, "Request",
             $"{TeacherName} gửi đơn {(req.Type == "Leave" ? "xin nghỉ" : "đổi buổi")}",
             $"Lớp {session.Class.Name}, buổi {session.SessionNo} ngày {session.Date:dd/MM/yyyy}. Lý do: {r.Reason}",
-            "/admin/teacher-requests", UserId);
+            null, UserId);
 
         await Db.SaveChangesAsync();
         return StatusCode(201, new { r.Id, r.Status, message = "Đã gửi đơn, chờ Admin duyệt" });

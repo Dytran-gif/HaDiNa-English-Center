@@ -1,0 +1,82 @@
+/* Backdrop gets its own token value, independent of inheritance. */
+.admin-layout, .admin-layout .admin-dialog::backdrop { --admin-overlay: rgb(15 23 42 / 45%); }
+/* The Admin design source. Scope prevents changes to Public/Teacher/Student. */
+.admin-layout {
+  --admin-primary: #2563eb;
+  --admin-primary-hover: #1d4ed8;
+  --admin-primary-soft: #eff6ff;
+  --admin-primary-ink: #1e40af;
+  --admin-danger: #b42318;
+  --admin-danger-hover: #912018;
+  --admin-danger-soft: #fef3f2;
+  --admin-success: #167044;
+  --admin-success-soft: #edfdf5;
+  --admin-warning: #854d0e;
+  --admin-warning-soft: #fffbeb;
+  --admin-text: #172033;
+  --admin-muted: #526075;
+  --admin-surface: #ffffff;
+  --admin-canvas: #f7f9fc;
+  --admin-border: #dce3ed;
+  --admin-disabled-bg: #e8edf3;
+  --admin-disabled-text: #536176;
+
+  --admin-space-1: 4px;
+  --admin-space-2: 8px;
+  --admin-space-3: 12px;
+  --admin-space-4: 16px;
+  --admin-space-5: 20px;
+  --admin-space-6: 24px;
+  --admin-space-8: 32px;
+  --admin-space-10: 40px;
+  --admin-space-12: 48px;
+  --admin-space-16: 64px;
+  --admin-radius-control: 8px;
+  --admin-radius-panel: 16px;
+  --admin-radius-input: 10px;
+  --admin-radius-icon: 12px;
+  --admin-shadow-1: 0 2px 8px rgb(15 23 42 / 5%);
+  --admin-shadow-2: 0 12px 40px rgb(15 23 42 / 14%);
+  --admin-font-xs: .75rem;
+  --admin-font-sm: .875rem;
+  --admin-font-caption: .8125rem;
+  --admin-font-section: 1.125rem;
+  --admin-font-stat: 2rem;
+  --admin-font-md: 1rem;
+  --admin-font-lg: 1.25rem;
+  --admin-font-xl: 1.5rem;
+  --admin-font-2xl: 1.75rem;
+  --admin-leading: 1.5;
+  --admin-control-height: 44px;
+  --admin-sidebar-width: 264px;
+  --admin-header-height: 88px;
+  --admin-icon-size: 20px;
+  --admin-dialog-width: 480px;
+  --admin-toast-width: 380px;
+  --admin-motion: 160ms;
+  --ink: var(--admin-text);
+  --muted: var(--admin-muted);
+  --paper: var(--admin-surface);
+  --paper-alt: var(--admin-canvas);
+  --line: var(--admin-border);
+  --blue: var(--admin-primary);
+  --blue-hover: var(--admin-primary-hover);
+  --blue-dark: var(--admin-primary-ink);
+  --blue-light: var(--admin-primary-soft);
+  --red: var(--admin-danger);
+  --red-hover: var(--admin-danger-hover);
+  --radius-sm: var(--admin-radius-control);
+  --radius-md: var(--admin-radius-panel);
+  --shadow-soft: var(--admin-shadow-1);
+  --shadow-soft-lg: var(--admin-shadow-2);
+  color: var(--admin-text);
+  font-family: var(--font-body);
+  line-height: var(--admin-leading);
+  color-scheme: light;
+}
+@media (max-width: 64em) { .admin-layout { --admin-sidebar-width: 240px; } }
+.admin-layout {
+  --admin-post-thumbnail-width: 56px;
+  --admin-post-title-width: 36ch;
+  --admin-post-table-width: 56em;
+}
