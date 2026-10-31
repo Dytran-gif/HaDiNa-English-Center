@@ -25,7 +25,7 @@ Vite development proxy `/api` và `/uploads` tới http://localhost:5220. Không
 
 Production không có Vite proxy: cấu hình reverse proxy /api và /uploads hoặc cấp VITE_API_URL trước khi build, kèm CORS phù hợp nếu khác origin. Không đưa mật khẩu/token vào biến môi trường FE.
 
-Không tự chạy BE trong lần sửa này: Program.cs hiện tự MigrateAsync/seed khi khởi động. Người phụ trách DB chuẩn bị schema hiện có và cấu hình kết nối trước; không dùng thao tác chạy thử để vô tình thay schema.
+Từ 2026-10-31, Program.cs mặc định không migrate/seed. Chỉ chạy khối khởi tạo khi Database:InitializeOnStartup=true; giữ false khi thử DB hiện có.
 
 ## Trang và API đang dùng
 
@@ -78,3 +78,27 @@ Giữ /admin/blog, màn soạn tối giản dùng query compose=new hoặc compo
 Dashboard KPI/Reports đã dùng API thật `dashboard/kpis` và `dashboard/revenue-by-month?months=12`; không đọc số mẫu/localStorage. Blog còn demo. Đây là cập nhật mới thay các ghi chú minh họa Dashboard/Reports phía trên. Bảng lớp ngày vẫn dùng classes/schedules hiện có. Khi không có token/server, hiện lỗi rõ và số -- thay vì giả số0.
 
 Đã đồng bộ mật khẩu8ký tự, trường lỗi trong form, dropdown band/preview/snapshot và phân trang tự phục hồi URL quá phạm vi. Mock vẫn dùng riêng5174 và banner bản thử; npm run dev5173 gọi BE5220. Không dùng mock để chứng minh kết nối SQL thật. Xem reports/27-fs-admin-review-implementation.md.
+
+## Chạy với EnglishCenterDB thật — đã kiểm tra 2026-10-31
+
+- SQL Server localhost, database EnglishCenterDB, Windows Authentication qua ConnectionStrings:Default hiện có; không cần đổi chuỗi kết nối.
+- FE: http://127.0.0.1:5173/dang-nhap ; BE: http://localhost:5220 . Bản mock5174 đã dừng.
+- Dùng tài khoản Admin hiện có trong DB. Tài khoản admin@demo.com / 123456 đã đăng nhập API thành công; không chọn checkbox xem demo. Nếu trước đây dùng session demo trên5173, đăng xuất rồi đăng nhập lại bằng máy chủ.
+
+Từ gốc repo, mở hai terminal:
+
+```powershell
+# Terminal BE (tài khoản Windows có quyền SQL Server)
+cd app/backend/EnglishCenter.Api
+dotnet run --project EnglishCenter.Api/EnglishCenter.Api.csproj -- --urls http://localhost:5220 --Database:InitializeOnStartup=false
+```
+
+```powershell
+# Terminal FE
+cd app/frontend
+npm.cmd run dev -- --host 127.0.0.1 --port 5173 --strictPort
+```
+
+Đã kiểm tra login/JWT, KPI, revenue, danh sách Khóa/GV/HV/Lớp/Phòng/Payments/Center và các GET chi tiết qua Vite proxy. DB hiện1khóa/1lớp/2GV/2HV/0phiếu; không ghi thêm dữ liệu thử. Các thao tác bạn tự bấm thêm/sửa/xóa trên5173 sẽ dùng DB thật.
+
+Chưa thử mutation hoặc xác nhận toàn TeacherPortal vì DB thiếu các bảng mở rộng; Blog vẫn demo riêng. Không bật khởi tạo DB tự động để xử lý phần schema còn thiếu.

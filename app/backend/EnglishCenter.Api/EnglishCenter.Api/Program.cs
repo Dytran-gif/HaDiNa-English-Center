@@ -67,8 +67,11 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
-using (var scope = app.Services.CreateScope())
+// Existing databases must not be migrated or seeded implicitly on application startup.
+// Opt in explicitly with --Database:InitializeOnStartup=true when provisioning a database.
+if (builder.Configuration.GetValue<bool>("Database:InitializeOnStartup"))
 {
+    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.MigrateAsync();
     await DbSeeder.SeedAsync(db);

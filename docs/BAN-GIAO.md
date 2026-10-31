@@ -1,4 +1,36 @@
 # Nhật ký bàn giao
+## [2026-10-31] Codex — Chuyển Admin sang DB thật
+
+**Đã xong**
+- BE http://localhost:5220 / FE http://127.0.0.1:5173 dùng localhost/EnglishCenterDB bằng Windows Authentication. Dừng mock5174.
+- Program chỉ migrate/seed khi chủ động bật Database:InitializeOnStartup=true; mặc định tắt. Không sửa schema hoặc seed trong lần chạy thật này.
+- Build BE PASS0warning/error; login Admin/JWT, dashboard/revenue, danh sách Khóa/GV/HV/Lớp/Phòng/Payments/Center và GET chi tiết qua Vite proxy đều thành công. Số liệu DB1khóa/1lớp/2GV/2HV/0phiếu.
+
+**Đang dở**
+- Chưa thử thao tác ghi dữ liệu hay kiểm chứng toàn TeacherPortal (thiếu bảng mở rộng). Blog còn demo riêng.
+
+**Việc tiếp theo**
+- Mở /dang-nhap trên5173, đăng nhập máy chủ, không chọn demo. Hướng dẫn/command trong docs/admin/FE-ADMIN.md.
+
+**Bẫy cần biết**
+- Các thao tác thêm/sửa/xóa do người dùng thực hiện trên5173 sẽ ghi DB thật. Không bật initialize-on-startup để thử vì có thể migrate/seed ngoài ý muốn.
+- DB có TokenVersion đã sửa ở lượt trước; không sửa migration cũ. Chạy BE cần tài khoản Windows có quyền SQL Server; sandbox không dùng được SSPI nên BE đã được mở ngoài sandbox theo phê duyệt.
+
+## [2026-10-31] Codex — Bổ sung TokenVersion vào DB local
+
+**Đã xong**
+- Theo yêu cầu, thêm dbo.Users.TokenVersion int NOT NULL DEFAULT(0) vào localhost/EnglishCenterDB bằng Windows Authentication.
+- Kiểm tra5user trước/sau, MinVersion=MaxVersion=0. Lưu script docs/admin/sql/2026-10-31-users-token-version.sql và cập nhật DB-CAN-LAM.
+
+**Đang dở**
+- Chưa khởi động BE với DB này; còn thiếu các bảng TeacherPortal. Không chạy migration/seed trong thao tác vừa rồi.
+
+**Việc tiếp theo**
+- Đối chiếu phần schema còn thiếu trước khi chạy toàn bộ backend với auto migrate/seed.
+
+**Bẫy cần biết**
+- Entity/InitialCreate/snapshot đã có TokenVersion, DB thực tế thiếu do schema drift. Không tạo migration thêm cột trùng, không sửa migration cũ. Script chỉ sửa DB local chỉ định, không chứa mật khẩu/kết nối bí mật.
+
 ## [2026-10-31] Codex — Fullstack Admin review/fix (plan27)
 
 **Đã xong**
