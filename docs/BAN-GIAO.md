@@ -1,4 +1,19 @@
 # Nhật ký bàn giao
+## [2026-10-31] Codex — Bảng thông tin Admin trên header
+
+**Đã xong**
+- Nhấn tên/avatar mở Dialog thông tin quản trị viên: họ tên, email, điện thoại, vai trò. Có nút Đóng/Esc/backdrop và bố cục responsive; dùng component/token Admin hiện có.
+- FE build/typecheck PASS, lint 0 error/1 warning AuthContext cũ. Module Header trên preview trả HTTP200.
+
+**Đang dở**
+- Chưa QA tương tác bằng trình duyệt; không thêm chức năng sửa hồ sơ.
+
+**Việc tiếp theo**
+- Mở http://127.0.0.1:5174/admin/dashboard , nhấn tên/avatar góc trên để dùng thử.
+
+**Bẫy cần biết**
+- Chỉ lấy dữ liệu phiên đăng nhập. Login API hiện dùng email làm full_name fallback; bảng hiện Chưa cập nhật thay vì giả email là họ tên thật. Không đổi BE/auth.
+
 ## [2026-10-31] Codex — Gỡ Đơn giáo viên khỏi FE và BE Admin
 
 **Đã xong**

@@ -152,3 +152,10 @@ Các mã F2/F3/BLOG phía trên ghi tiến độ đợt UI, không phải chứn
 
 ## Quyết định 2026-10-31 — Đơn giáo viên
 - Người dùng yêu cầu xóa cả FE và BE Admin; thay thế chủ trương giữ BE/hoãn FE trước đây. Menu/route/page/type/controller/mock/verification đã gỡ. Các ghi chú audit 2026-10-30 là lịch sử, không phải trạng thái hiện tại.
+
+## [2026-10-31] Thông tin tài khoản Admin trên header
+
+- Nhấn tên/avatar mở Dialog thông tin quản trị viên: họ tên, email đăng nhập, điện thoại, vai trò. Dùng user từ useAuth, không thêm API/auth/context hay lưu dữ liệu mới.
+- Field thiếu hiện Chưa cập nhật; không coi email fallback của loginApi là họ tên thật. Đây là bảng xem thông tin, không chỉnh sửa tài khoản.
+- Reuse Button/Badge/Dialog và token Admin; có nút Đóng/Esc/backdrop, tên/email dài được xử lý; bố cục chi tiết xuống một cột trên mobile.
+- Build/typecheck PASS; lint 0 error/1 warning AuthContext cũ. Module preview HTTP200; chưa QA tương tác bằng trình duyệt.
