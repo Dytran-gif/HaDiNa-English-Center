@@ -35,7 +35,6 @@ Không tự chạy BE trong lần sửa này: Program.cs hiện tự MigrateAsyn
 | Học viên | /admin/students | students CRUD/detail/reset-password/lock/unlock; detail có enrollments, payments + totalPaid; ghi danh/rút qua route cũ được BE hỗ trợ |
 | Khóa học | /admin/courses | courses CRUD, search và phân trang 16 |
 | Lớp học | /admin/classes | classes CRUD/detail, lịch tuần có roomId; lọc courseId/teacherId/status; rút bằng enrollmentId |
-| Đơn GV | /admin/teacher-requests | GET, POST approve/reject |
 | Phòng | /admin/rooms | rooms CRUD, đúng name/capacity; bỏ phân bổ phòng theo khóa mock vì BE gắn phòng trong lịch lớp |
 | Học phí | /admin/payments | payments list/search/create/receipt; chọn ghi danh Active chưa có phiếu từ students/{id}; in bằng window.print |
 | Cài đặt | /admin/settings | GET/PUT settings/center, POST settings/change-password |
@@ -70,3 +69,6 @@ Danh sách có ảnh bìa/fallback, title2 dòng, danh mục từ dữ liệu de
 Kho demo mới admin_blog_v2 đọc dữ liệu cũ admin_blog khi chưa có bản mới, chỉ ghi v2 khi có thao tác; giữ nguyên backup cũ. Nếu dữ liệu hỏng hoặc không lưu được, báo lỗi thay vì âm thầm thay seed/giả thành công.
 
 Giữ /admin/blog, màn soạn tối giản dùng query compose=new hoặc compose=id, không sửa route/auth. Đợt1 chỉ chuyển form demo văn bản ra khỏi modal để thêm/sửa hoạt động; editor2 cột/contentEditable/ảnh/chưa lưu vẫn đợt2–3. Lưu nháp giữ màn, Published quay lại list; toast nói rõ lưu trình duyệt. Preview hiện là văn bản React escape, không HTML; không thay trang public.
+
+## Cập nhật 2026-10-31 — bỏ Đơn giáo viên
+Đã xóa menu/title/route/page/type FE và controller Admin teacher-requests ở BE. Link thông báo mới từ cổng Giáo viên bỏ đích route đã xóa. Entity và các chức năng riêng của cổng Giáo viên được giữ; DB không thay đổi. Trang Admin dùng API còn 7 (Dashboard dùng thêm classes cho bảng theo ngày).

@@ -83,13 +83,9 @@ Luật: ít nhất 1 lịch/tuần, giờ bắt đầu < giờ kết thúc, các
   "degree": "IELTS 8.0, TESOL", "hireDate": "2026-01-10", "status": "Teaching", "tempPassword": "123456" }
 ```
 
-## 6. Đơn của giáo viên: `api/admin/teacher-requests`
+## 6. Đơn giáo viên — đã gỡ khỏi Admin
 
-| Method | URL | Mô tả |
-|---|---|---|
-| GET | `/api/admin/teacher-requests?status=Pending&type=Leave\|Reschedule\|AttendanceUnlock` | Danh sách đơn |
-| POST | `/api/admin/teacher-requests/{id}/approve` | `{ "note" }`. Nghỉ/đổi buổi: hủy buổi cũ, tạo buổi bù (nếu có đề xuất), báo học viên. Mở điểm danh: cho sửa trong 24 giờ. 409 nếu đã xử lý / trùng phòng / trùng lịch |
-| POST | `/api/admin/teacher-requests/{id}/reject` | `{ "reason" }` (bắt buộc) |
+Theo yêu cầu ngày 2026-10-31, đã xóa GET /api/admin/teacher-requests và POST approve/reject. Không còn controller hay API thay thế cho chức năng duyệt đơn trong Admin. Entity/DB và luồng gửi đơn của cổng Giáo viên vẫn còn; không có migration hay xóa dữ liệu trong thay đổi này.
 
 ## 7. Cài đặt: `api/admin/settings`
 
@@ -154,4 +150,4 @@ Giá là giá hiện tại của khóa dành cho ghi danh mới; finalTuition = 
 
 ## FE Admin (2026-10-30)
 
-Các trang FE hiện gọi đúng API đã có: teachers, students, courses, classes, rooms, teacher-requests, payments và settings. /admin/users chuyển hướng sang /admin/students. Email update và logo upload chưa được FE gửi vì BE chưa hỗ trợ. Dashboard/Blog/Reports vẫn có nhãn minh họa. Chi tiết route, chạy thử và giới hạn: [FE-ADMIN.md](../admin/FE-ADMIN.md).
+Các trang FE hiện gọi đúng API đã có: teachers, students, courses, classes, rooms, payments và settings. /admin/users chuyển hướng sang /admin/students. Email update và logo upload chưa được FE gửi vì BE chưa hỗ trợ. Dashboard/Blog/Reports vẫn có nhãn minh họa. Chi tiết route, chạy thử và giới hạn: [FE-ADMIN.md](../admin/FE-ADMIN.md).

@@ -1,4 +1,4 @@
-﻿# ADMIN FE TRACKER
+# ADMIN FE TRACKER
 
 Cập nhật lần cuối: 2026-10-30 — audit lượt 1/3 (Page 1–2)
 
@@ -6,7 +6,7 @@ Cập nhật lần cuối: 2026-10-30 — audit lượt 1/3 (Page 1–2)
 
 ⬜ chưa làm · 🔵 đang làm · ✅ xong (build + lint 0 lỗi, docs cập nhật) · ⚠️ một phần · ⏸ bị chặn.
 
-Code đã xác minh có đủ 11 trang menu, trong đó 8 trang dùng API và Dashboard/Blog/Reports còn dữ liệu minh họa. /admin/users redirect sang /admin/students. Baseline build PASS, lint 0 lỗi/1 warning AuthContext ngoài phạm vi.
+Code đã xác minh có 10 trang menu sau khi gỡ Đơn giáo viên, trong đó 7 trang dùng API và Dashboard/Blog/Reports còn dữ liệu minh họa. /admin/users redirect sang /admin/students. Baseline build PASS, lint 0 lỗi/1 warning AuthContext ngoài phạm vi.
 
 | Mã | Hạng mục | Trạng thái | File đã sửa | Ghi chú |
 |---|---|---|---|---|
@@ -32,7 +32,7 @@ Code đã xác minh có đủ 11 trang menu, trong đó 8 trang dùng API và Da
 | F3-A.4.rooms | Phòng học | ⬜ | Rooms, ResourcePage | Đợt 3. |
 | F3-A.4.payments | Học phí | ⬜ | Payments | Đợt 3; chưa thay nghiệp vụ. |
 | F3-A.4.blog | Tin tức/Blog | ⚠️ | Blog, Ui/AdminContent.css | Danh sách demo mới đã xong; editor/image/gallery và API còn thiếu, xem nhóm BLOG bên dưới. |
-| F3-A.4.requests | Đơn giáo viên | ⬜ | TeacherRequests | Đợt 3. |
+| F3-A.4.requests | Gỡ Đơn giáo viên khỏi Admin | ✅ | Menu/title/routes/adminApi/page | Theo yêu cầu 2026-10-31: xóa FE và controller BE; không triển khai lại. |
 | F3-A.4.reports | Báo cáo | ⬜ | Reports | Đợt 3; dữ liệu minh họa. |
 | F3-A.4.dashboard | Dashboard | ⚠️ | Dashboard, StatsOverview, QuickActions, SectionCard, AdminPanels.css | Quick actions/KPI đơn/recent đã xong; chart/lớp hôm nay/sắp đầy chưa làm, vẫn dữ liệu minh họa có nhãn. |
 | F3-A.5 | Toast cho từng mutation | ⬜ | Các trang Admin | Đợt 3; foundation không tính đã tích hợp mọi thao tác. |
@@ -149,3 +149,6 @@ Các mã F2/F3/BLOG phía trên ghi tiến độ đợt UI, không phải chứn
 - Đây là thay đổi FE theo yêu cầu ngày 2026-10-31, không sửa BE và không đánh dấu hoàn tất toàn task 1.5 của spec (chưa có endpoint today-classes, giờ/phòng và link chi tiết).
 - AUDIT-ADMIN.md là kết quả tại ngày audit 2026-10-30; phần ghi thiếu khối hôm nay là hiện trạng trước thay đổi này.
 - Validation: build/typecheck PASS; lint 0 error/1 warning AuthContext có sẵn. Kiểm tra dữ liệu mock 31/10: 3 lớp, 01/11: 0 lớp, 02/11: 5 lớp; module Vite HTTP200. Chưa QA hình ảnh trình duyệt.
+
+## Quyết định 2026-10-31 — Đơn giáo viên
+- Người dùng yêu cầu xóa cả FE và BE Admin; thay thế chủ trương giữ BE/hoãn FE trước đây. Menu/route/page/type/controller/mock/verification đã gỡ. Các ghi chú audit 2026-10-30 là lịch sử, không phải trạng thái hiện tại.

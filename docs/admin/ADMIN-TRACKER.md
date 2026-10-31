@@ -91,3 +91,9 @@ Plan 23 đã thêm trang và nối các API hiện có; xem FE-ADMIN.md. Trạng
 - Các quyết định cũ về lớp đang mở và lịch lớp cần người dùng xác nhận theo mục Cần người chốt trong AUDIT-ADMIN.md; không coi audit là phê duyệt.
 - finalTuition tùy chọn; total đã có alias. Không ghi hai trường này là bắt buộc còn thiếu.
 - Build BE PASS 0 warning/0 error; chưa chạy DB/API. Xem AUDIT-ADMIN.md để đọc phạm vi chứng cứ.
+
+## Quyết định 2026-10-31 — gỡ API đơn giáo viên Admin
+
+- Theo yêu cầu mới, đã xóa TeacherRequestsController (GET list, POST approve/reject). Quyết định này thay thế chủ trương giữ BE teacher-requests trước đây.
+- FE Admin và API giả tương ứng cũng đã gỡ. Entity TeacherRequest, dữ liệu cũ, SessionService và luồng gửi đơn của TeacherPortal vẫn dùng chung nên giữ; không migration/xóa dữ liệu.
+- Thông báo mới từ TeacherPortal không gắn link đến route Admin đã xóa. Không còn giao diện/API Admin xử lý các đơn Pending; chưa có luồng thay thế.

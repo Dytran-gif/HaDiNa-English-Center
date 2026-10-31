@@ -1,4 +1,22 @@
 # Nhật ký bàn giao
+## [2026-10-31] Codex — Gỡ Đơn giáo viên khỏi FE và BE Admin
+
+**Đã xong**
+- Theo yêu cầu mới, xóa menu/title/route/page/type FE; xóa TeacherRequestsController gồm GET danh sách, POST approve/reject. Gỡ mock handler và case render trang đã xóa.
+- Bỏ link /admin/teacher-requests trong hai thông báo mới phát sinh từ TeacherPortal, giữ nội dung thông báo và logic gửi đơn.
+- Cập nhật ADMIN_API, FE-ADMIN, tracker, context và hướng dẫn preview. Quyết định mới thay thế chủ trương giữ BE/hoãn FE trước đây.
+- FE build/typecheck PASS; lint 0 error/1 warning AuthContext cũ; verify-admin 26 PASS. BE dotnet build --no-restore PASS 0 warning/0 error. Không chạy DB/migration.
+
+**Đang dở**
+- Không còn giao diện/API Admin duyệt các đơn Pending. Luồng gửi và dữ liệu đơn của TeacherPortal vẫn tồn tại, chưa có cơ chế xử lý thay thế.
+
+**Việc tiếp theo**
+- Refresh giao diện để kiểm tra nhóm Đào tạo; tiếp tục audit theo lượt khi được yêu cầu.
+
+**Bẫy cần biết**
+- Entity/DbSet TeacherRequest còn được TeacherPortal và SessionService dùng: không xóa bảng/migration hay dữ liệu cũ trong đợt gỡ Admin.
+- Thông báo cũ đã lưu DB có thể vẫn chứa đường dẫn cũ; không sửa DB. AUDIT-ADMIN ngày 2026-10-30 là ảnh chụp lịch sử trước quyết định này.
+
 ## [2026-10-31] Codex — Dashboard lớp học theo ngày
 
 **Đã xong**

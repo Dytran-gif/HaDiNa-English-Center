@@ -21,8 +21,3 @@ export interface EnrollmentResponse extends AdminRecord {
   tuitionFee: number; discountPercent: number; finalTuitionFee: number; paymentId: number | null;
 }
 export interface StudentResponse extends AdminRecord { fullName: string; enrollments: EnrollmentResponse[] }
-export interface TeacherRequestResponse extends AdminRecord {
-  type: string; status: string; reason: string; adminNote: string | null;
-  teacher: { fullName: string }; session: { className: string; date: string; startTime: string; endTime: string; roomName: string | null };
-  proposedDate: string | null; proposedStartTime: string | null; proposedEndTime: string | null;
-}

@@ -15,7 +15,7 @@ Gốc: app/frontend. Quy ước: docs/conventions/FRONTEND.md. Design Admin: doc
 
 ## Hiện trạng dữ liệu
 
-8 trang Admin dùng API thật: Khóa học, Giáo viên, Học viên, Lớp học, Đơn giáo viên, Học phí, Phòng học, Cài đặt. Dashboard/Blog/Reports còn minh họa có nhãn; không mô tả toàn bộ Admin là mock hoặc đã nối hết.
+7 trang Admin dùng API thật: Khóa học, Giáo viên, Học viên, Lớp học, Học phí, Phòng học, Cài đặt. Đơn giáo viên đã gỡ khỏi FE/BE Admin theo yêu cầu 2026-10-31. Dashboard/Blog/Reports còn minh họa có nhãn; không mô tả toàn bộ Admin là mock hoặc đã nối hết.
 
 /admin/users redirect sang /admin/students. Đăng nhập thật mặc định gọi POST /api/auth/login; lựa chọn demo để xem UI khi chưa có DB, không giả lưu API thành công. Layout đã gộp demo/minh họa thành một Notice info (plan25). Settings không có lỗi đăng nhập giả khi demo; các bảng/trang khác còn cần EmptyState trung tính.
 

@@ -233,7 +233,7 @@ public class AttendanceController : TeacherControllerBase
         var adminIds = await Db.Users.Where(u => u.Role == "admin" && !u.IsLocked).Select(u => u.Id).ToListAsync();
         _notify.Add(adminIds, "Request", $"{TeacherName} xin mở lại điểm danh",
             $"Lớp {s.Class.Name}, buổi {s.SessionNo} ngày {s.Date:dd/MM/yyyy}. Lý do: {r.Reason}",
-            "/admin/teacher-requests", UserId);
+            null, UserId);
 
         await Db.SaveChangesAsync();
         return StatusCode(201, new { r.Id, r.Status, message = "Đã gửi yêu cầu mở lại điểm danh" });

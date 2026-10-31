@@ -26,7 +26,6 @@ import RoomsManagement from "./pages/admin/Rooms/RoomsManagement";
 import TeachersManagement from "./pages/admin/Teachers/TeachersManagement";
 import StudentsManagement from "./pages/admin/Students/StudentsManagement";
 import ClassesManagement from "./pages/admin/Classes/ClassesManagement";
-import TeacherRequests from "./pages/admin/TeacherRequests/TeacherRequests";
 import Settings from "./pages/admin/Settings/Settings";
 import TeacherLayout from "./pages/teacher/Layout/TeacherLayout";
 import TeacherDashboard from "./pages/teacher/Dashboard/Dashboard";
@@ -94,7 +93,6 @@ export default function AppRoutes() {
                 <Route path="teachers" element={<TeachersManagement />} />
                 <Route path="students" element={<StudentsManagement />} />
                 <Route path="classes" element={<ClassesManagement />} />
-                <Route path="teacher-requests" element={<TeacherRequests />} />
                 <Route path="settings" element={<Settings />} />
             </Route>
             <Route

@@ -65,7 +65,6 @@ const plugin={name:'local-admin-mock',enforce:'pre',
       const [key,id,sub,child]=url.pathname.replace('/api/admin/','').split('/');
       if(key==='settings'&&id==='center'){if(req.method==='PUT')Object.assign(db.centerSetting,body);return send(db.centerSetting);}
       if(key==='settings'&&id==='change-password')return send({message:'Đã mô phỏng đổi mật khẩu; tài khoản thật không thay đổi.',token});
-      if(key==='teacher-requests')return send([]);
       if(key==='teachers'&&id==='specialties')return send([...new Set(db.teachers.map(t=>t.specialty))]);
       if(key==='classes'&&id==='available')return send(db.classes.filter(c=>status(c)!=='Completed'&&enrolled(c.id).length<c.maxStudents).map(c=>({...classView(c),finalTuition:courseView(find('courses',c.courseId)).finalPrice})));
       if(!views[key])return send({message:'API chưa được mô phỏng trong bản thử.'},404);

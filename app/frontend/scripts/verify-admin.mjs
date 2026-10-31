@@ -42,7 +42,6 @@ try {
     ["Teachers/TeachersManagement.tsx","/admin/teachers","Thêm giáo viên"],
     ["Students/StudentsManagement.tsx","/admin/students","Thêm học viên"],
     ["Classes/ClassesManagement.tsx","/admin/classes","Tạo lớp"],
-    ["TeacherRequests/TeacherRequests.tsx","/admin/teacher-requests","Loại đơn"],
     ["Settings/Settings.tsx","/admin/settings","Thông tin trung tâm"],
     ["Payments/PaymentsManagement.tsx","/admin/payments","Tạo phiếu thu"],
     ["Rooms/RoomsManagement.tsx","/admin/rooms","Thêm phòng học"],
