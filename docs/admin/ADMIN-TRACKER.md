@@ -1,6 +1,6 @@
 # ADMIN TRACKER
 
-Cập nhật lần cuối: 2026-10-30 — đợt 1
+Cập nhật lần cuối: 2026-10-30 — audit lượt 1/3 (Page 1–2)
 
 Đợt tiếp theo: Đợt 2 — Dashboard (plan 22); hai phần Payments chờ DB không chặn số liệu thu dương.
 
@@ -10,19 +10,19 @@ Cập nhật lần cuối: 2026-10-30 — đợt 1
 
 | Mã task | Tên | BE | File / endpoint | Ghi chú, quyết định, phần thiếu |
 |---|---|---|---|---|
-| 1.1 | Ba nút lối tắt | ✅ | POST students/classes/payments | Đủ API tạo dùng chung; không cần API riêng. Mở form là phần FE ngoài phạm vi. |
-| 1.2 | Hiển thị 4 KPI card | ⬜ | GET dashboard/kpis | Chưa có controller/endpoint. |
-| 1.3 | Biểu đồ doanh thu theo tháng | ⬜ | GET dashboard/revenue-by-month | Chưa có controller/endpoint. |
-| 1.4 | Biểu đồ học viên mới theo tháng | ⬜ | GET dashboard/new-students-by-month | Chưa có controller/endpoint. |
-| 1.5.1 | Danh sách lớp có lịch dạy trong ngày | ⬜ | GET dashboard/today-classes | Chưa có controller/endpoint. |
-| 1.5.2 | Tóm tắt trong ngày | ⬜ | GET dashboard/today-classes | Chưa có controller/endpoint. |
-| 1.6.1 | Bảng lớp sắp đầy | ⬜ | GET dashboard/almost-full-classes | Chưa có controller/endpoint. |
-| 2.1.1 | Hiển thị lưới card, 4 card mỗi hàng | ⚠️ | GET courses; CourseResponse | CoursesController: thiếu currentStudents/maxStudents/finalTuition; có activeStudents/finalPrice. |
-| 2.1.2 | Phân trang, 16 khóa mỗi trang | ⚠️ | GET courses; PagedResult | total alias đã thêm, mặc định 16; skip cũ dùng int có thể tràn với trang rất lớn, cần rà ở đợt 5. |
-| 2.2.1 | Ô tìm kiếm theo tên khóa | ⚠️ | GET courses?search= | GET courses: Contains, chưa collation CI_AI. |
-| 2.3.1 | Form thêm khóa học | ⚠️ | POST courses; CourseRequest | POST courses: có band/số buổi/giá/trùng tên; lỗi DTO còn ProblemDetails. |
-| 2.4.1 | Sửa khóa học | ⚠️ | PUT courses/{id} | PUT courses: giữ snapshot cũ, không tự đổi lịch lớp cũ; lỗi theo trường chưa chuẩn hóa. |
-| 2.4.2 | Xóa khóa học | ⚠️ | DELETE courses/{id} | DELETE courses: có chặn, thiếu số lớp trong message. |
+| 1.1 | Ba nút lối tắt | ✅ | D:11; RP:67 (students); Fpages/admin/Classes/ClassesManagement.tsx:53; Fpages/admin/Payments/PaymentsManagement.tsx:36; BControllers/Admin/StudentsController.cs:14/:179; BControllers/Admin/ClassesController.cs:14/:187; BControllers/Admin/PaymentsController.cs:16/:53 | audit 2026-10-30 — Không cần API dashboard riêng. Ba link có action=create; các trang đích đọc query để mở form khi mount. POST có quyền admin. Chưa test thao tác trình duyệt/DB. |
+| 1.2 | Bốn KPI | ❌ | BProgram.cs:97 + kiểm kê controller ở Tóm tắt; S:4/:10/:11/:13/:14/:16 | audit 2026-10-30 — Thiếu GET dashboard/kpis. FE là số mock: khóa, giáo viên, học viên, blog; thiếu lớp đang mở/doanh thu tháng, không lọc Studying; không API/skeleton/lỗi --. |
+| 1.3 | Doanh thu 12 tháng | ❌ | BProgram.cs:97 + kiểm kê; D:8 (toàn hàm chỉ actions/KPI/recent) | audit 2026-10-30 — Không endpoint revenue-by-month, không chuỗi tháng liên tục/zero-fill; Dashboard không có biểu đồ, đơn vị tiền/loading/lỗi. |
+| 1.4 | Học viên mới 12 tháng | ❌ | BProgram.cs:97 + kiểm kê; D:8 | audit 2026-10-30 — Không endpoint new-students-by-month; không biểu đồ theo ngày tạo học viên/loading/lỗi. |
+| 1.5.1 | Lớp có lịch hôm nay | ❌ | BProgram.cs:97 + kiểm kê; D:8 | audit 2026-10-30 — Không today-classes; thiếu chọn theo thứ/ngày lớp, giờ/GV/phòng/sĩ số/sức chứa/sắp giờ; FE không danh sách/link chi tiết. |
+| 1.5.2 | Tổng lớp hôm nay | ❌ | BProgram.cs:97 + kiểm kê; D:8 | audit 2026-10-30 — Không totalToday trong response; FE không phần tóm tắt. |
+| 1.6.1 | Lớp sắp đầy | ❌ | BProgram.cs:97 + kiểm kê; D:8 | audit 2026-10-30 — Không almost-full-classes threshold/limit; không lọc tỷ lệ kể cả vừa đầy; FE không progress/link. |
+| 2.1.1 | Lưới 4/2 card | ⚠️ | CC:12/:26/:39/:49/:69; BDtos/Admin/CourseResponse.cs:16/:18; BDtos/Common/PagedResult.cs:5; CFG:12/:14; RP:64/:97/:98/:99 | audit 2026-10-30 — GET mặc định16, có items/total/page/pageSize và quyền admin; thiếu currentStudents/maxStudents. activeStudents đếm enrollment Active ở lớp chưa kết thúc, không phải field hợp đồng. FE gọi API thật nhưng bảng, không grid/sĩ số tối đa/sessionsPerWeek/badge giảm giá/skeleton; detail mở modal. finalTuition là tùy chọn nên không tính thiếu bắt buộc. |
+| 2.1.2 | Phân trang 16 khóa | ⚠️ | CC:49/:51/:65; BDtos/Common/PagedResult.cs:7; CFG:13; RP:58/:73/:104; Fpages/admin/Components/Ui/Pagination.tsx:7 | audit 2026-10-30 — BE pageSize16 và total alias đúng, nhưng Skip((page-1)*pageSize) int có thể tràn, không bảo đảm trang cực lớn trả rỗng. FE lưu page URL nhưng hiện pager cả <=16 và không scroll-top; trang vượt phạm vi thông thường hiển thị rỗng. |
+| 2.2.1 | Tìm tên khóa | ❓ | CC:57/:60/:63; Fpages/admin/Components/Api/SearchField.tsx:8/:13; RP:73/:91/:98 | audit 2026-10-30 — BE Contains, total sau lọc đúng; không explicit CI_AI, collation thực DB chưa kiểm chứng nên không kết luận kết quả chắc chắn sai. FE debounce300ms/reset page/URL có; không nút xóa riêng, type=search có thể có native clear tùy browser, chưa QA; empty chưa đúng câu spec. |
+| 2.3.1 | Thêm khóa | 🔶 | CR:13/:16/:25/:32; CC:90/:95/:110/:113; BProgram.cs:65; CFG:15; RP:78/:81/:85/:106/:107/:109; Fpages/admin/Components/Api/AdminUi.tsx:3; Fservices/apiClient.ts:35 | audit 2026-10-30 — BE đủ phần lớn Range/so sánh, POST201 và kiểm tra trùng409. BandFrom/BandTo/Tuition non-nullable mặc định0 nên không phân biệt bỏ trường bắt buộc với nhập0; 409 chỉ message, không lỗi name. FE có form/HTML validation/chặn busy/đóng/reload; band là number thay dropdown; không preview giá trong form, không hiển thị lỗi từng trường/validate so sánh phía FE; thành công Notice thay toast. DTO400 có errors mặc định ApiController, không khẳng định thiếu mọi lỗi theo trường ở BE. |
+| 2.4.1 | Sửa khóa | 🔶 | CC:117/:120/:126/:129/:135; CR:13/:25; BServices/EnrollmentService.cs:52/:60; RP:74/:76/:86/:106/:108 | audit 2026-10-30 — BE có PUT/404/trùng tên, giữ snapshot giá ghi danh; còn thiếu Required số/lỗi409 theo trường như tạo. Không tự sửa lịch lớp cũ; tác động số buổi cần người chốt. FE reuse/prefill đúng, thiếu nhắc chỉ ghi danh mới, field errors và toast; form còn thiếu như 2.3.1. |
+| 2.4.2 | Xóa khóa | ⚠️ | CC:146/:149/:154/:155; RP:80/:81/:96/:101; Fpages/admin/Components/Api/AdminUi.tsx:3 | audit 2026-10-30 — BE404/409 khi có bất kỳ lớp đúng, nhưng message không nêu số lớp. FE có confirm, lỗi server, reload và lùi trang khi xóa dòng cuối; thành công Notice thay toast. |
 | 3.1.1 | Bảng danh sách giáo viên có phân trang | ⚠️ | GET teachers; TeacherResponse | GET teachers: có classCount; thiếu isAccountLocked (có isLocked). |
 | 3.2.1 | Ô tìm kiếm theo tên | ⚠️ | GET teachers?search= | GET teachers: chưa collation CI_AI. |
 | 3.2.2 | Lọc theo chuyên môn và trạng thái | ⚠️ | GET teachers; teachers/specialties | GET teachers: thiếu specialties; status sai chưa 400. |
@@ -84,3 +84,10 @@ Cập nhật lần cuối: 2026-10-30 — đợt 1
 
 ## Ghi chú FE — 2026-10-30
 Plan 23 đã thêm trang và nối các API hiện có; xem FE-ADMIN.md. Trạng thái BE trong bảng không thay đổi bởi công việc FE. Dashboard/Blog/Reports, email update và upload logo vẫn chờ BE.
+
+## Audit 2026-10-30 — phạm vi và nhãn
+- Page 1–2 đã kiểm chứng lại; Page 3–8 giữ trạng thái lịch sử, chưa audit lượt này.
+- Nhãn audit: ✅ khớp qua code; ⚠️ lệch; ❌ thiếu; 🔶 một phần; ⏸ bị chặn; ❓ chưa kiểm chứng. Nhãn này thay nghĩa ⚠️ cũ ở các dòng 1.x/2.x.
+- Các quyết định cũ về lớp đang mở và lịch lớp cần người dùng xác nhận theo mục Cần người chốt trong AUDIT-ADMIN.md; không coi audit là phê duyệt.
+- finalTuition tùy chọn; total đã có alias. Không ghi hai trường này là bắt buộc còn thiếu.
+- Build BE PASS 0 warning/0 error; chưa chạy DB/API. Xem AUDIT-ADMIN.md để đọc phạm vi chứng cứ.

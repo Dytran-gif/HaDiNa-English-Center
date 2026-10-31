@@ -1,4 +1,22 @@
 # Nhật ký bàn giao
+## [2026-10-30] Codex — Audit ADMIN lượt 1/3, Page 1–2
+
+**Đã xong**
+- Đối chiếu 13 task FE + BE với ADMIN-SPEC; tạo docs/admin/AUDIT-ADMIN.md, cập nhật hai tracker theo mã spec. Tổng 26 nhãn: ✅2, ⚠️6, ❌11, 🔶6, ⏸0, ❓1; kiểm kê 8 mục dư, không xóa code.
+- dotnet build PASS 0 warning/error; FE build PASS, lint 0 error/1 warning AuthContext có sẵn. Không chạy app/DB/migration.
+
+**Đang dở**
+- Chưa audit sâu Page3–8. Dashboard thiếu API/khối spec; Courses API có nhưng thiếu field/cấu trúc card/form theo spec.
+
+**Việc tiếp theo**
+- Lượt2 đọc AUDIT-ADMIN.md rồi audit Page3,4,5; lượt3 Page6,7,8 và mới tạo KE-HOACH-SUA.md.
+- Xin chốt định nghĩa lớp đang mở, sort khóa, ảnh hưởng số buổi tới lớp cũ, cách đếm học viên, giới hạn form và phần dư theo bảng trong báo cáo.
+
+**Bẫy cần biết**
+- Total alias đã có; finalTuition tùy chọn. Không báo nhầm thiếu total hay FE đang đọc field khóa không tồn tại.
+- Tracker cũ có quyết định chưa thấy xác nhận; audit không tự chốt. FE Đơn giáo viên vẫn có menu/route dù chủ trương hoãn; BE giữ có chủ đích.
+- Chỉ bốn tài liệu thay đổi. Không tạo báo cáo review/plans ngoài danh sách đầu ra được cho phép.
+
 ## [2026-10-30] Codex — Blog đợt1 danh sách (plan26)
 
 **Đã xong**

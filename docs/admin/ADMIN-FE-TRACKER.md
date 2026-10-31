@@ -1,6 +1,6 @@
-# ADMIN FE TRACKER
+﻿# ADMIN FE TRACKER
 
-Cập nhật lần cuối: 2026-10-30 — Blog đợt 1 (Việc 1 + 6)
+Cập nhật lần cuối: 2026-10-30 — audit lượt 1/3 (Page 1–2)
 
 Đợt tiếp theo: Blog đợt 2 — trình soạn đầy đủ, chưa chèn hình; các việc Admin khác giữ trạng thái riêng.
 
@@ -112,3 +112,30 @@ Việc1–5 đã viết/build/lint/doc. Việc6 chỉ có tiêu đề NHỊP, kh
 
 ## Quyết định Blog đợt 1
 Không thêm Tiptap vì convention cấm dependencies mới; contentEditable tối giản dự kiến đợt2. Đợt1 không render HTML: React escape văn bản, không có dangerouslySetInnerHTML. Đợt3 mới viết sanitizer allowlist tương đương/kiểm tra kỹ trước HTML preview. Không dùng upload Teacher cho Admin. Kho v2 đọc admin_blog cũ, không ghi đè backup. Legacy category chỉ demo, không giả field BE. Sau Lưu nháp giữ compose, sau Published về list; mọi toast nói rõ lưu trên trình duyệt. Chưa QA browser1440/1024/390 do không có công cụ.
+
+## Audit theo mã ADMIN-SPEC — 2026-10-30, lượt 1/3
+
+Các mã F2/F3/BLOG phía trên ghi tiến độ đợt UI, không phải chứng nhận khớp toàn spec. Bảng dưới là kết quả audit Page 1–2; Page 3–8 chưa audit. ✅ khớp qua code; ⚠️ lệch; ❌ thiếu; 🔶 một phần; ⏸ bị chặn; ❓ chưa kiểm chứng.
+
+| Mã task | Tên | Trạng thái | File/endpoint | Ghi chú |
+|---|---|---|---|---|
+| 1.1 | Ba nút lối tắt | ✅ | D:11; RP:67 (students); Fpages/admin/Classes/ClassesManagement.tsx:53; Fpages/admin/Payments/PaymentsManagement.tsx:36; BControllers/Admin/StudentsController.cs:14/:179; BControllers/Admin/ClassesController.cs:14/:187; BControllers/Admin/PaymentsController.cs:16/:53 | audit 2026-10-30 — Không cần API dashboard riêng. Ba link có action=create; các trang đích đọc query để mở form khi mount. POST có quyền admin. Chưa test thao tác trình duyệt/DB. |
+| 1.2 | Bốn KPI | ⚠️ | BProgram.cs:97 + kiểm kê controller ở Tóm tắt; S:4/:10/:11/:13/:14/:16 | audit 2026-10-30 — Thiếu GET dashboard/kpis. FE là số mock: khóa, giáo viên, học viên, blog; thiếu lớp đang mở/doanh thu tháng, không lọc Studying; không API/skeleton/lỗi --. |
+| 1.3 | Doanh thu 12 tháng | ❌ | BProgram.cs:97 + kiểm kê; D:8 (toàn hàm chỉ actions/KPI/recent) | audit 2026-10-30 — Không endpoint revenue-by-month, không chuỗi tháng liên tục/zero-fill; Dashboard không có biểu đồ, đơn vị tiền/loading/lỗi. |
+| 1.4 | Học viên mới 12 tháng | ❌ | BProgram.cs:97 + kiểm kê; D:8 | audit 2026-10-30 — Không endpoint new-students-by-month; không biểu đồ theo ngày tạo học viên/loading/lỗi. |
+| 1.5.1 | Lớp có lịch hôm nay | ❌ | BProgram.cs:97 + kiểm kê; D:8 | audit 2026-10-30 — Không today-classes; thiếu chọn theo thứ/ngày lớp, giờ/GV/phòng/sĩ số/sức chứa/sắp giờ; FE không danh sách/link chi tiết. |
+| 1.5.2 | Tổng lớp hôm nay | ❌ | BProgram.cs:97 + kiểm kê; D:8 | audit 2026-10-30 — Không totalToday trong response; FE không phần tóm tắt. |
+| 1.6.1 | Lớp sắp đầy | ❌ | BProgram.cs:97 + kiểm kê; D:8 | audit 2026-10-30 — Không almost-full-classes threshold/limit; không lọc tỷ lệ kể cả vừa đầy; FE không progress/link. |
+| 2.1.1 | Lưới 4/2 card | ⚠️ | CC:12/:26/:39/:49/:69; BDtos/Admin/CourseResponse.cs:16/:18; BDtos/Common/PagedResult.cs:5; CFG:12/:14; RP:64/:97/:98/:99 | audit 2026-10-30 — GET mặc định16, có items/total/page/pageSize và quyền admin; thiếu currentStudents/maxStudents. activeStudents đếm enrollment Active ở lớp chưa kết thúc, không phải field hợp đồng. FE gọi API thật nhưng bảng, không grid/sĩ số tối đa/sessionsPerWeek/badge giảm giá/skeleton; detail mở modal. finalTuition là tùy chọn nên không tính thiếu bắt buộc. |
+| 2.1.2 | Phân trang 16 khóa | ⚠️ | CC:49/:51/:65; BDtos/Common/PagedResult.cs:7; CFG:13; RP:58/:73/:104; Fpages/admin/Components/Ui/Pagination.tsx:7 | audit 2026-10-30 — BE pageSize16 và total alias đúng, nhưng Skip((page-1)*pageSize) int có thể tràn, không bảo đảm trang cực lớn trả rỗng. FE lưu page URL nhưng hiện pager cả <=16 và không scroll-top; trang vượt phạm vi thông thường hiển thị rỗng. |
+| 2.2.1 | Tìm tên khóa | 🔶 | CC:57/:60/:63; Fpages/admin/Components/Api/SearchField.tsx:8/:13; RP:73/:91/:98 | audit 2026-10-30 — BE Contains, total sau lọc đúng; không explicit CI_AI, collation thực DB chưa kiểm chứng nên không kết luận kết quả chắc chắn sai. FE debounce300ms/reset page/URL có; không nút xóa riêng, type=search có thể có native clear tùy browser, chưa QA; empty chưa đúng câu spec. |
+| 2.3.1 | Thêm khóa | 🔶 | CR:13/:16/:25/:32; CC:90/:95/:110/:113; BProgram.cs:65; CFG:15; RP:78/:81/:85/:106/:107/:109; Fpages/admin/Components/Api/AdminUi.tsx:3; Fservices/apiClient.ts:35 | audit 2026-10-30 — BE đủ phần lớn Range/so sánh, POST201 và kiểm tra trùng409. BandFrom/BandTo/Tuition non-nullable mặc định0 nên không phân biệt bỏ trường bắt buộc với nhập0; 409 chỉ message, không lỗi name. FE có form/HTML validation/chặn busy/đóng/reload; band là number thay dropdown; không preview giá trong form, không hiển thị lỗi từng trường/validate so sánh phía FE; thành công Notice thay toast. DTO400 có errors mặc định ApiController, không khẳng định thiếu mọi lỗi theo trường ở BE. |
+| 2.4.1 | Sửa khóa | 🔶 | CC:117/:120/:126/:129/:135; CR:13/:25; BServices/EnrollmentService.cs:52/:60; RP:74/:76/:86/:106/:108 | audit 2026-10-30 — BE có PUT/404/trùng tên, giữ snapshot giá ghi danh; còn thiếu Required số/lỗi409 theo trường như tạo. Không tự sửa lịch lớp cũ; tác động số buổi cần người chốt. FE reuse/prefill đúng, thiếu nhắc chỉ ghi danh mới, field errors và toast; form còn thiếu như 2.3.1. |
+| 2.4.2 | Xóa khóa | 🔶 | CC:146/:149/:154/:155; RP:80/:81/:96/:101; Fpages/admin/Components/Api/AdminUi.tsx:3 | audit 2026-10-30 — BE404/409 khi có bất kỳ lớp đúng, nhưng message không nêu số lớp. FE có confirm, lỗi server, reload và lùi trang khi xóa dòng cuối; thành công Notice thay toast. |
+
+### Quyết định và tồn đọng của audit
+- Không sửa code; lựa chọn nghiệp vụ/điều hướng chưa chốt, xem AUDIT-ADMIN.md.
+- Dashboard vẫn mock; Courses gọi API thật. Có foundation Toast/Skeleton không đồng nghĩa ResourcePage đã tích hợp.
+- Đơn giáo viên vẫn có menu/route, trái chủ trương FE hoãn; không xóa trong lượt audit.
+- Build FE PASS; lint 0 error, 1 warning AuthContext có sẵn. Không chạy app/browser.
+- Lượt tiếp theo: Page 3, 4, 5.
