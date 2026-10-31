@@ -11,8 +11,8 @@ export default function CourseBottomFE({ selectedCourses, onRemoveCourse }: Cour
     // Nếu chưa chọn khóa nào thì ẩn khu vực này
     if (selectedCourses.length === 0) return null;
 
-    // Tính tổng giá tiền của tất cả các khóa học được chọn
-    const totalPrice = selectedCourses.reduce((sum, course) => sum + course.price, 0);
+    // Tính tổng học phí của tất cả các khóa học được chọn (chuẩn thuộc tính tuition từ DB)
+    const totalPrice = selectedCourses.reduce((sum, course) => sum + course.tuition, 0);
 
     return (
         <section className="course-bottom-section">
@@ -27,39 +27,23 @@ export default function CourseBottomFE({ selectedCourses, onRemoveCourse }: Cour
                             
                             {/* 1. Thông tin khóa học */}
                             <div className="cb-course-info">
-                                <img src={course.imageUrl} alt={course.title} className="cb-img" />
+                                <img 
+                                    src={course.imageUrl || "/api/placeholder/400/200"} 
+                                    alt={course.name} 
+                                    className="cb-img" 
+                                />
                                 <div className="cb-info-text">
-                                    <span className={`cb-level badge-${course.level.toLowerCase()}`}>
-                                        {course.level}
+                                    <span className="cb-level badge-beginner">
+                                        Band {course.bandFrom} - {course.bandTo}
                                     </span>
-                                    <h4 className="cb-title">{course.title}</h4>
+                                    <h4 className="cb-title">{course.name}</h4>
                                     <div className="cb-meta">
-                                        <span><i className="fa-regular fa-clock"></i> {course.durationHours} hours</span>
-                                        <span className="cb-price-item">{course.price.toLocaleString('vi-VN')} VND</span>
+                                        <span><i className="fa-regular fa-clock"></i> {course.totalSessions} sessions</span>
+                                        <span className="cb-price-item">{course.tuition.toLocaleString('vi-VN')} VND</span>
                                     </div>
                                 </div>
                             </div>
-
-                            {/* 2. Chọn lớp học */}
-                            <div className="cb-class-selection">
-                                <label className="cb-label">Choose a Class</label>
-                                <div className="cb-select-wrapper">
-                                    <select className="cb-select">
-                                        {course.availableClasses.map((cls) => {
-                                            const status = cls.currentEnrolled >= cls.maxCapacity ? 'Đã đầy' : 'Còn chỗ';
-                                            return (
-                                                <option key={cls.classId} value={cls.classId} disabled={status === 'Đã đầy'}>
-                                                    {cls.classId} | {cls.scheduleTime} - {status}
-                                                </option>
-                                            );
-                                        })}
-                                    </select>
-                                </div>
-                                <a href="#schedule" className="cb-view-schedule">
-                                    View full schedule <i className="fa-solid fa-arrow-right"></i>
-                                </a>
-                            </div>
-
+                            
                             {/* 3. Nút Xóa khóa học */}
                             <button 
                                 className="cb-delete-btn" 

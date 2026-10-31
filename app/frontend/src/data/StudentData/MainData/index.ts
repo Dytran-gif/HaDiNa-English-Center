@@ -1,4 +1,10 @@
-export * from "./CourseData";
-export * from "./ClassScheduleData";
-export * from "./GeneralNotification";
-export * from "./ScheduleNotification";
+export { mockClasses } from "./ClassesMockData.ts";
+export { mockClassSchedules } from "./ClassSchedulesMockData";
+export { mockCourses } from "./CoursesMockData.ts";
+export { mockEnrollments } from "./EnrollmentsMockData.ts";
+export { mockNotifications } from "./NotificationsMockData.ts";
+export { mockPayments } from "./PaymentsMockData.ts";
+export { mockRooms } from "./RoomsMockData.ts";
+export { mockStudents } from "./StudentsMockData.ts";
+export { mockTeachers } from "./TeachersMockData.ts";
+export { mockUsers } from "./UsersMockData.ts";

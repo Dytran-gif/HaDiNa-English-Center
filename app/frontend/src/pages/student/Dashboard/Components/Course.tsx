@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
-import { coursesData } from "../../../../data/StudentData/MainData";
-import "./Course.css"
+import { mockCourses } from "../../../../data/StudentData/MainData";
+import type { Course } from "../../../../types/StudentTypes/MainTypes";
+import "./Course.css";
 
 export default function CourseFE() {
     // Các state và ref để xử lý kéo cuộn ngang
@@ -25,9 +26,9 @@ export default function CourseFE() {
     // Khi di chuyển chuột (đang nhấn giữ)
     const handleMouseMove = (e: React.MouseEvent) => {
         if (!isDragging || !scrollRef.current) return;
-        e.preventDefault(); // Ngăn chặn hành vi bôi đen text mặc định
+        e.preventDefault();
         const x = e.pageX - scrollRef.current.offsetLeft;
-        const walk = (x - startX) * 0.5; // Nhân 1.5 để tốc độ cuộn nhanh hơn chuột một chút
+        const walk = (x - startX) * 0.5;
         scrollRef.current.scrollLeft = scrollLeft - walk;
     };
 
@@ -57,33 +58,33 @@ export default function CourseFE() {
                 onMouseUp={handleMouseUpOrLeave}
                 onMouseMove={handleMouseMove}
             >
-                {coursesData.slice(0, 10).map((course) => (
+                {mockCourses.slice(0, 10).map((course: Course) => (
                     <div
                         key={course.id}
                         className="course-card scroll-item"
                         style={{
-                            backgroundImage: `url("${course.imageUrl}")`
+                            backgroundImage: course.imageUrl ? `url("${course.imageUrl}")` : undefined
                         }}
                     >
                         <div className="course-content">
                             <h3 className="course-title">
-                                {course.title}
+                                {course.name}
                             </h3>
                             <div className="course-info">
-                                {/* Dòng 1: Level và Time */}
+                                {/* Dòng 1: Trình độ Band và Số buổi / tuần */}
                                 <div className="course-meta">
-                                    <span className="info-level">{course.level}</span>
+                                    <span className="info-level">Band {course.bandFrom} - {course.bandTo}</span>
                                     <span className="meta-divider">•</span>
-                                    <span className="info-time">{course.timePerLesson} hrs/lesson</span>
+                                    <span className="info-time">{course.sessionsPerWeek} sessions/wk</span>
                                 </div>
 
-                                {/* Dòng 2: Danh sách các Tag kỹ năng */}
+                                {/* Dòng 2: Tổng số buổi, Học phí & Giảm giá */}
                                 <div className="info-skills">
-                                    {course.skills.map((skill, index) => (
-                                        <span key={index} className="skill-tag">
-                                            {skill}
-                                        </span>
-                                    ))}
+                                    <span className="skill-tag">{course.totalSessions} Sessions</span>
+                                    <span className="skill-tag">{course.tuition.toLocaleString('vi-VN')} VND</span>
+                                    {course.discountPercent > 0 && (
+                                        <span className="skill-tag discount-tag">-{course.discountPercent}%</span>
+                                    )}
                                 </div>
                             </div>
                         </div>

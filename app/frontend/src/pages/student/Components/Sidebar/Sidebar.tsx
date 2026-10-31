@@ -37,7 +37,7 @@ function Sidebar() {
                             }
                         >
                             <span className="sidebar-icon">
-                                {item.icon}
+                                <i className={item.icon}></i>
                             </span>
 
                             <span>{item.label}</span>
@@ -56,7 +56,7 @@ function Sidebar() {
                         to="/student/account"
                         className="sidebar-item"
                     >
-                        <span className="sidebar-icon">●</span>
+                        <span className="sidebar-icon"><i className="fa-solid fa-user-tag"></i></span>
                         <span>Account</span>
                     </Link>
 
@@ -65,7 +65,7 @@ function Sidebar() {
                         to="/student/settings"
                         className="sidebar-item"
                     >
-                        <span className="sidebar-icon">⚙</span>
+                        <span className="sidebar-icon"><i className="fa-solid fa-screwdriver-wrench"></i></span>
                         <span>Settings</span>
                     </Link>
 
@@ -74,7 +74,7 @@ function Sidebar() {
                         type="button"
                         className="sidebar-item logout-button"
                     >
-                        <span className="sidebar-icon">↪</span>
+                        <span className="sidebar-icon"><i className="fa-solid fa-arrow-right-from-bracket"></i></span>
                         <span>Log out</span>
                     </button>
 

@@ -1,11 +1,13 @@
-import { coursesData } from "../../../../data/StudentData/MainData";
+import React from 'react';
+import { mockCourses } from "../../../../data/StudentData/MainData";
+import type { Course } from "../../../../types/StudentTypes/MainTypes";
 import bannerImage from "../../../../assets/images/Banner-dashboard.png";
 import bannerArrowImage from "../../../../assets/images/Banner-arrow-dashboard.png";
-import "./PresentLesson.css"
+import "./PresentLesson.css";
 
 export default function PresentLessonFE() {
     // Lấy khóa học đầu tiên làm bài học hiển thị (Demo)
-    const currentCourse = coursesData[0];
+    const currentCourse: Course | undefined = mockCourses[0];
 
     // Kiểm tra an toàn, nếu không có dữ liệu thì không render thẻ để tránh lỗi
     if (!currentCourse) return null;
@@ -41,16 +43,15 @@ export default function PresentLessonFE() {
             <div className="middle-column card">
                 <img
                     src={currentCourse.imageUrl || "/api/placeholder/400/200"}
-                    alt={currentCourse.title}
+                    alt={currentCourse.name}
                     className="card-image"
                 />
                 <h3 className="card-title">
-                    {currentCourse.level}: {currentCourse.title}
+                    Band {currentCourse.bandFrom} - {currentCourse.bandTo}: {currentCourse.name}
                 </h3>
                 <p className="card-subtitle">
-                    {currentCourse.skills ? currentCourse.skills.join(" • ") : "General English"}
+                    {currentCourse.description || `${currentCourse.totalSessions} Sessions`}
                 </p>
-
             </div>
 
             {/* Cột phải: Hình ảnh minh họa */}
@@ -65,7 +66,7 @@ export default function PresentLessonFE() {
                 />
                 <img
                     src={bannerImage}
-                    alt={currentCourse.title}
+                    alt={currentCourse.name}
                     className="illustration-image"
                 />
             </div>

@@ -4,26 +4,26 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
     {
         label: "Dashboard",
         path: "/student/dashboard",
-        icon: "⌂",
+        icon: "fa-solid fa-house",
     },
     {
         label: "Schedule",
         path: "/student/schedule",
-        icon: "▣",
+        icon: "fa-solid fa-calendar-check"
     },
     {
         label: "Courses",
         path: "/student/courses",
-        icon: "▰",
+        icon: "fa-solid fa-book-open",
     },
     {
         label: "Feedback",
         path: "/student/feedback",
-        icon: "▣",
+        icon: "fa-solid fa-comment-dots",
     },
     {
         label: "Tuition",
         path: "/student/tuition",
-        icon: "▤",
+        icon: "fa-solid fa-money-check-dollar",
     },
 ];
