@@ -1,5 +1,6 @@
 import "../admin-shared.css";
 import "../Dashboard/Dashboard.css";
+import "./Reports.css";
 import Card from "../../../components/ui/Card";
 import Button from "../Components/Ui/Button";
 import StatBlock from "../../../components/ui/StatBlock";
@@ -47,7 +48,6 @@ export default function Reports() {
     const maxRevenue = Math.max(1, ...revenueByMonth.map(([, v]) => v));
 
     const totalRevenue = payments.filter((p) => p.status === "paid").reduce((s, p) => s + p.amount, 0);
-    const totalOutstanding = payments.filter((p) => p.status !== "paid").reduce((s, p) => s + p.amount, 0);
     const studentCount = adminMockUsers.filter((u) => u.role === "student").length;
 
     function handleExportRevenue() {
@@ -58,12 +58,9 @@ export default function Reports() {
 
     return (
         <div className="admin-table-page">
-            <div className="admin-stats-grid admin-stats-grid--three">
+            <div className="admin-stats-grid admin-reports-stats">
                 <Card>
                     <StatBlock value={formatPrice(totalRevenue)} label="Tổng doanh thu đã thu" />
-                </Card>
-                <Card>
-                    <StatBlock value={formatPrice(totalOutstanding)} label="Công nợ chưa thu" />
                 </Card>
                 <Card>
                     <StatBlock value={String(studentCount)} label="Học viên đang theo học" />
