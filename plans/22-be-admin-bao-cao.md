@@ -16,3 +16,7 @@
 ## Tiêu chí hoàn thành
 - [ ] FE `admin/Dashboard` và `admin/Reports` có đủ số liệu cần hiển thị (đối chiếu mock hiện tại)
 - [ ] `dotnet build` xanh
+
+## Cập nhật 2026-10-31 — phạm vi đã làm ở plan27
+
+Đã có GET dashboard/kpis và dashboard/revenue-by-month, FE Dashboard/Reports sử dụng trực tiếp. Chưa có toàn bộ nhóm reports mở rộng trong backlog này. Xuất chi tiết/công nợ/đơn giáo viên đã bị người dùng loại khỏi Admin; không triển khai lại các mục đó theo backlog cũ. Xem plan27, ADMIN_API và báo cáo thực hiện.

@@ -1,4 +1,25 @@
 # Nhật ký bàn giao
+## [2026-10-31] Codex — Fullstack Admin review/fix (plan27)
+
+**Đã xong**
+- Dashboard KPI/Báo cáo bỏ số mẫu, dùng dashboard/kpis và revenue-by-month (quyền Admin); doanh thu theo PaidDate,12tháng liên tục, tổng all-time; giữ bỏ công nợ/xuất chi tiết/đơn GV.
+- Sửa overflow phân trang4controller, search CI_AI, status400, khóa requiredJson/field errors/unique race/xóa số lớp; FE field errors/dropdown band/preview/snapshot/clamp URL.
+- Đồng bộ mật khẩu mới8ký tự, không đổi trùng cũ; AppTime UTC+7, bỏ2middleware lặp. Đã cập nhật API doc/http.
+- FE build/typecheck PASS, lint0error/1warning cũ. BE build0warning/error. 89checks PASS (28Admin+28UI+16Blog+17BE không DB); review PASS. Mock HTTP KPI/revenue/400/401/404 đạt. Chi tiết reports/27-fs-admin-review-implementation.md.
+
+**Đang dở**
+- Chưa integration SQL Server/QA tương tác browser. Không chạy ASP.NET vì tự migrate/seed.
+- Admin thiếu tên thật trong schema; Blog chưa API; phiếu0 bị constraint. Audit là lịch sử, không tính hoàn tất toàn spec.
+
+**Việc tiếp theo**
+- Mở http://127.0.0.1:5174/admin/dashboard hoặc /admin/reports xem bản thử đã restart.
+- Nhóm DB chuẩn bị SQL Server rồi kiểm thử tổng hợp doanh thu, concurrent create/delete, validation và JWT. Tiếp tục audit Page3–5 riêng khi được yêu cầu.
+
+**Bẫy cần biết**
+- AppTime dùng chung Teacher/Student: nay UTC+7 độc lập server, không cập nhật timestamp đã lưu. Cần kiểm tra dữ liệu giờ cũ trước triển khai.
+- Demo login cũ123456 vẫn dùng được; chỉ mật khẩu tạo/reset/đổi mới yêu cầu8. Không schema/migration/dependency.
+- Dashboard lớp theo ngày dùng lịch tuần + khoảng ngày, chưa xét nghỉ/bù ClassSession; định nghĩa lớp mở giữ EndDate>=today theo code trước.
+
 ## [2026-10-31] Codex — Bảng thông tin Admin trên header
 
 **Đã xong**

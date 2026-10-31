@@ -65,7 +65,7 @@ Có 3 vai trò: `admin` · `teacher` · `student`. Khách (chưa đăng nhập) 
 - Trang theo vai trò nằm ở `src/pages/<role>/<Feature>/<Feature>.tsx`, khai báo route trong `src/routes.tsx`, bọc `<ProtectedRoute role="...">`.
 - Lấy user bằng `useAuth()`, không tạo context/auth mới.
 - Nền dùng src/styles/tokens.css; Admin dùng thêm token --admin-* scoped .admin-layout ở pages/admin/Components/Ui/AdminTokens.css. Không đổi token Public/Teacher/Student để sửa Admin. Không Tailwind/Bootstrap hoặc tự cài thư viện.
-- Admin đã nối API cho Khóa/GV/HV/Lớp/Đơn/Học phí/Phòng/Cài đặt; Dashboard/Blog/Reports còn minh họa. Gọi qua src/services, không fetch trong page. Design Admin scoped trong pages/admin/Components/Ui; xem docs/design/DESIGN-SYSTEM.md.
+- Admin nối API cho Khóa/GV/HV/Lớp/Học phí/Phòng/Cài đặt và Dashboard KPI/Reports; Đơn giáo viên đã gỡ, Blog còn minh họa. Gọi qua src/services, không fetch trong page. Design Admin scoped trong pages/admin/Components/Ui; xem docs/design/DESIGN-SYSTEM.md.
 
 ---
 

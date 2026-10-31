@@ -25,7 +25,7 @@ function AdminLayout() {
         return () => desktop.removeEventListener("change", closeOnDesktop);
     }, []);
     const { pathname } = useLocation();
-    const illustrative = ["/admin/dashboard", "/admin/blog", "/admin/reports", "/admin/users"].includes(pathname);
+    const illustrative = ["/admin/blog"].includes(pathname);
     return (
         <div className="admin-layout">
             <ToastProvider>

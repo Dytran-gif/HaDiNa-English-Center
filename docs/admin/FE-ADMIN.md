@@ -72,3 +72,9 @@ Giữ /admin/blog, màn soạn tối giản dùng query compose=new hoặc compo
 
 ## Cập nhật 2026-10-31 — bỏ Đơn giáo viên
 Đã xóa menu/title/route/page/type FE và controller Admin teacher-requests ở BE. Link thông báo mới từ cổng Giáo viên bỏ đích route đã xóa. Entity và các chức năng riêng của cổng Giáo viên được giữ; DB không thay đổi. Trang Admin dùng API còn 7 (Dashboard dùng thêm classes cho bảng theo ngày).
+
+## Cập nhật fullstack 2026-10-31 — plan27
+
+Dashboard KPI/Reports đã dùng API thật `dashboard/kpis` và `dashboard/revenue-by-month?months=12`; không đọc số mẫu/localStorage. Blog còn demo. Đây là cập nhật mới thay các ghi chú minh họa Dashboard/Reports phía trên. Bảng lớp ngày vẫn dùng classes/schedules hiện có. Khi không có token/server, hiện lỗi rõ và số -- thay vì giả số0.
+
+Đã đồng bộ mật khẩu8ký tự, trường lỗi trong form, dropdown band/preview/snapshot và phân trang tự phục hồi URL quá phạm vi. Mock vẫn dùng riêng5174 và banner bản thử; npm run dev5173 gọi BE5220. Không dùng mock để chứng minh kết nối SQL thật. Xem reports/27-fs-admin-review-implementation.md.

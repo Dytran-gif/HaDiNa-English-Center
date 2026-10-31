@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using EnglishCenter.Api.Dtos.Common;
+using Microsoft.Data.SqlClient;
 
 namespace EnglishCenter.Api.Controllers.Admin;
 
@@ -20,7 +21,7 @@ public class CoursesController : ControllerBase
         _db = db;
     }
 
-    private static DateOnly Today() => DateOnly.FromDateTime(DateTime.Now);
+    private static DateOnly Today() => EnglishCenter.Api.Services.AppTime.Today;
 
     // Chuyển Course -> CourseResponse, kèm số lớp và số học viên (tính ngay trong SQL)
     private static IQueryable<CourseResponse> Project(IQueryable<Course> query, DateOnly today)
@@ -52,18 +53,12 @@ public class CoursesController : ControllerBase
         if (pageSize < 1) pageSize = 16;
         if (pageSize > 100) pageSize = 100;
 
-        var query = _db.Courses.AsQueryable();
-
-        if (!string.IsNullOrWhiteSpace(search))
-        {
-            var kw = search.Trim();
-            query = query.Where(c => c.Name.Contains(kw));
-        }
+        var query = _db.Courses.AsNoTracking().WhereContains(search, c => c.Name);
 
         var total = await query.CountAsync();
 
         var items = await Project(query.OrderByDescending(c => c.CreatedAt).ThenBy(c => c.Id)
-                .Skip((page - 1) * pageSize).Take(pageSize), Today())
+                .SlicePage(page, pageSize, total), Today())
             .ToListAsync();
 
         return Ok(new PagedResult<CourseResponse>
@@ -93,7 +88,7 @@ public class CoursesController : ControllerBase
         var name = req.Name.Trim();
 
         if (await _db.Courses.AnyAsync(c => c.Name == name))
-            return Conflict(new { message = "Tên khóa học đã tồn tại" });
+            return Conflict(new { message = "Tên khóa học đã tồn tại", errors = new { name = new[] { "Tên khóa học đã tồn tại" } } });
 
         var course = new Course
         {
@@ -107,7 +102,11 @@ public class CoursesController : ControllerBase
             DiscountPercent = req.DiscountPercent
         };
         _db.Courses.Add(course);
-        await _db.SaveChangesAsync();
+        try { await _db.SaveChangesAsync(); }
+        catch (DbUpdateException error) when (error.InnerException is SqlException { Number: 2601 or 2627 })
+        {
+            return Conflict(new { message = "Tên khóa học đã tồn tại", errors = new { name = new[] { "Tên khóa học đã tồn tại" } } });
+        }
 
         var result = await Project(_db.Courses.Where(c => c.Id == course.Id), Today()).FirstAsync();
         return CreatedAtAction(nameof(GetById), new { id = course.Id }, result);
@@ -124,7 +123,7 @@ public class CoursesController : ControllerBase
         var name = req.Name.Trim();
 
         if (await _db.Courses.AnyAsync(c => c.Name == name && c.Id != id))
-            return Conflict(new { message = "Tên khóa học đã tồn tại" });
+            return Conflict(new { message = "Tên khóa học đã tồn tại", errors = new { name = new[] { "Tên khóa học đã tồn tại" } } });
 
         // Đổi học phí / giảm giá chỉ ảnh hưởng ghi danh MỚI,
         // vì các ghi danh cũ đã lưu snapshot giá trong bảng Enrollments.
@@ -136,7 +135,11 @@ public class CoursesController : ControllerBase
         course.SessionsPerWeek = req.SessionsPerWeek;
         course.Tuition = req.Tuition;
         course.DiscountPercent = req.DiscountPercent;
-        await _db.SaveChangesAsync();
+        try { await _db.SaveChangesAsync(); }
+        catch (DbUpdateException error) when (error.InnerException is SqlException { Number: 2601 or 2627 })
+        {
+            return Conflict(new { message = "Tên khóa học đã tồn tại", errors = new { name = new[] { "Tên khóa học đã tồn tại" } } });
+        }
 
         var result = await Project(_db.Courses.Where(c => c.Id == id), Today()).FirstAsync();
         return Ok(result);
@@ -151,11 +154,16 @@ public class CoursesController : ControllerBase
             return NotFound(new { message = "Không tìm thấy khóa học" });
 
         // Luật: khóa đã có lớp (kể cả lớp đã kết thúc) thì không được xóa
-        if (await _db.Classes.AnyAsync(c => c.CourseId == id))
-            return Conflict(new { message = "Khóa học đã có lớp, không thể xóa" });
+        var classCount = await _db.Classes.CountAsync(c => c.CourseId == id);
+        if (classCount > 0)
+            return Conflict(new { message = $"Khóa học đang được {classCount} lớp sử dụng, không thể xóa" });
 
         _db.Courses.Remove(course);
-        await _db.SaveChangesAsync();
+        try { await _db.SaveChangesAsync(); }
+        catch (DbUpdateException error) when (error.InnerException is SqlException { Number: 547 })
+        {
+            return Conflict(new { message = "Khóa học vừa được sử dụng, không thể xóa. Hãy tải lại danh sách." });
+        }
 
         return NoContent();
     }

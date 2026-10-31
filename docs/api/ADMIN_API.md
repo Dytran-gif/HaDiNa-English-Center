@@ -11,7 +11,7 @@ Doc này được **tổng hợp từ code hiện tại** (`Controllers/Admin/`)
 | GET | `/api/admin/courses/{id}` | Chi tiết |
 | POST | `/api/admin/courses` | Tạo. 409 "Tên khóa học đã tồn tại" |
 | PUT | `/api/admin/courses/{id}` | Sửa. 409 trùng tên |
-| DELETE | `/api/admin/courses/{id}` | Xóa. 409 "Khóa học đã có lớp, không thể xóa" |
+| DELETE | `/api/admin/courses/{id}` | Xóa. 409 kèm số lớp đang dùng khóa; lỗi FK đồng thời cũng trả 409 |
 
 ```json
 { "name": "IELTS 6.5", "description": "...", "bandFrom": 5.0, "bandTo": 6.5,
@@ -102,7 +102,7 @@ Theo yêu cầu ngày 2026-10-31, đã xóa GET /api/admin/teacher-requests và 
 | Nhóm | Plan |
 |---|---|
 | Blog `api/admin/posts`, ảnh trang chủ `api/admin/homepage-images` | [plans/21](../../plans/21-be-admin-blog-trang-chu.md) |
-| Dashboard `api/admin/dashboard`, báo cáo `api/admin/reports/*` | [plans/22](../../plans/22-be-admin-bao-cao.md) |
+| Dashboard còn lại (học viên mới/lớp sắp đầy); báo cáo mở rộng `api/admin/reports/*` | [plans/22](../../plans/22-be-admin-bao-cao.md) |
 
 ## 8. Học phí: `api/admin/payments` — đợt 1
 
@@ -150,4 +150,23 @@ Giá là giá hiện tại của khóa dành cho ghi danh mới; finalTuition = 
 
 ## FE Admin (2026-10-30)
 
-Các trang FE hiện gọi đúng API đã có: teachers, students, courses, classes, rooms, payments và settings. /admin/users chuyển hướng sang /admin/students. Email update và logo upload chưa được FE gửi vì BE chưa hỗ trợ. Dashboard/Blog/Reports vẫn có nhãn minh họa. Chi tiết route, chạy thử và giới hạn: [FE-ADMIN.md](../admin/FE-ADMIN.md).
+Các trang FE hiện gọi đúng API đã có: teachers, students, courses, classes, rooms, payments và settings. /admin/users chuyển hướng sang /admin/students. Email update và logo upload chưa được FE gửi vì BE chưa hỗ trợ. Dashboard KPI và Reports dùng API dashboard; Blog còn minh họa. Chi tiết route, chạy thử và giới hạn: [FE-ADMIN.md](../admin/FE-ADMIN.md).
+
+## 9. Dashboard / nguồn số liệu Báo cáo — 2026-10-31
+
+Tất cả endpoint dưới đây yêu cầu Bearer token với role admin, không có endpoint public tương ứng.
+
+| Method | URL | Response / quy tắc |
+|---|---|---|
+| GET | `/api/admin/dashboard/kpis` | `{ activeStudents, openClasses, teachers, monthlyRevenue, totalRevenue }`. Học viên trạng thái Studying; lớp EndDate >= hôm nay (Upcoming + Ongoing, đồng nhất Courses hiện có); teachers tổng hồ sơ; doanh thu SUM Amount theo PaidDate. monthlyRevenue trong tháng hiện tại; totalRevenue toàn bộ lịch sử. Không phiếu trả 0. |
+| GET | `/api/admin/dashboard/revenue-by-month?months=12` | Mảng `{ month: "yyyy-MM", revenue }`, tăng dần, gồm tháng hiện tại; tháng thiếu phiếu trả 0. months từ 1–36, ngoài khoảng trả 400 `{message}`. Khoảng query từ đầu tháng đầu tiên đến trước đầu tháng tiếp theo, dùng giờ Việt Nam. |
+
+FE Dashboard và Reports gọi chung hai API này qua useAdminQuery; lỗi hiển thị -- và Notice/thử lại, không coi lỗi tải là doanh thu0. Reports xuất CSV doanh thu đúng 12 tháng đang hiển thị; không tái thêm xuất chi tiết/công nợ/đơn giáo viên. Bảng lớp theo ngày tiếp tục dùng GET classes có schedules và tải đủ các trang.
+
+### Các sửa hợp đồng Admin trong cùng đợt
+
+- GET courses/teachers/students tìm kiếm qua Vietnamese_CI_AI; status sai ở teachers/students trả400 (Teaching/OnLeave và Studying/OnHold/Dropped). Phân trang cực lớn trả items rỗng, giữ total/page/pageSize, không nhân int tràn.
+- Course bandFrom/bandTo/tuition bắt buộc có property JSON; 0 là hợp lệ, bỏ trường bị400 từ JSON formatter. Các trường số buổi thiếu vẫn bị400 bởi Range; discountPercent mặc định0. Lỗi trùng name409 có `{ message, errors: { name: [...] } }`, gồm trường hợp đua unique khi SaveChanges.
+- Tạo/reset tài khoản và đổi mật khẩu Admin yêu cầu tối thiểu8 ký tự. Đăng nhập tài khoản demo cũ vẫn chấp nhận mật khẩu đang có; không đổi dữ liệu/hash của tài khoản cũ. Đổi mật khẩu trùng mật khẩu hiện tại bị400 với errors.NewPassword.
+- AppTime dùng UTC+7 cố định, trả DateTime Unspecified, không phụ thuộc timezone server; không cập nhật hồi tố dữ liệu thời gian cũ.
+- Request thủ công: `app/backend/EnglishCenter.Api/EnglishCenter.Api/Admin.http`. Chưa chạy API/DB vì Program tự migrate/seed khi khởi động.

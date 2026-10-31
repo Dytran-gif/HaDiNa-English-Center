@@ -1,10 +1,11 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useSearchParams } from "react-router-dom";
 import Button from "../Ui/Button";
 import Card from "../../../../components/ui/Card";
 import Modal from "../../../../components/ui/Modal";
 import { InputField, SelectField, TextareaField } from "../Ui/FormField";
 import { useAdminApi, useAdminQuery } from "../../../../services/admin/useAdminApi";
+import { ApiError } from "../../../../services/apiClient";
 import type { AdminRecord, PagedResponse, PaymentResponse, StudentResponse } from "../../../../types/adminApi";
 import { Feedback, Pager } from "./AdminUi";
 import { display, money } from "./adminFormat";
@@ -67,21 +68,44 @@ export default function ResourcePage({ config }: { config: ResourceConfig }) {
   const [open, setOpen] = useState(params.get("action") === "create"); const [detail, setDetail] = useState<number | null>(null);
   const [resetId, setResetId] = useState<number | null>(null); const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false); const [actionError, setActionError] = useState(""); const [message, setMessage] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const fieldError = (key: string) => fieldErrors[key.toLowerCase()];
+  function updateField(key: string, value: string) {
+    setForm(previous => ({ ...previous, [key]: value }));
+    setFieldErrors(previous => { const next = { ...previous }; delete next[key.toLowerCase()]; return next; });
+  }
   const rows = Array.isArray(data) ? data : data?.items ?? [];
   const total = Array.isArray(data) ? data.length : data?.totalItems ?? 0;
+  useEffect(() => {
+    if (!config.paged || loading || error || !data) return;
+    const lastPage = Math.max(1, Math.ceil(total / (config.pageSize ?? 10)));
+    if (page > lastPage) setParams(previous => { const next = new URLSearchParams(previous); next.set("page", String(lastPage)); return next; }, { replace: true });
+  }, [config.paged, config.pageSize, data, error, loading, page, setParams, total]);
   const accounts = config.path === "teachers" || config.path === "students";
   function changeParam(key: string, value: string) { setParams(p => { const next = new URLSearchParams(p); if(value) next.set(key,value); else next.delete(key); if(key !== "page") next.set("page","1"); return next; }); }
   function edit(row?: AdminRecord) {
-    setEditing(row?.id ?? null); setActionError("");
+    setEditing(row?.id ?? null); setActionError(""); setFieldErrors({});
     setForm(Object.fromEntries(config.fields.map(f => [f.key, row ? String(row[f.key] ?? "") : f.options?.[0] ?? (f.type === "number" ? "0" : "")]))); setOpen(true);
   }
   async function mutate(action: () => Promise<unknown>, success: string, deleted = false) {
-    setBusy(true); setActionError(""); setMessage("");
+    if (busy) return false;
+    setBusy(true); setActionError(""); setMessage(""); setFieldErrors({});
     try { await action(); setMessage(success); reload(); if(deleted && rows.length === 1 && page > 1) changeParam("page",String(page-1)); return true; }
-    catch(e) { setActionError(ErrorText(e)); return false; } finally { setBusy(false); }
+    catch(e) {
+      setActionError(ErrorText(e));
+      if (e instanceof ApiError) setFieldErrors(Object.fromEntries(Object.entries(e.fieldErrors).map(([key, errors]) => [key.split(".").at(-1)!.toLowerCase(), errors.join(" ")])));
+      return false;
+    } finally { setBusy(false); }
   }
   async function save(e: FormEvent) {
     e.preventDefault();
+    if (busy) return;
+    if (config.path === "courses") {
+      const errors: Record<string, string> = {};
+      if (Number(form.bandFrom) > Number(form.bandTo)) errors.bandfrom = "Band từ phải nhỏ hơn hoặc bằng band đến.";
+      if (Number(form.sessionsPerWeek) > Number(form.totalSessions)) errors.sessionsperweek = "Số buổi mỗi tuần không được lớn hơn tổng số buổi.";
+      if (Object.keys(errors).length) { setFieldErrors(errors); return; }
+    }
     const body = Object.fromEntries(config.fields.filter(f => editing === null || !f.createOnly).map(f => [f.key, f.type === "number" ? Number(form[f.key]) : (form[f.key] || null)]));
     if (await mutate(() => api.send(editing === null ? "POST" : "PUT", config.path + (editing === null ? "" : `/${editing}`), body), "Đã lưu thay đổi.")) setOpen(false);
   }
@@ -101,10 +125,11 @@ export default function ResourcePage({ config }: { config: ResourceConfig }) {
         <Button type="button" disabled={busy} onClick={() => {if(window.confirm(`Xóa ${config.singular} này?`)) void mutate(() => api.send("DELETE",`${config.path}/${row.id}`),"Đã xóa.",true);}}>Xóa</Button>
       </div></td></tr>)}
     </tbody></table></div></Card>
-    {config.paged && <Pager page={page} pageSize={config.pageSize ?? 10} total={total} onChange={p => changeParam("page",String(p))} />}
+    {config.paged && total > (config.pageSize ?? 10) && <Pager page={page} pageSize={config.pageSize ?? 10} total={total} onChange={p => { changeParam("page",String(p)); document.getElementById("admin-main-content")?.scrollIntoView({ block: "start" }); }} />}
     <Modal open={open} title={`${editing === null ? "Thêm" : "Sửa"} ${config.singular}`} onClose={() => {if(!busy)setOpen(false);}}>
       <form className="admin-api-stack" onSubmit={save}><Feedback error={actionError} />
-        {config.fields.filter(f => editing === null || !f.createOnly).map(f => f.options ? <SelectField key={f.key} label={f.label} value={form[f.key] ?? ""} onChange={e => setForm(v => ({...v,[f.key]:e.target.value}))} options={f.options.map(s => ({value:s,label:display(s)}))} /> : f.type === "textarea" ? <TextareaField key={f.key} label={f.label} value={form[f.key] ?? ""} onChange={e => setForm(v => ({...v,[f.key]:e.target.value}))} /> : <InputField key={f.key} label={f.label} type={f.type ?? "text"} required={f.required} min={f.min} max={f.max} step={f.step} maxLength={f.maxLength} minLength={f.type === "password" ? 8 : undefined} value={form[f.key] ?? ""} onChange={e => setForm(v => ({...v,[f.key]:e.target.value}))} />)}
+        {config.fields.filter(f => editing === null || !f.createOnly).map(f => f.options ? <SelectField key={f.key} label={f.label} required={f.required} disabled={busy} error={fieldError(f.key)} value={form[f.key] ?? ""} onChange={e => updateField(f.key,e.target.value)} options={f.options.map(s => ({value:s,label:display(s)}))} /> : f.type === "textarea" ? <TextareaField key={f.key} label={f.label} maxLength={f.maxLength} disabled={busy} error={fieldError(f.key)} value={form[f.key] ?? ""} onChange={e => updateField(f.key,e.target.value)} /> : <InputField key={f.key} label={f.label} type={f.type ?? "text"} required={f.required} disabled={busy} error={fieldError(f.key)} min={f.min} max={f.max} step={f.step} maxLength={f.maxLength} minLength={f.type === "password" ? 8 : undefined} value={form[f.key] ?? ""} onChange={e => updateField(f.key,e.target.value)} />)}
+        {config.path === "courses" && <><p className="admin-api-muted">Học phí sau giảm: <strong>{money(Number(form.tuition || 0) * (1 - Number(form.discountPercent || 0) / 100))}</strong></p>{editing !== null && <p className="admin-api-muted">Thay đổi học phí và giảm giá chỉ áp dụng cho học viên ghi danh từ bây giờ.</p>}</>}
         {editing !== null && accounts && <p className="admin-api-muted">Email đăng nhập được giữ nguyên khi sửa hồ sơ.</p>}
         <Button type="submit" variant="primary" disabled={busy}>{busy ? "Đang lưu…" : "Lưu"}</Button>
       </form>

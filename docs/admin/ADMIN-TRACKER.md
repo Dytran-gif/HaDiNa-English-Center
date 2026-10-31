@@ -97,3 +97,10 @@ Plan 23 đã thêm trang và nối các API hiện có; xem FE-ADMIN.md. Trạng
 - Theo yêu cầu mới, đã xóa TeacherRequestsController (GET list, POST approve/reject). Quyết định này thay thế chủ trương giữ BE teacher-requests trước đây.
 - FE Admin và API giả tương ứng cũng đã gỡ. Entity TeacherRequest, dữ liệu cũ, SessionService và luồng gửi đơn của TeacherPortal vẫn dùng chung nên giữ; không migration/xóa dữ liệu.
 - Thông báo mới từ TeacherPortal không gắn link đến route Admin đã xóa. Không còn giao diện/API Admin xử lý các đơn Pending; chưa có luồng thay thế.
+
+## [2026-10-31] Plan27 — sửa lỗi BE và bổ sung API Dashboard
+
+- KPI/revenue-by-month đã có controller admin, DTO và doc/http; giữ AppTime và PaidDate làm nguồn. Không đánh dấu xong dashboard học viên mới/lớp sắp đầy.
+- Khóa/GV/HV/lớp phân trang tránh tràn; Khóa/GV/HV tìm CI_AI. Tạo/reset/đổi mật khẩu8, trùng mật khẩu cũ bị400. Course JSON nhận biết thiếu band/tuition, errors.name409/race; chặn xóa báo số lớp.
+- AppTime UTC+7 độc lập server; ảnh hưởng Teacher/Student, không hồi tố dữ liệu. Program bỏ2 đăng ký middleware lặp.
+- BuildPASS0warning/error,17 kiểm tra BE không DB, SQL ToQueryString PASS. Chưa thực thi SQL Server. Các dòng audit2026-10-30 là lịch sử, xem reports/27-fs-admin-review-implementation.md.

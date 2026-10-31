@@ -84,14 +84,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseHttpsRedirection();
 
 // Phục vụ file upload (tài liệu, ảnh đề, audio) tại /uploads/...
 app.UseStaticFiles();
 
 app.UseAuthentication();
-app.UseAuthorization();
-
 app.UseAuthorization();
 
 app.MapControllers();

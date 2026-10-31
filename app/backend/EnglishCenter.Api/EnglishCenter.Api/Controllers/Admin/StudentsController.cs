@@ -23,7 +23,7 @@ public class StudentsController : ControllerBase
         _enrollments = enrollments;
     }
 
-    private static DateOnly Today() => DateOnly.FromDateTime(DateTime.Now);
+    private static DateOnly Today() => AppTime.Today;
 
     private static IQueryable<StudentResponse> Project(IQueryable<Student> query, DateOnly today)
     {
@@ -122,20 +122,16 @@ public class StudentsController : ControllerBase
         if (pageSize < 1) pageSize = 10;
         if (pageSize > 100) pageSize = 100;
 
-        var query = _db.Students.AsQueryable();
-
-        if (!string.IsNullOrWhiteSpace(search))
-        {
-            var kw = search.Trim();
-            query = query.Where(s => s.FullName.Contains(kw) || s.Phone.Contains(kw) || s.Code.Contains(kw));
-        }
+        if (!string.IsNullOrWhiteSpace(status) && status != "Studying" && status != "OnHold" && status != "Dropped")
+            return BadRequest(new { message = "status phải là Studying, OnHold hoặc Dropped" });
+        var query = _db.Students.AsNoTracking().WhereContains(search, s => s.FullName, s => s.Phone, s => s.Code);
         if (!string.IsNullOrWhiteSpace(status))
             query = query.Where(s => s.Status == status);
 
         var total = await query.CountAsync();
 
         var items = await Project(query.OrderBy(s => s.Code)
-                .Skip((page - 1) * pageSize).Take(pageSize), Today())
+                .SlicePage(page, pageSize, total), Today())
             .ToListAsync();
 
         return Ok(new PagedResult<StudentResponse>

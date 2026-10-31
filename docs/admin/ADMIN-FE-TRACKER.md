@@ -159,3 +159,14 @@ Các mã F2/F3/BLOG phía trên ghi tiến độ đợt UI, không phải chứn
 - Field thiếu hiện Chưa cập nhật; không coi email fallback của loginApi là họ tên thật. Đây là bảng xem thông tin, không chỉnh sửa tài khoản.
 - Reuse Button/Badge/Dialog và token Admin; có nút Đóng/Esc/backdrop, tên/email dài được xử lý; bố cục chi tiết xuống một cột trên mobile.
 - Build/typecheck PASS; lint 0 error/1 warning AuthContext cũ. Module preview HTTP200; chưa QA tương tác bằng trình duyệt.
+
+## [2026-10-31] Plan27 — sửa lỗi FE/BE đã review
+
+| Nhóm | Trạng thái trong đợt | Ghi chú |
+|---|---|---|
+| KPI/Reports API | ✅ | Dùng dashboard/kpis + revenue-by-month, số Studying và doanh thu PaidDate; Notice/retry/loading/--. Không toàn bộ task1.x theo spec. |
+| Form CRUD | ✅ | Lỗi field Pascal/camel, khóa busy, band dropdown, preview và nhắc giá ghi danh mới; ẩn pager + clamp URL khi mất trang. |
+| Responsive Reports | ✅ | Cuộn ngang 12 tháng, zero không có cột giả; CSV chỉ doanh thu hiện tại. |
+| Kiểm chứng | ✅ | FE build/typecheck, lint0error/1warning cũ;28Admin+28UI+16Blog; reviewPASS. Không QA tương tác browser. |
+
+Các bảng audit2026-10-30 bên trên phản ánh lịch sử. Không khôi phục các chức năng người dùng đã bỏ. Xem plan27 và báo cáo để biết phần chưa hoàn tất theo toàn spec.

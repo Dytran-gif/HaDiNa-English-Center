@@ -1,4 +1,6 @@
 export type AdminRecord = { id: number; [key: string]: unknown };
+export interface DashboardKpisResponse { activeStudents: number; openClasses: number; teachers: number; monthlyRevenue: number; totalRevenue: number }
+export interface RevenueMonthResponse { month: string; revenue: number }
 export interface PagedResponse<T> {
   items: T[]; totalItems: number; total?: number; page: number; pageSize: number; totalPages: number;
 }

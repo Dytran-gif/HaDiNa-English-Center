@@ -2,6 +2,12 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.admin-layout .admin-revenue-scroll { overflow-x: auto; }
+.admin-layout .admin-revenue-scroll:focus-visible { outline: 2px solid var(--admin-primary); outline-offset: var(--admin-space-1); }
+.admin-layout .admin-revenue-scroll .admin-bar-chart { min-width: calc(12 * var(--admin-space-16)); gap: var(--admin-space-4); }
+.admin-layout .admin-revenue-scroll .admin-bar-chart__bar { min-height: 0; }
+.admin-layout .admin-revenue-scroll .admin-bar-chart__value { white-space: nowrap; }
+
 @media (max-width: 39.999em) {
     .admin-layout .admin-reports-stats {
         grid-template-columns: minmax(0, 1fr);

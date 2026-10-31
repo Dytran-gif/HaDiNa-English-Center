@@ -39,6 +39,8 @@ try {
   globalThis.localStorage = { getItem:key=>store.get(key)??null, setItem:(key,value)=>store.set(key,value), removeItem:key=>store.delete(key) };
   const { AuthProvider } = await vite.ssrLoadModule("/src/context/AuthContext.tsx");
   const cases = [
+    ["Dashboard/Dashboard.tsx","/admin/dashboard","Lớp học hôm nay"],
+    ["Reports/Reports.tsx","/admin/reports","Doanh thu 12 tháng gần nhất"],
     ["Teachers/TeachersManagement.tsx","/admin/teachers","Thêm giáo viên"],
     ["Students/StudentsManagement.tsx","/admin/students","Thêm học viên"],
     ["Classes/ClassesManagement.tsx","/admin/classes","Tạo lớp"],

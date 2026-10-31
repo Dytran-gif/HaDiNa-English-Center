@@ -28,7 +28,7 @@ public class ClassesController : ControllerBase
         _notify = notify;
     }
 
-    private static DateOnly Today() => DateOnly.FromDateTime(DateTime.Now);
+    private static DateOnly Today() => AppTime.Today;
 
     private static string StatusOf(DateOnly start, DateOnly end, DateOnly today)
     {
@@ -131,7 +131,7 @@ public class ClassesController : ControllerBase
         var total = await query.CountAsync();
 
         var items = await Project(query.OrderByDescending(c => c.StartDate).ThenBy(c => c.Id)
-                .Skip((page - 1) * pageSize).Take(pageSize))
+                .SlicePage(page, pageSize, total))
             .ToListAsync();
 
         foreach (var item in items)

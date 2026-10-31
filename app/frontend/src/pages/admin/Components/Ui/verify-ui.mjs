@@ -1,4 +1,4 @@
-﻿import assert from 'node:assert/strict';
+import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { createServer } from 'vite';
 import React from 'react';
@@ -26,7 +26,7 @@ try{
  const {default:Pagination}=await load('Pagination.tsx');html=render(Pagination,{page:1,total:0,onChange:()=>{}});check(html.includes('Trang 1/1')&&(html.match(/ disabled/g)??[]).length===2,'empty pagination disables both directions');html=render(Pagination,{page:2,total:30,loading:true,onChange:()=>{}});check(html.includes('Trang 2/3')&&(html.match(/ disabled/g)??[]).length===2,'pagination locks during loading');
  const {default:Confirm}=await load('ConfirmDialog.tsx');html=render(Confirm,{open:false,onClose:()=>{},onConfirm:()=>{}},'Xóa khóa?');check(html.includes('<dialog')&&html.includes('aria-labelledby=')&&html.includes('autofocus'),'confirm uses labeled dialog and safe initial focus');
  const {default:ToastProvider}=await load('ToastProvider.tsx');check(render(ToastProvider,{},'Nội dung').includes('Thông báo thao tác'),'toast region belongs to provider');
- const {adminSidebarMenuGroups:groups}=await vite.ssrLoadModule('/src/data/AdminData/sidebarMenuItems.ts');const routes=groups.flatMap(group=>group.items.map(item=>item.path));check(groups.length===5&&routes.length===11&&new Set(routes).size===11,'five menu groups preserve eleven unique routes');
+ const {adminSidebarMenuGroups:groups}=await vite.ssrLoadModule('/src/data/AdminData/sidebarMenuItems.ts');const routes=groups.flatMap(group=>group.items.map(item=>item.path));check(groups.length===5&&routes.length===10&&new Set(routes).size===10&&!routes.includes('/admin/teacher-requests'),'five menu groups preserve ten unique routes without removed teacher requests');
  const store=new Map([['ecw_auth_user',JSON.stringify({user:{user_id:3,full_name:'Quản trị demo',email:'admin@demo.com',role:'admin',phone:'',created_at:''},token:null})]]);globalThis.localStorage={getItem:key=>store.get(key)??null,setItem:(key,value)=>store.set(key,value),removeItem:key=>store.delete(key)};
  const {AuthProvider}=await vite.ssrLoadModule('/src/context/AuthContext.tsx');const {default:Layout}=await vite.ssrLoadModule('/src/pages/admin/Layout/AdminLayout.tsx');html=renderMarkup(React.createElement(MemoryRouter,{initialEntries:['/admin/courses']},React.createElement(AuthProvider,null,React.createElement(Layout))));check(html.includes('Quản trị demo')&&html.includes('admin@demo.com')&&html.includes('Đăng xuất'),'header preserves account identity and logout');check(html.includes('aria-label="Mở menu quản trị"')&&html.includes('aria-expanded="false"')&&html.includes('admin-nav-drawer'),'mobile drawer control is named');check(html.includes('aria-current="page"')&&html.includes('admin-skip-link'),'active navigation and skip link are exposed');
  const tokens=fs.readFileSync('src/pages/admin/Components/Ui/AdminTokens.css','utf8');

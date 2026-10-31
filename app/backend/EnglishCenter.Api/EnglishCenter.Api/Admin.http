@@ -1,0 +1,33 @@
+﻿@baseUrl = http://localhost:5220
+@token = replace-with-local-admin-token
+
+### KPI — role admin required
+GET {{baseUrl}}/api/admin/dashboard/kpis
+Authorization: Bearer {{token}}
+
+### Revenue months — zero-fill, chronological
+GET {{baseUrl}}/api/admin/dashboard/revenue-by-month?months=12
+Authorization: Bearer {{token}}
+
+### Invalid months => 400
+GET {{baseUrl}}/api/admin/dashboard/revenue-by-month?months=37
+Authorization: Bearer {{token}}
+
+### Extreme page => empty items, no overflow
+GET {{baseUrl}}/api/admin/courses?page=2147483647&pageSize=100
+Authorization: Bearer {{token}}
+
+### Vietnamese search
+GET {{baseUrl}}/api/admin/students?search=nguyen&pageSize=16
+Authorization: Bearer {{token}}
+
+### Invalid status => 400
+GET {{baseUrl}}/api/admin/teachers?status=Invalid
+Authorization: Bearer {{token}}
+
+### Explicit zero values allowed; omitted tuition must be 400
+POST {{baseUrl}}/api/admin/courses
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{"name":"Khoa test local","bandFrom":0,"bandTo":0.5,"totalSessions":10,"sessionsPerWeek":2,"tuition":0,"discountPercent":0}

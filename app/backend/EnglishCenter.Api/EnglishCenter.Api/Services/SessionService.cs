@@ -4,11 +4,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EnglishCenter.Api.Services;
 
-// Giờ hệ thống dùng chung cho các chức năng Teacher (giờ địa phương của server, giống ClassesController)
+// Giờ nghiệp vụ trung tâm: Việt Nam (UTC+7), không phụ thuộc timezone máy chủ.
 public static class AppTime
 {
-    public static DateTime Now => DateTime.Now;
-    public static DateOnly Today => DateOnly.FromDateTime(DateTime.Now);
+    private static readonly TimeZoneInfo VietnamTimeZone = TimeZoneInfo.CreateCustomTimeZone(
+        "Vietnam", TimeSpan.FromHours(7), "Vietnam", "Vietnam");
+    public static DateTime Now => TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, VietnamTimeZone);
+    public static DateOnly Today => DateOnly.FromDateTime(Now);
 
     public static DateTime At(DateOnly date, TimeOnly time) => date.ToDateTime(time);
 

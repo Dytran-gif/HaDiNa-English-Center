@@ -5,7 +5,7 @@ Nguồn sự thật: `docs/api/*.md`. FE chỉ code theo doc. BE đổi endpoint
 | Doc | Vùng | Trạng thái |
 |---|---|---|
 | `docs/api/README.md` | Quy ước chung + auth | Có |
-| `docs/api/ADMIN_API.md` | `api/admin/*` | Có (sinh từ code hiện tại), đã có Payments; còn thiếu Blog/Dashboard/Reports |
+| `docs/api/ADMIN_API.md` | `api/admin/*` | Có (sinh từ code hiện tại), đã có Payments; còn thiếu Blog và các phần dashboard/báo cáo mở rộng |
 | `docs/api/TEACHER_API.md` | `api/teacher/*` | Đầy đủ |
 | `docs/api/STUDENT_API.md` | `api/student/*` | **Spec để làm**, BE chưa có |
 | `docs/api/PUBLIC_API.md` | `api/public/*` | **Spec để làm**, BE chưa có |

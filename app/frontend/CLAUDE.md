@@ -18,7 +18,7 @@ npm run build
 BẮT BUỘC: `npm run lint && npm run typecheck` phải XANH trước khi push.
 
 ## Dữ liệu
-- Admin có 7 trang API thật: Khóa/GV/HV/Lớp/Học phí/Phòng/Cài đặt. Dashboard/Blog/Reports còn minh họa; Teacher/Student/Public vẫn có dữ liệu demo. JSON cũ ở docs/do-an/du-lieu-cu không dùng trực tiếp.
+- Admin có 7 trang API thật: Khóa/GV/HV/Lớp/Học phí/Phòng/Cài đặt. Dashboard KPI và Reports dùng API dashboard; Blog còn minh họa; Teacher/Student/Public vẫn có dữ liệu demo. JSON cũ ở docs/do-an/du-lieu-cu không dùng trực tiếp.
 - Backend thật: `../backend/` (ASP.NET Core). Hợp đồng API: `../../docs/api/`.
 - API qua src/services/apiClient.ts và services/admin/useAdminApi.ts; type Admin API tại types/adminApi.ts. Page không fetch trực tiếp.
 

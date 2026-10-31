@@ -12,13 +12,13 @@ for (const key of ['courses','teachers','students','classes','rooms','schedules'
   if (!Array.isArray(db[key])) throw new Error(`Missing array: ${key}`);
 }
 const token = 'local-admin-mock-preview';
-const today = () => new Date().toLocaleDateString('en-CA');
+const today = () => new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
 const find = (key,id) => db[key].find(x => x.id === Number(id));
-const status = c => c.startDate > today() ? 'Upcoming' : c.endDate < today() ? 'Completed' : 'Ongoing';
+const status = c => c.startDate > today() ? 'Upcoming' : c.endDate < today() ? 'Finished' : 'Ongoing';
 const enrolled = id => db.enrollments.filter(e => e.classId === id && e.status === 'Active');
 const courseView = c => ({...c, finalPrice:c.tuition*(1-c.discountPercent/100),
-  activeStudents:db.classes.filter(x=>x.courseId===c.id && status(x)!=='Completed').reduce((n,x)=>n+enrolled(x.id).length,0),
-  maxStudents:db.classes.filter(x=>x.courseId===c.id && status(x)!=='Completed').reduce((n,x)=>n+x.maxStudents,0)});
+  activeStudents:db.classes.filter(x=>x.courseId===c.id && status(x)!=='Finished').reduce((n,x)=>n+enrolled(x.id).length,0),
+  maxStudents:db.classes.filter(x=>x.courseId===c.id && status(x)!=='Finished').reduce((n,x)=>n+x.maxStudents,0)});
 const classView = c => ({...c, courseName:find('courses',c.courseId)?.name, teacherName:find('teachers',c.teacherId)?.fullName,
   status:status(c), meetingUrl:c.onlineLink ?? null, enrolledCount:enrolled(c.id).length, enrolled:enrolled(c.id).length, capacity:c.maxStudents,
   schedules:db.schedules.filter(s=>s.classId===c.id).map(s=>({...s,roomName:find('rooms',s.roomId)?.name})),
@@ -63,10 +63,21 @@ const plugin={name:'local-admin-mock',enforce:'pre',
       if(url.pathname==='/api/auth/login'){if(body.email!==db.adminUser.email||body.password!=='123456')return send({message:'Dùng admin@demo.com / 123456 cho bản thử.'},401);return send({token,userId:db.adminUser.id,email:db.adminUser.email,role:'admin'});}
       if(req.headers.authorization!==`Bearer ${token}`)return send({message:'Chỉ dùng token của bản thử.'},401);
       const [key,id,sub,child]=url.pathname.replace('/api/admin/','').split('/');
+      if(key==='dashboard' && req.method==='GET'){
+        const current=today().slice(0,7);
+        if(id==='kpis')return send({activeStudents:db.students.filter(s=>s.status==='Studying').length,openClasses:db.classes.filter(c=>c.endDate>=today()).length,teachers:db.teachers.length,
+          monthlyRevenue:db.payments.filter(p=>p.paidDate.slice(0,7)===current).reduce((n,p)=>n+paymentView(p).amount,0),totalRevenue:db.payments.reduce((n,p)=>n+paymentView(p).amount,0)});
+        if(id==='revenue-by-month'){
+          const months=Number(url.searchParams.get('months')??12);
+          if(!Number.isInteger(months)||months<1||months>36)return send({message:'months phải từ 1 đến 36'},400);
+          const [year,month]=current.split('-').map(Number);
+          return send(Array.from({length:months},(_,index)=>{const date=new Date(year,month-months+index,1);const key=`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;return {month:key,revenue:db.payments.filter(p=>p.paidDate.slice(0,7)===key).reduce((n,p)=>n+paymentView(p).amount,0)};}));
+        }
+      }
       if(key==='settings'&&id==='center'){if(req.method==='PUT')Object.assign(db.centerSetting,body);return send(db.centerSetting);}
       if(key==='settings'&&id==='change-password')return send({message:'Đã mô phỏng đổi mật khẩu; tài khoản thật không thay đổi.',token});
       if(key==='teachers'&&id==='specialties')return send([...new Set(db.teachers.map(t=>t.specialty))]);
-      if(key==='classes'&&id==='available')return send(db.classes.filter(c=>status(c)!=='Completed'&&enrolled(c.id).length<c.maxStudents).map(c=>({...classView(c),finalTuition:courseView(find('courses',c.courseId)).finalPrice})));
+      if(key==='classes'&&id==='available')return send(db.classes.filter(c=>status(c)!=='Finished'&&enrolled(c.id).length<c.maxStudents).map(c=>({...classView(c),finalTuition:courseView(find('courses',c.courseId)).finalPrice})));
       if(!views[key])return send({message:'API chưa được mô phỏng trong bản thử.'},404);
       if(id && sub==='enrollments'){
         if(req.method==='POST'){const c=find('classes',body.classId);if(!c)return send({message:'Không tìm thấy lớp.'},404);const course=find('courses',c.courseId);db.enrollments.push({id:Math.max(0,...db.enrollments.map(x=>x.id))+1,studentId:Number(id),classId:c.id,status:'Active',tuitionFee:course.tuition,discountPercent:course.discountPercent,discountAmount:course.tuition*course.discountPercent/100,finalTuitionFee:courseView(course).finalPrice});return send({},201);}
