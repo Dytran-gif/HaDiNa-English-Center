@@ -5,7 +5,7 @@ import Button from "../Components/Ui/Button";
 import StatBlock from "../../../components/ui/StatBlock";
 import { adminPayments } from "../../../data/AdminData/payments";
 import { adminMockUsers } from "../../../data/AdminData/mockUsers";
-import { courses, formatPrice } from "../../../data/courses";
+import { formatPrice } from "../../../data/courses";
 import { useLocalCollection } from "../../../hooks/useLocalCollection";
 import type { Payment } from "../../../types";
 
@@ -56,16 +56,6 @@ export default function Reports() {
         downloadCsv(rows, "bao-cao-doanh-thu.csv");
     }
 
-    function handleExportPayments() {
-        const rows: (string | number)[][] = [["Mã hóa đơn", "Học viên", "Khóa học", "Số tiền", "Trạng thái", "Hạn thanh toán"]];
-        payments.forEach((p) => {
-            const user = adminMockUsers.find((u) => u.user_id === p.user_id)?.full_name ?? `#${p.user_id}`;
-            const course = courses.find((c) => c.course_id === p.course_id)?.course_name ?? `#${p.course_id}`;
-            rows.push([p.payment_id, user, course, p.amount, p.status, p.due_date]);
-        });
-        downloadCsv(rows, "bao-cao-hoa-don.csv");
-    }
-
     return (
         <div className="admin-table-page">
             <div className="admin-stats-grid admin-stats-grid--three">
@@ -105,17 +95,6 @@ export default function Reports() {
                 )}
             </Card>
 
-            <Card className="admin-recent-card" style={{ marginTop: 20 }}>
-                <div className="admin-recent-header">
-                    <h2>Xuất báo cáo chi tiết</h2>
-                    <Button variant="outline" onClick={handleExportPayments}>
-                        Xuất danh sách hóa đơn (CSV)
-                    </Button>
-                </div>
-                <p style={{ color: "var(--muted)", margin: 0 }}>
-                    Xuất toàn bộ {payments.length} hóa đơn kèm trạng thái thanh toán để đối soát ngoài hệ thống.
-                </p>
-            </Card>
         </div>
     );
 }
