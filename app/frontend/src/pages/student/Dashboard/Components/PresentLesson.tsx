@@ -1,23 +1,41 @@
-import React from 'react';
 import { mockCourses } from "../../../../data/StudentData/MainData";
-import type { Course } from "../../../../types/StudentTypes/MainTypes";
 import bannerImage from "../../../../assets/images/Banner-dashboard.png";
 import bannerArrowImage from "../../../../assets/images/Banner-arrow-dashboard.png";
 import "./PresentLesson.css";
 
-export default function PresentLessonFE() {
-    // Lấy khóa học đầu tiên làm bài học hiển thị (Demo)
-    const currentCourse: Course | undefined = mockCourses[0];
+interface PresentLessonProps {
+    lesson?: {
+        courseName: string;
+        bandFrom: number | string;
+        bandTo: number | string;
+        description?: string;
+        totalSessions?: number;
+        imageUrl?: string;
+    };
+}
 
-    // Kiểm tra an toàn, nếu không có dữ liệu thì không render thẻ để tránh lỗi
-    if (!currentCourse) return null;
+export default function PresentLessonFE({ lesson }: PresentLessonProps) {
+    const defaultCourse = mockCourses[0];
+    const displayCourse = lesson ? {
+        name: lesson.courseName,
+        bandFrom: lesson.bandFrom,
+        bandTo: lesson.bandTo,
+        description: lesson.description || `${lesson.totalSessions ?? 0} Sessions`,
+        imageUrl: lesson.imageUrl
+    } : defaultCourse ? {
+        name: defaultCourse.name,
+        bandFrom: defaultCourse.bandFrom,
+        bandTo: defaultCourse.bandTo,
+        description: defaultCourse.description || `${defaultCourse.totalSessions} Sessions`,
+        imageUrl: defaultCourse.imageUrl
+    } : null;
+
+    if (!displayCourse) return null;
 
     return (
         <section className="next-lesson-section">
-            {/* Lớp nền gradient mờ */}
             <div className="bg-gradient-overlay"></div>
 
-            {/* Cột trái: Thông tin kêu gọi hành động */}
             <div className="left-column">
                 <span className="badge">
                     Continue Learning
@@ -31,7 +49,7 @@ export default function PresentLessonFE() {
                     Continue where you left off and make progress towards your goals.
                 </p>
 
-                <button className="continue-btn">
+                <button className="continue-btn" type="button">
                     <svg className="icon-play" viewBox="0 0 24 24">
                         <path d="M8 5v14l11-7z" />
                     </svg>
@@ -39,22 +57,20 @@ export default function PresentLessonFE() {
                 </button>
             </div>
 
-            {/* Cột giữa: Thẻ bài học */}
             <div className="middle-column card">
                 <img
-                    src={currentCourse.imageUrl || "/api/placeholder/400/200"}
-                    alt={currentCourse.name}
+                    src={displayCourse.imageUrl || "/api/placeholder/400/200"}
+                    alt={displayCourse.name}
                     className="card-image"
                 />
                 <h3 className="card-title">
-                    Band {currentCourse.bandFrom} - {currentCourse.bandTo}: {currentCourse.name}
+                    Band {displayCourse.bandFrom} - {displayCourse.bandTo}: {displayCourse.name}
                 </h3>
                 <p className="card-subtitle">
-                    {currentCourse.description || `${currentCourse.totalSessions} Sessions`}
+                    {displayCourse.description}
                 </p>
             </div>
 
-            {/* Cột phải: Hình ảnh minh họa */}
             <div className="right-column">
                 <div className="decorative-text">
                     Better English <br /> Brighter Future
@@ -66,7 +82,7 @@ export default function PresentLessonFE() {
                 />
                 <img
                     src={bannerImage}
-                    alt={currentCourse.name}
+                    alt={displayCourse.name}
                     className="illustration-image"
                 />
             </div>

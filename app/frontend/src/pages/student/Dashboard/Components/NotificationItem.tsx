@@ -1,10 +1,19 @@
-import React from 'react';
 import { mockNotifications } from "../../../../data/StudentData/MainData";
-import type { AppNotification } from "../../../../types/StudentTypes/MainTypes";
 import "./NotificationItem.css";
 
+export interface DashboardNotificationItem {
+    id: number | string;
+    type: string;
+    title: string;
+    message: string;
+}
+
+interface NotificationItemProps {
+    notifications?: DashboardNotificationItem[];
+}
+
 // Hàm hỗ trợ render icon và màu sắc tương ứng theo thuộc tính type trong DB
-const renderNotificationIcon = (type: AppNotification['type']) => {
+const renderNotificationIcon = (type: string) => {
     switch (type) {
         case 'Cancellation':
             return (
@@ -28,18 +37,18 @@ const renderNotificationIcon = (type: AppNotification['type']) => {
     }
 };
 
-export default function NotificationItemFE() {
+export default function NotificationItemFE({ notifications }: NotificationItemProps) {
+    const list = notifications && notifications.length > 0 ? notifications : mockNotifications;
+
     return (
         <section className="notification-card">
-            {/* Header */}
             <header className="notif-header">
                 <h2 className="notif-title">Recent Notifications</h2>
                 <a href="#notifications" className="notif-view-all">View all</a>
             </header>
 
-            {/* Danh sách thông báo */}
             <div className="notif-list">
-                {mockNotifications.map((notif: AppNotification) => (
+                {list.map((notif) => (
                     <div key={notif.id} className="notif-item">
                         {renderNotificationIcon(notif.type)}
                         

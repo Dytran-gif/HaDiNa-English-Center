@@ -1,36 +1,49 @@
-import React, { useRef, useState } from 'react';
+import { useRef, useState, type MouseEvent } from 'react';
 import { mockCourses } from "../../../../data/StudentData/MainData";
-import type { Course } from "../../../../types/StudentTypes/MainTypes";
 import "./Course.css";
 
-export default function CourseFE() {
-    // Các state và ref để xử lý kéo cuộn ngang
+export interface DashboardCourseItem {
+    id: number | string;
+    name: string;
+    bandFrom: number | string;
+    bandTo: number | string;
+    totalSessions: number;
+    sessionsPerWeek: number;
+    tuition: number;
+    discountPercent: number;
+    imageUrl?: string;
+}
+
+interface CourseProps {
+    courses?: DashboardCourseItem[];
+}
+
+export default function CourseFE({ courses }: CourseProps) {
     const scrollRef = useRef<HTMLDivElement>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [startX, setStartX] = useState(0);
     const [scrollLeft, setScrollLeft] = useState(0);
 
-    // Khi nhấn chuột xuống
-    const handleMouseDown = (e: React.MouseEvent) => {
+    const handleMouseDown = (e: MouseEvent) => {
         if (!scrollRef.current) return;
         setIsDragging(true);
         setStartX(e.pageX - scrollRef.current.offsetLeft);
         setScrollLeft(scrollRef.current.scrollLeft);
     };
 
-    // Khi thả chuột ra
     const handleMouseUpOrLeave = () => {
         setIsDragging(false);
     };
 
-    // Khi di chuyển chuột (đang nhấn giữ)
-    const handleMouseMove = (e: React.MouseEvent) => {
+    const handleMouseMove = (e: MouseEvent) => {
         if (!isDragging || !scrollRef.current) return;
         e.preventDefault();
         const x = e.pageX - scrollRef.current.offsetLeft;
         const walk = (x - startX) * 0.5;
         scrollRef.current.scrollLeft = scrollLeft - walk;
     };
+
+    const list = courses && courses.length > 0 ? courses : mockCourses.slice(0, 10);
 
     return (
         <section className="continue-learning-section">
@@ -49,7 +62,6 @@ export default function CourseFE() {
                 </a>
             </header>
 
-            {/* Gắn ref và các sự kiện chuột vào div cuộn */}
             <div
                 className={`cards-grid horizontal-scroll-wrapper ${isDragging ? 'active-drag' : ''}`}
                 ref={scrollRef}
@@ -58,7 +70,7 @@ export default function CourseFE() {
                 onMouseUp={handleMouseUpOrLeave}
                 onMouseMove={handleMouseMove}
             >
-                {mockCourses.slice(0, 10).map((course: Course) => (
+                {list.map((course) => (
                     <div
                         key={course.id}
                         className="course-card scroll-item"
@@ -71,14 +83,12 @@ export default function CourseFE() {
                                 {course.name}
                             </h3>
                             <div className="course-info">
-                                {/* Dòng 1: Trình độ Band và Số buổi / tuần */}
                                 <div className="course-meta">
                                     <span className="info-level">Band {course.bandFrom} - {course.bandTo}</span>
                                     <span className="meta-divider">•</span>
                                     <span className="info-time">{course.sessionsPerWeek} sessions/wk</span>
                                 </div>
 
-                                {/* Dòng 2: Tổng số buổi, Học phí & Giảm giá */}
                                 <div className="info-skills">
                                     <span className="skill-tag">{course.totalSessions} Sessions</span>
                                     <span className="skill-tag">{course.tuition.toLocaleString('vi-VN')} VND</span>

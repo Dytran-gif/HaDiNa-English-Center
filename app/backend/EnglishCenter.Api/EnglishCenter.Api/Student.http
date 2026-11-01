@@ -1,0 +1,17 @@
+### Đăng nhập tài khoản student
+# @name login
+POST http://localhost:5220/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "student@demo.com",
+  "password": "password"
+}
+
+### Lưu token
+@token = {{login.response.body.token}}
+
+### Lấy thông tin Dashboard học viên
+GET http://localhost:5220/api/student/dashboard
+Authorization: Bearer {{token}}
+
