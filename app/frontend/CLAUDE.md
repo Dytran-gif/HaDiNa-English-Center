@@ -18,9 +18,9 @@ npm run build
 BẮT BUỘC: `npm run lint && npm run typecheck` phải XANH trước khi push.
 
 ## Dữ liệu
-- Hiện tại: MOCK trong `src/data/*.ts` (+ `useLocalCollection` cho CRUD). Dữ liệu JSON cũ đã chuyển ra `docs/do-an/du-lieu-cu/`, app không dùng.
+- Admin có 7 trang API thật: Khóa/GV/HV/Lớp/Học phí/Phòng/Cài đặt. Dashboard KPI và Reports dùng API dashboard; Blog còn minh họa; Teacher/Student/Public vẫn có dữ liệu demo. JSON cũ ở docs/do-an/du-lieu-cu không dùng trực tiếp.
 - Backend thật: `../backend/` (ASP.NET Core). Hợp đồng API: `../../docs/api/`.
-- Nối API qua `src/services/` (plan `01`). Page không gọi `fetch` trực tiếp.
+- API qua src/services/apiClient.ts và services/admin/useAdminApi.ts; type Admin API tại types/adminApi.ts. Page không fetch trực tiếp.
 
 ## Đăng nhập: nền dùng chung ĐÃ CÓ (do Hoàng làm, đừng viết lại)
 ```ts
@@ -29,7 +29,7 @@ const { user, logout } = useAuth();   // user.role = "student" | "teacher" | "ad
 ```
 - Trang cần bảo vệ: bọc `<ProtectedRoute role="...">` trong `routes.tsx`.
 - Tài khoản demo (mật khẩu 123456): `student@demo.com` / `teacher@demo.com` / `admin@demo.com`.
-- Đang mock. Chuyển sang `POST /api/auth/login` ở plan `03`, giữ nguyên `useAuth()`.
+- Login mặc định gọi POST /api/auth/login qua loginApi; login demo đồng bộ cũ vẫn giữ. Token/session trong AuthContext, logout khi API 401; không sửa auth khi chỉ làm UI.
 
 ## Ai giữ phần nào
 Bảng đầy đủ ở `../../.claude/context/ownership.md`. Tóm tắt:
@@ -54,3 +54,6 @@ Quy tắc quan trọng để KHÔNG đụng dashboard:
 - Câu hỏi + logic gợi ý: `src/components/sections/surveyConfig.ts` (đặt cạnh component, KHÔNG để trong `src/data/` để tránh thư mục dùng chung).
 - Slug gợi ý khớp `src/data/courses.ts`, link tới `/khoa-hoc/:slug`. Khi nối API xem plan `40` (slug hay id).
 - Muốn chỉnh khoá gợi ý thì sửa hàm `recommendCourse` trong `surveyConfig.ts`.
+
+## Design Admin
+Token scoped .admin-layout và adapter Button/FormField/Tag tại src/pages/admin/Components/Ui. Không sửa global UI hoặc token Public/Teacher/Student để đổi màu Admin. Xem docs/design/DESIGN-SYSTEM.md và docs/admin/ADMIN-FE-TRACKER.md; mỗi lần chỉ làm một đợt.

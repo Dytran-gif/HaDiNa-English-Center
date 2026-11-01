@@ -1,4 +1,4 @@
-import React from 'react';
+
 import type { Course } from '../../../../types/StudentTypes/MainTypes';
 import './CourseBottom.css';
 

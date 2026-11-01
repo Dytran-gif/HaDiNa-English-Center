@@ -19,7 +19,8 @@ export type { TeachingMaterial } from "./material";
 //Đường dẫn của StudentTypes
 export type {
     NotificationData,
-    PageTitle,
+
     StudentUser,
 } from "./StudentTypes/HeaderTypes";
 export type { SidebarMenuItem } from "./StudentTypes/SidebarTypes";
+export interface PageTitle { title: string; subtitle: string }

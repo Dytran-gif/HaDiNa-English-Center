@@ -6,7 +6,7 @@ Gốc: `app/backend/EnglishCenter.Api/EnglishCenter.Api/` (gọi tắt `API/`).
 
 ```
 API/
-├── Program.cs              # DI + JWT + migrate/seed lúc khởi động
+├── Program.cs              # DI + JWT; migrate/seed chỉ khi Database:InitializeOnStartup=true
 ├── Controllers/
 │   ├── AuthController.cs   # api/auth/login, api/auth/me
 │   ├── Admin/              # [Authorize(Roles="admin")]   api/admin/...

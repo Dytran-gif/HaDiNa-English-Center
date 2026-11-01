@@ -1,0 +1,36 @@
+﻿/* Shared composition for dashboard actions, overview cards and settings panels. */
+.admin-layout .admin-quick-actions { margin-block-end: var(--admin-space-6); }
+.admin-layout .admin-quick-actions h2 { margin: 0 0 var(--admin-space-2); color: var(--admin-muted); font-size: var(--admin-font-caption); font-weight: 500; }
+.admin-layout .admin-quick-actions-list { display: flex; justify-content: flex-start; flex-wrap: wrap; gap: var(--admin-space-3); row-gap: var(--admin-space-3); }
+.admin-layout .admin-quick-actions .admin-button { box-sizing: border-box; height: var(--admin-space-10); min-height: var(--admin-space-10); padding-block: 0; padding-inline: var(--admin-space-4); font-size: var(--admin-font-sm); font-weight: 600; gap: var(--admin-space-2); }
+.admin-layout .admin-kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--admin-space-4); margin-block-end: var(--admin-space-6); }
+.admin-layout .admin-kpi-card { display: grid; align-content: start; gap: var(--admin-space-2); min-width: 0; padding: var(--admin-space-5); border: 1px solid var(--admin-border); border-radius: var(--admin-radius-panel); box-shadow: var(--admin-shadow-1); color: var(--admin-text); background: var(--admin-surface); text-decoration: none; transition: box-shadow var(--admin-motion), border-color var(--admin-motion); }
+.admin-layout .admin-kpi-card:hover { box-shadow: var(--admin-shadow-2); border-color: var(--admin-primary); }
+.admin-layout .admin-kpi-icon { display: grid; place-items: center; width: var(--admin-space-10); height: var(--admin-space-10); margin-block-end: var(--admin-space-2); border-radius: var(--admin-radius-icon); background: var(--admin-primary-soft); color: var(--admin-primary); }
+.admin-layout .admin-kpi-value { font-size: var(--admin-font-stat); line-height: 1.25; font-weight: 700; }
+.admin-layout .admin-kpi-label { color: var(--admin-muted); font-size: var(--admin-font-sm); }
+.admin-layout .admin-section-card { display: flex; flex-direction: column; min-width: 0; padding: var(--admin-space-6); border: 1px solid var(--admin-border); border-radius: var(--admin-radius-panel); background: var(--admin-surface); box-shadow: var(--admin-shadow-1); }
+.admin-layout .admin-section-card-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--admin-space-3); margin-block-end: var(--admin-space-4); }
+.admin-layout .admin-section-card-header h2 { margin: 0; color: var(--admin-text); font-size: var(--admin-font-section); line-height: var(--admin-leading); font-weight: 600; }
+.admin-layout .admin-section-card-action { margin-inline-start: auto; }
+.admin-layout .admin-section-card-action .admin-button--ghost { color: var(--admin-primary); }
+.admin-layout .admin-section-card-body { display: flex; flex-direction: column; gap: var(--admin-space-4); flex: 1; min-width: 0; }
+.admin-layout .admin-summary-list { margin: 0; padding: 0; list-style: none; }
+.admin-layout .admin-summary-list li { box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; gap: var(--admin-space-3); min-height: var(--admin-space-12); padding-block: var(--admin-space-3); border-bottom: 1px solid var(--admin-border); font-size: var(--admin-font-sm); }
+.admin-layout .admin-summary-list li:last-child { border-bottom: 0; }
+.admin-layout .admin-summary-list li:hover { background: var(--admin-canvas); }
+.admin-layout .admin-settings-panels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; gap: var(--admin-space-6); }
+.admin-layout .admin-settings-panels .field__control { height: var(--admin-control-height); border-radius: var(--admin-radius-input); }
+.admin-layout .admin-panel-form { display: flex; flex-direction: column; gap: var(--admin-space-4); flex: 1; min-width: 0; }
+.admin-layout .admin-panel-fieldset { display: flex; flex-direction: column; flex: 1; min-width: 0; margin: 0; padding: 0; border: 0; }
+.admin-layout .admin-panel-fieldset:disabled { opacity: 1; }
+.admin-layout .admin-panel-submit { margin-block-start: auto; padding-block-start: var(--admin-space-2); }
+.admin-layout .admin-panel-form .admin-api-muted { margin: 0; font-size: var(--admin-font-xs); }
+.admin-layout .admin-panel-feedback .admin-notice-action { display: flex; justify-content: flex-end; margin-block-start: var(--admin-space-3); }
+.admin-layout .admin-content-notice { margin-block-end: var(--admin-space-6); }
+@media (max-width: 74.999em) { .admin-layout .admin-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 39.999em) {
+  .admin-layout .admin-quick-actions-list { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .admin-layout .admin-quick-actions .admin-button { width: 100%; }
+  .admin-layout .admin-kpi-grid, .admin-layout .admin-settings-panels { grid-template-columns: minmax(0, 1fr); }
+}
