@@ -1,0 +1,105 @@
+.schedule-notice-container {
+    background-color: #ffffff;
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid #f1f5f9;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+}
+
+/* Header thông báo */
+.notice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.notice-title-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.notice-icon-box {
+    width: 38px;
+    height: 38px;
+    background-color: #eff6ff;
+    color: #2563eb;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.notice-main-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+
+.notice-sub-title {
+    font-size: 12px;
+    color: #64748b;
+    margin: 2px 0 0 0;
+}
+
+.notice-view-all {
+    font-size: 12px;
+    font-weight: 600;
+    color: #2563eb;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: gap 0.2s ease;
+}
+
+.notice-view-all:hover {
+    gap: 10px;
+}
+
+/* Thẻ Thông báo nghỉ học màu Cam/Nắng nhẹ */
+.cancellation-card {
+    background-color: #fffbeb;
+    border: 1px solid #fef3c7;
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cancellation-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.warning-badge-icon {
+    color: #d97706;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.cancellation-text {
+    font-size: 13px;
+    color: #92400e;
+    margin: 0;
+}
+
+.cancellation-text strong {
+    color: #78350f;
+}
+
+.cancellation-text span {
+    font-weight: 600;
+}
+
+.cancellation-time {
+    font-size: 11px;
+    color: #b45309;
+    font-weight: 500;
+}

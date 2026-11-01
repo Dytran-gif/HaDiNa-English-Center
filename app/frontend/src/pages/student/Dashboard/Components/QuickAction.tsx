@@ -1,5 +1,5 @@
-
-import { quickActionsData } from "../../../../data/StudentData/OtherData"; 
+import { useNavigate } from "react-router-dom";
+import { quickActionsData } from "../../../../data/StudentData/OtherData";
 import "./QuickAction.css";
 
 // Hàm hỗ trợ render icon dựa vào iconType
@@ -19,13 +19,29 @@ const renderIcon = (iconType: string) => {
 };
 
 export default function QuickActionFE() {
+    const navigate = useNavigate();
+
+    const handleActionClick = (label: string) => {
+        const normalized = label.toLowerCase();
+        if (normalized.includes("course")) {
+            navigate("/student/courses");
+        } else if (normalized.includes("schedule")) {
+            navigate("/student/schedule");
+        }
+    };
+
     return (
         <section className="quick-action-card">
             <h2 className="qa-header-title">Quick Actions</h2>
 
             <div className="qa-list">
                 {quickActionsData.map((action) => (
-                    <button key={action.id} className="qa-item-btn">
+                    <button
+                        key={action.id}
+                        type="button"
+                        className="qa-item-btn"
+                        onClick={() => handleActionClick(action.label)}
+                    >
                         <div className="qa-icon-wrapper">
                             {renderIcon(action.iconType)}
                         </div>

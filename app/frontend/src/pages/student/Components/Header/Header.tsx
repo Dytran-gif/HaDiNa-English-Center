@@ -11,8 +11,8 @@ function Header() {
 
     const pageTitles: Record<string, string> = {
         "/student/dashboard": "Dashboard Overview",
-        "/student/skill": "Skill Details",
-        "/student/practice": "Practice Exercises",
+        "/student/courses": "Enrollment Courses",
+        "/student/schedule": "My Schedule",
     };
 
     const title = pageTitles[location.pathname] ?? "Dashboard";

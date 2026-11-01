@@ -1,0 +1,11 @@
+import type { Course } from "../../../types/StudentTypes/MainTypes";
+import imageMock from "../../../assets/images/next-lesson-mock.jpg";
+export const mockCourses: Course[] = [
+    { id: "c1", name: "General English A1-A2", description: "Tiếng Anh giao tiếp cơ bản cho người mới bắt đầu", bandFrom: "A1", bandTo: "A2", totalSessions: 30, sessionsPerWeek: 3, tuition: 2000000, discountPercent: 0, imageUrl: imageMock, createdAt: "2025-01-01" },
+    { id: "c2", name: "Practical Speaking (B1-B2)", description: "Luyện phản xạ nói thực chiến theo chủ đề", bandFrom: "B1", bandTo: "B2", totalSessions: 24, sessionsPerWeek: 2, tuition: 1800000, discountPercent: 10, imageUrl: imageMock, createdAt: "2025-01-01" },
+    { id: "c3", name: "IELTS Academic Intensive", description: "Luyện thi IELTS 4 kỹ năng mục tiêu 6.5+", bandFrom: "5.5", bandTo: "6.5", totalSessions: 36, sessionsPerWeek: 3, tuition: 4500000, discountPercent: 5, imageUrl: imageMock, createdAt: "2025-01-02" },
+    { id: "c4", name: "Business English Communication", description: "Tiếng Anh thương mại, viết email và đàm phán", bandFrom: "B2", bandTo: "C1", totalSessions: 20, sessionsPerWeek: 2, tuition: 2500000, discountPercent: 0, imageUrl: imageMock, createdAt: "2025-01-03" },
+    { id: "c5", name: "English Grammar & Writing Master", description: "Củng cố ngữ pháp chuẩn và kỹ năng viết luận", bandFrom: "A2", bandTo: "B1", totalSessions: 18, sessionsPerWeek: 2, tuition: 1500000, discountPercent: 15, imageUrl: imageMock, createdAt: "2025-01-04" },
+    { id: "c6", name: "Pronunciation & Accent Training", description: "Luyện phát âm chuẩn IPA và ngữ điệu tự nhiên", bandFrom: "A1", bandTo: "B2", totalSessions: 12, sessionsPerWeek: 2, tuition: 1200000, discountPercent: 0, imageUrl: imageMock, createdAt: "2024-11-01" },
+    { id: "c7", name: "IELTS Listening & Reading Booster", description: "Chuyên sâu chiến thuật làm bài Listening & Reading", bandFrom: "5.0", bandTo: "6.0", totalSessions: 16, sessionsPerWeek: 2, tuition: 2200000, discountPercent: 5, imageUrl: imageMock, createdAt: "2024-10-15" }
+];

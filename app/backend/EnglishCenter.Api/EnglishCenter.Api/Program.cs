@@ -19,6 +19,7 @@ builder.Services.AddScoped<FileStorageService>();
 builder.Services.AddScoped<StatsService>();
 builder.Services.AddScoped<SubmissionService>();
 builder.Services.AddScoped<GradebookService>();
+builder.Services.AddScoped<EnglishCenter.Api.Services.StudentPortal.StudentDashboardService>();
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

@@ -1,35 +1,49 @@
-import React, { useRef, useState } from 'react';
-import { coursesData } from "../../../../data/StudentData/MainData";
-import "./Course.css"
+import { useRef, useState, type MouseEvent } from 'react';
+import { mockCourses } from "../../../../data/StudentData/MainData";
+import "./Course.css";
 
-export default function CourseFE() {
-    // Các state và ref để xử lý kéo cuộn ngang
+export interface DashboardCourseItem {
+    id: number | string;
+    name: string;
+    bandFrom: number | string;
+    bandTo: number | string;
+    totalSessions: number;
+    sessionsPerWeek: number;
+    tuition: number;
+    discountPercent: number;
+    imageUrl?: string;
+}
+
+interface CourseProps {
+    courses?: DashboardCourseItem[];
+}
+
+export default function CourseFE({ courses }: CourseProps) {
     const scrollRef = useRef<HTMLDivElement>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [startX, setStartX] = useState(0);
     const [scrollLeft, setScrollLeft] = useState(0);
 
-    // Khi nhấn chuột xuống
-    const handleMouseDown = (e: React.MouseEvent) => {
+    const handleMouseDown = (e: MouseEvent) => {
         if (!scrollRef.current) return;
         setIsDragging(true);
         setStartX(e.pageX - scrollRef.current.offsetLeft);
         setScrollLeft(scrollRef.current.scrollLeft);
     };
 
-    // Khi thả chuột ra
     const handleMouseUpOrLeave = () => {
         setIsDragging(false);
     };
 
-    // Khi di chuyển chuột (đang nhấn giữ)
-    const handleMouseMove = (e: React.MouseEvent) => {
+    const handleMouseMove = (e: MouseEvent) => {
         if (!isDragging || !scrollRef.current) return;
-        e.preventDefault(); // Ngăn chặn hành vi bôi đen text mặc định
+        e.preventDefault();
         const x = e.pageX - scrollRef.current.offsetLeft;
-        const walk = (x - startX) * 0.5; // Nhân 1.5 để tốc độ cuộn nhanh hơn chuột một chút
+        const walk = (x - startX) * 0.5;
         scrollRef.current.scrollLeft = scrollLeft - walk;
     };
+
+    const list = courses && courses.length > 0 ? courses : mockCourses.slice(0, 10);
 
     return (
         <section className="continue-learning-section">
@@ -48,7 +62,6 @@ export default function CourseFE() {
                 </a>
             </header>
 
-            {/* Gắn ref và các sự kiện chuột vào div cuộn */}
             <div
                 className={`cards-grid horizontal-scroll-wrapper ${isDragging ? 'active-drag' : ''}`}
                 ref={scrollRef}
@@ -57,33 +70,31 @@ export default function CourseFE() {
                 onMouseUp={handleMouseUpOrLeave}
                 onMouseMove={handleMouseMove}
             >
-                {coursesData.slice(0, 10).map((course) => (
+                {list.map((course) => (
                     <div
                         key={course.id}
                         className="course-card scroll-item"
                         style={{
-                            backgroundImage: `url("${course.imageUrl}")`
+                            backgroundImage: course.imageUrl ? `url("${course.imageUrl}")` : undefined
                         }}
                     >
                         <div className="course-content">
                             <h3 className="course-title">
-                                {course.title}
+                                {course.name}
                             </h3>
                             <div className="course-info">
-                                {/* Dòng 1: Level và Time */}
                                 <div className="course-meta">
-                                    <span className="info-level">{course.level}</span>
+                                    <span className="info-level">Band {course.bandFrom} - {course.bandTo}</span>
                                     <span className="meta-divider">•</span>
-                                    <span className="info-time">{course.timePerLesson} hrs/lesson</span>
+                                    <span className="info-time">{course.sessionsPerWeek} sessions/wk</span>
                                 </div>
 
-                                {/* Dòng 2: Danh sách các Tag kỹ năng */}
                                 <div className="info-skills">
-                                    {course.skills.map((skill, index) => (
-                                        <span key={index} className="skill-tag">
-                                            {skill}
-                                        </span>
-                                    ))}
+                                    <span className="skill-tag">{course.totalSessions} Sessions</span>
+                                    <span className="skill-tag">{course.tuition.toLocaleString('vi-VN')} VND</span>
+                                    {course.discountPercent > 0 && (
+                                        <span className="skill-tag discount-tag">-{course.discountPercent}%</span>
+                                    )}
                                 </div>
                             </div>
                         </div>

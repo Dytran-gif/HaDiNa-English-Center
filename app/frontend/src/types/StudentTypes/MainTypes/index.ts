@@ -1,20 +1,7 @@
-export type{
-    ClassSchedule
-}from "./ClassSchedule";
+export type *
+from "./GeneralTypes.ts";
 
-export type{
-    Course,
-    CourseLevel,
-    SkillRange,
-    CourseFilters,
-}from "./Course";
+export type *
+from "./OtherTypes.ts";
 
-export type{
-    NotificationItem
-}from "./Notification";
-
-export type{
-    QuickAction,
-    FeatureItem
-}from "./Other";
 
