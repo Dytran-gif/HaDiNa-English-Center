@@ -60,16 +60,6 @@ function Sidebar() {
                         <span>Account</span>
                     </Link>
 
-
-                    <Link
-                        to="/student/settings"
-                        className="sidebar-item"
-                    >
-                        <span className="sidebar-icon"><i className="fa-solid fa-screwdriver-wrench"></i></span>
-                        <span>Settings</span>
-                    </Link>
-
-
                     <button
                         type="button"
                         className="sidebar-item logout-button"

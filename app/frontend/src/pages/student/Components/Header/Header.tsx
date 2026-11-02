@@ -2,8 +2,7 @@ import "./Header.css";
 import {Link, useLocation} from "react-router-dom";
 
 import {
-    notificationData,
-    studentUser,
+studentUser,
 } from "../../../../data/StudentData/HeaderData";
 
 function Header() {
@@ -12,7 +11,9 @@ function Header() {
     const pageTitles: Record<string, string> = {
         "/student/dashboard": "Dashboard Overview",
         "/student/courses": "Enrollment Courses",
-        "/student/schedule": "My Schedule",
+        "/student/schedule": "My Schedule", 
+        "/student/tuition": "My Payments",
+        "/student/feedback": "Feedback and Support",
     };
 
     const title = pageTitles[location.pathname] ?? "Dashboard";
@@ -26,38 +27,6 @@ function Header() {
 
             {/* RIGHT */}
             <div className="header-right">
-                {/* SEARCH */}
-                <div className="header-search">
-                    <input
-                        type="text"
-                        placeholder="Search anything..."
-                    />
-
-                    <Link
-                        to="/search"
-                        className="search-link"
-                    >
-                        {/* Dùng thẻ i của HTML thuần */}
-                        <span className="search-icon">
-                           <i className="fa-brands fa-sistrix" ></i>
-                        </span>
-                    </Link>
-                </div>
-
-                {/* NOTIFICATION */}
-                <button
-                    type="button"
-                    className="notification-button"
-                >
-                    {/* Dùng thẻ i của HTML thuần */}
-                    <i className="fa-solid fa-bell"></i>
-
-                    {notificationData.unreadCount > 0 && (
-                        <span className="notification-badge">
-                            {notificationData.unreadCount}
-                        </span>
-                    )}
-                </button>
 
                 {/* USER */}
                 <div className="header-user">

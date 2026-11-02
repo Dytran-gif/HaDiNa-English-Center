@@ -1,9 +1,40 @@
-import React from 'react';
-import { mockPayments } from "../../../../data/StudentData/MainData";
-import type { Payment } from "../../../../types/StudentTypes/MainTypes";
+import React, { useMemo } from 'react';
+import { 
+    mockPayments, 
+    mockEnrollments, 
+    mockClasses, 
+    mockCourses 
+} from "../../../../data/StudentData/MainData";
+import type { Payment, Enrollment, ClassItem, Course } from "../../../../types/StudentTypes/MainTypes";
 import './PaymentHistory.css';
 
 const PaymentHistory: React.FC = () => {
+    // ID học viên đang đăng nhập (khớp với hệ thống dữ liệu mẫu)
+    const currentStudentId = "std-01";
+
+    // Lọc và ánh xạ lịch sử thanh toán của riêng học viên thông qua Enrollment -> ClassItem -> Course
+    const studentPayments = useMemo(() => {
+        // Lấy danh sách ID enrollment thuộc về học viên hiện tại
+        const studentEnrollmentIds = mockEnrollments
+            .filter((enr: Enrollment) => enr.studentId === currentStudentId)
+            .map((enr: Enrollment) => enr.id);
+
+        // Lọc các bản ghi thanh toán khớp với danh sách enrollment trên
+        return mockPayments
+            .filter((pay: Payment) => studentEnrollmentIds.includes(pay.enrollmentId))
+            .map((pay: Payment) => {
+                const enrollment = mockEnrollments.find((enr: Enrollment) => enr.id === pay.enrollmentId);
+                const classItem = enrollment ? mockClasses.find((c: ClassItem) => c.id === enrollment.classId) : null;
+                const course = classItem ? mockCourses.find((co: Course) => co.id === classItem.courseId) : null;
+
+                return {
+                    payment: pay,
+                    courseName: course ? course.name : 'N/A',
+                    className: classItem ? classItem.name : 'N/A'
+                };
+            });
+    }, [currentStudentId]);
+
     // Hàm format tiền tệ VNĐ
     const formatCurrency = (amount: number) => {
         return amount.toLocaleString('vi-VN') + ' VNĐ';
@@ -28,7 +59,7 @@ const PaymentHistory: React.FC = () => {
                         <thead>
                             <tr>
                                 <th>Payment ID</th>
-                                <th>Enrollment ID</th>
+                                <th>Course / Class</th>
                                 <th>Amount</th>
                                 <th>Method</th>
                                 <th>Paid Date</th>
@@ -36,21 +67,24 @@ const PaymentHistory: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {mockPayments.map((pay: Payment) => (
-                                <tr key={pay.id}>
-                                    <td className="font-medium text-blue">{pay.id}</td>
-                                    <td className="text-muted">{pay.enrollmentId}</td>
-                                    <td className="font-medium">{formatCurrency(pay.amount)}</td>
+                            {studentPayments.map(({ payment, courseName, className }) => (
+                                <tr key={payment.id}>
+                                    <td className="font-medium text-blue">{payment.id}</td>
                                     <td>
-                                        <span className={`badge ${pay.method.toLowerCase()}`}>
-                                            {pay.method}
+                                        <div className="font-medium">{courseName}</div>
+                                        <div className="text-muted" style={{ fontSize: '12px' }}>{className}</div>
+                                    </td>
+                                    <td className="font-medium">{formatCurrency(payment.amount)}</td>
+                                    <td>
+                                        <span className={`badge ${payment.method.toLowerCase()}`}>
+                                            {payment.method}
                                         </span>
                                     </td>
-                                    <td className="text-muted">{pay.paidDate}</td>
-                                    <td className="text-muted">{pay.note || 'N/A'}</td>
+                                    <td className="text-muted">{payment.paidDate}</td>
+                                    <td className="text-muted">{payment.note || 'N/A'}</td>
                                 </tr>
                             ))}
-                            {mockPayments.length === 0 && (
+                            {studentPayments.length === 0 && (
                                 <tr>
                                     <td colSpan={6} className="text-center p-8 text-muted">
                                         Chưa có lịch sử giao dịch nào.

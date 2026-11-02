@@ -79,9 +79,9 @@ export default function ScheduleGrid() {
         });
     }, [currentWeekStart]);
 
-    // TRUY VẤN DỮ LIỆU TRỰC TIẾP TỪ 10 BẢNG DATABASE
+    // TRUY VẤN DỮ LIỆU TRỰC TIẾP TỪ CÁC BẢNG MOCK DATA
     const currentWeekSessions = useMemo(() => {
-        const studentId = "std-01"; // Sinh viên đang đăng nhập
+        const studentId = "std-01"; // ID học viên khớp với các component khác
 
         // 1. Lấy các lượt đăng ký Active (Bảng Enrollment)
         const activeEnrollments = mockEnrollments.filter(
@@ -274,7 +274,7 @@ export default function ScheduleGrid() {
 
                                                     <div className="popup-info-grid">
                                                         <div>
-                                                            <i className="fa-solid fa-hashtag"></i> Class: <strong>{item.classId}</strong>
+                                                            <i className="fa-solid fa-hashtag"></i> Class: <strong>{item.className}</strong>
                                                         </div>
                                                         <div>
                                                             <i className="fa-regular fa-clock"></i> {startTime} - {endTime}

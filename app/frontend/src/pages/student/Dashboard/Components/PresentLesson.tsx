@@ -1,4 +1,6 @@
-import { mockCourses } from "../../../../data/StudentData/MainData";
+import { useMemo } from 'react';
+import { mockCourses, mockEnrollments, mockClasses } from "../../../../data/StudentData/MainData";
+import type { Course, ClassItem, Enrollment } from "../../../../types/StudentTypes/MainTypes";
 import bannerImage from "../../../../assets/images/Banner-dashboard.png";
 import bannerArrowImage from "../../../../assets/images/Banner-arrow-dashboard.png";
 import "./PresentLesson.css";
@@ -15,19 +17,32 @@ interface PresentLessonProps {
 }
 
 export default function PresentLessonFE({ lesson }: PresentLessonProps) {
-    const defaultCourse = mockCourses[0];
+    // ID học viên đang đăng nhập (khớp với dữ liệu mẫu hệ thống)
+    const currentStudentId = "std-01";
+
+    // Tự động liên kết lấy khóa học đã đăng ký đầu tiên của học viên qua Enrollment -> ClassItem -> Course
+    const studentFirstCourse = useMemo(() => {
+        const studentEnrollment = mockEnrollments.find((enr: Enrollment) => enr.studentId === currentStudentId);
+        if (!studentEnrollment) return null;
+
+        const classItem = mockClasses.find((c: ClassItem) => c.id === studentEnrollment.classId);
+        if (!classItem) return null;
+
+        return mockCourses.find((co: Course) => co.id === classItem.courseId) || null;
+    }, [currentStudentId]);
+
     const displayCourse = lesson ? {
         name: lesson.courseName,
         bandFrom: lesson.bandFrom,
         bandTo: lesson.bandTo,
         description: lesson.description || `${lesson.totalSessions ?? 0} Sessions`,
         imageUrl: lesson.imageUrl
-    } : defaultCourse ? {
-        name: defaultCourse.name,
-        bandFrom: defaultCourse.bandFrom,
-        bandTo: defaultCourse.bandTo,
-        description: defaultCourse.description || `${defaultCourse.totalSessions} Sessions`,
-        imageUrl: defaultCourse.imageUrl
+    } : studentFirstCourse ? {
+        name: studentFirstCourse.name,
+        bandFrom: studentFirstCourse.bandFrom,
+        bandTo: studentFirstCourse.bandTo,
+        description: studentFirstCourse.description || `${studentFirstCourse.totalSessions} Sessions`,
+        imageUrl: studentFirstCourse.imageUrl
     } : null;
 
     if (!displayCourse) return null;

@@ -18,6 +18,8 @@ import StudentDashboard from "./pages/student/Dashboard/Dashboard";
 import StudentCourse from "./pages/student/Course/Course";
 import StudentSchedule from "./pages/student/Schedule/Schedule";
 import StudentTuition from "./pages/student/Tuition/Tuition";
+import StudentFeedback from "./pages/student/Feedback/Feedback";
+
 import AdminLayout from "./pages/admin/Layout/AdminLayout";
 import AdminDashboard from "./pages/admin/Dashboard/Dashboard";
 import CoursesManagement from "./pages/admin/Courses/CoursesManagement";
@@ -64,18 +66,11 @@ export default function AppRoutes() {
             >
                 <Route index element={<Navigate to="/student/dashboard" replace />} />
                 <Route path="dashboard" element={<StudentDashboard />} />
-
-                {/* Sau này thêm các page */}
-
-
                 <Route path="courses" element={<StudentCourse />} />
                 <Route path="schedule" element={<StudentSchedule />} />
                 <Route path="tuition" element={<StudentTuition />} />
-                {/* 
-  
-    
-    <Route path="feedback" element={<StudentFeedback />} />
-     */}
+                <Route path="feedback" element={<StudentFeedback />} />
+
 
             </Route>
             <Route

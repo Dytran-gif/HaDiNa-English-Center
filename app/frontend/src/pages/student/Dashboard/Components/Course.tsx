@@ -1,21 +1,10 @@
-import { useRef, useState, type MouseEvent } from 'react';
-import { mockCourses } from "../../../../data/StudentData/MainData";
+import { useRef, useState, useMemo, type MouseEvent } from 'react';
+import { mockCourses, mockEnrollments, mockClasses } from "../../../../data/StudentData/MainData";
+import type { Course, ClassItem, Enrollment } from "../../../../types/StudentTypes/MainTypes";
 import "./Course.css";
 
-export interface DashboardCourseItem {
-    id: number | string;
-    name: string;
-    bandFrom: number | string;
-    bandTo: number | string;
-    totalSessions: number;
-    sessionsPerWeek: number;
-    tuition: number;
-    discountPercent: number;
-    imageUrl?: string;
-}
-
 interface CourseProps {
-    courses?: DashboardCourseItem[];
+    courses?: Course[];
 }
 
 export default function CourseFE({ courses }: CourseProps) {
@@ -43,7 +32,24 @@ export default function CourseFE({ courses }: CourseProps) {
         scrollRef.current.scrollLeft = scrollLeft - walk;
     };
 
-    const list = courses && courses.length > 0 ? courses : mockCourses.slice(0, 10);
+    // ID học viên đang đăng nhập (khớp với dữ liệu mẫu hệ thống)
+    const currentStudentId = "std-01";
+
+    // Tự động lọc các khóa học mà học viên đã đăng ký thông qua Enrollment -> ClassItem -> Course
+    const studentEnrolledCourses = useMemo(() => {
+        if (courses && courses.length > 0) return courses;
+
+        return mockEnrollments
+            .filter((enr: Enrollment) => enr.studentId === currentStudentId)
+            .map((enr: Enrollment) => {
+                const classItem = mockClasses.find((c: ClassItem) => c.id === enr.classId);
+                const course = classItem ? mockCourses.find((co: Course) => co.id === classItem.courseId) : null;
+                return course;
+            })
+            .filter((course): course is Course => course !== null);
+    }, [courses, currentStudentId]);
+
+    const list = studentEnrolledCourses;
 
     return (
         <section className="continue-learning-section">
@@ -100,6 +106,11 @@ export default function CourseFE({ courses }: CourseProps) {
                         </div>
                     </div>
                 ))}
+                {list.length === 0 && (
+                    <div className="no-courses" style={{ padding: '20px', color: '#64748b' }}>
+                        Bạn chưa đăng ký khóa học nào.
+                    </div>
+                )}
             </div>
         </section>
     );

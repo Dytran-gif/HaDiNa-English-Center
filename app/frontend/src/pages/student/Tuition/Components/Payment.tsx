@@ -1,30 +1,56 @@
 import React, { useState, useMemo } from 'react';
-import { mockCourses } from "../../../../data/StudentData/MainData";
-import type { Course } from "../../../../types/StudentTypes/MainTypes";
+import { 
+    mockCourses, 
+    mockEnrollments, 
+    mockClasses 
+} from "../../../../data/StudentData/MainData";
+import type { Course, ClassItem, Enrollment } from "../../../../types/StudentTypes/MainTypes";
 import './Payment.css';
 
 const PaymentFE: React.FC = () => {
-    const [selectedIds, setSelectedIds] = useState<string[]>([]);
+    // ID học viên đang đăng nhập (khớp với hệ thống dữ liệu mẫu)
+    const currentStudentId = "std-01";
 
-    const handleSelect = (id: string) => {
-        setSelectedIds(prev =>
-            prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    // Lọc và ánh xạ danh sách các khóa học đã đăng ký thông qua Enrollment -> ClassItem -> Course[cite: 10, 11]
+    const studentEnrollments = useMemo(() => {
+        return mockEnrollments
+            .filter((enr: Enrollment) => enr.studentId === currentStudentId)
+            .map((enr: Enrollment) => {
+                const classItem = mockClasses.find((c: ClassItem) => c.id === enr.classId);
+                const course = classItem ? mockCourses.find((co: Course) => co.id === classItem.courseId) : null;
+                return {
+                    enrollment: enr,
+                    classItem,
+                    course,
+                    fee: enr.finalTuitionFee ?? course?.tuition ?? 0
+                };
+            })
+            .filter((item): item is { enrollment: Enrollment; classItem: ClassItem; course: Course; fee: number } => 
+                item.course !== null && item.classItem !== null
+            );
+    }, [currentStudentId]);
+
+    const [selectedEnrollmentIds, setSelectedEnrollmentIds] = useState<string[]>([]);
+
+    const handleSelect = (enrollmentId: string) => {
+        setSelectedEnrollmentIds(prev =>
+            prev.includes(enrollmentId) ? prev.filter(id => id !== enrollmentId) : [...prev, enrollmentId]
         );
     };
 
     const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.checked) {
-            setSelectedIds(mockCourses.map(c => c.id));
+            setSelectedEnrollmentIds(studentEnrollments.map(item => item.enrollment.id));
         } else {
-            setSelectedIds([]);
+            setSelectedEnrollmentIds([]);
         }
     };
 
     const totalAmount = useMemo(() => {
-        return mockCourses
-            .filter(c => selectedIds.includes(c.id))
-            .reduce((sum, c) => sum + c.tuition, 0);
-    }, [selectedIds]);
+        return studentEnrollments
+            .filter(item => selectedEnrollmentIds.includes(item.enrollment.id))
+            .reduce((sum, item) => sum + item.fee, 0);
+    }, [studentEnrollments, selectedEnrollmentIds]);
 
     const formatCurrency = (amount: number) => {
         return amount.toLocaleString('vi-VN') + ' VNĐ';
@@ -52,37 +78,39 @@ const PaymentFE: React.FC = () => {
                                     <input
                                         type="checkbox"
                                         className="custom-checkbox"
-                                        checked={selectedIds.length === mockCourses.length && mockCourses.length > 0}
+                                        checked={selectedEnrollmentIds.length === studentEnrollments.length && studentEnrollments.length > 0}
                                         onChange={handleSelectAll}
                                     />
                                 </th>
                                 <th>Course Name</th>
+                                <th>Class</th>
                                 <th>Level</th>
                                 <th>Duration</th>
-                                <th>Price</th>
+                                <th>Tuition Fee</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {mockCourses.map((course: Course) => (
-                                <tr key={course.id}>
+                            {studentEnrollments.map(({ enrollment, classItem, course, fee }) => (
+                                <tr key={enrollment.id}>
                                     <td className="text-center">
                                         <input
                                             type="checkbox"
                                             className="custom-checkbox"
-                                            checked={selectedIds.includes(course.id)}
-                                            onChange={() => handleSelect(course.id)}
+                                            checked={selectedEnrollmentIds.includes(enrollment.id)}
+                                            onChange={() => handleSelect(enrollment.id)}
                                         />
                                     </td>
                                     <td className="font-medium">{course.name}</td>
+                                    <td className="text-muted">{classItem.name}</td>
                                     <td className="text-muted">{course.bandFrom} - {course.bandTo}</td>
                                     <td className="text-muted">{course.totalSessions} sessions</td>
-                                    <td className="font-medium">{formatCurrency(course.tuition)}</td>
+                                    <td className="font-medium">{formatCurrency(fee)}</td>
                                 </tr>
                             ))}
-                            {mockCourses.length === 0 && (
+                            {studentEnrollments.length === 0 && (
                                 <tr>
-                                    <td colSpan={5} className="text-center p-8 text-muted">
-                                        Không có khóa học nào.
+                                    <td colSpan={6} className="text-center p-8 text-muted">
+                                        Không có khóa học nào cần thanh toán.
                                     </td>
                                 </tr>
                             )}
@@ -102,7 +130,7 @@ const PaymentFE: React.FC = () => {
                     <div className="summary-item">
                         <span className="summary-label">Selected Courses</span>
                         <span className="summary-value">
-                            {selectedIds.length} course{selectedIds.length > 1 ? 's' : ''}
+                            {selectedEnrollmentIds.length} course{selectedEnrollmentIds.length > 1 ? 's' : ''}
                         </span>
                     </div>
 
@@ -113,8 +141,8 @@ const PaymentFE: React.FC = () => {
 
                     <button
                         className="btn-primary"
-                        disabled={selectedIds.length === 0}
-                        onClick={() => alert(`Thanh toán thành công ${formatCurrency(totalAmount)} cho ${selectedIds.length} khóa học!`)}
+                        disabled={selectedEnrollmentIds.length === 0}
+                        onClick={() => alert(`Thanh toán thành công ${formatCurrency(totalAmount)} cho ${selectedEnrollmentIds.length} khóa học!`)}
                     >
                         Payment Now
                     </button>

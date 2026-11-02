@@ -20,7 +20,7 @@ export default function ScheduleHistoryFE() {
 
     // 1. TRUY VẤN VÀ JOIN DỮ LIỆU CÁC KHÓA ĐÃ HOÀN THÀNH / HỦY
     const historyList = useMemo(() => {
-        const studentId = "std-01"; // ID Sinh viên đang đăng nhập
+        const studentId = "std-01"; // ID Sinh viên đồng bộ với toàn hệ thống
 
         // Lọc các đợt đăng ký có trạng thái 'Completed' hoặc 'Cancelled' (hoặc 'Dropped')
         const pastEnrollments = mockEnrollments.filter(
@@ -108,7 +108,7 @@ export default function ScheduleHistoryFE() {
                 )}
             </div>
 
-            {/* BỘ PHÂN TRANG (PAGINATION) - Chỉ hiện khi có trên 5 mục hoặc tổng trang > 1 */}
+            {/* BỘ PHÂN TRANG (PAGINATION) */}
             {totalPages > 1 && (
                 <div className="th-pagination">
                     <button 
