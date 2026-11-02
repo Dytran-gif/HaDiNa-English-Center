@@ -51,15 +51,6 @@ function Sidebar() {
                     MENU TÀI KHOẢN
                 ========================= */}
                 <div className="sidebar-bottom">
-
-                    <Link
-                        to="/student/account"
-                        className="sidebar-item"
-                    >
-                        <span className="sidebar-icon"><i className="fa-solid fa-user-tag"></i></span>
-                        <span>Account</span>
-                    </Link>
-
                     <button
                         type="button"
                         className="sidebar-item logout-button"
