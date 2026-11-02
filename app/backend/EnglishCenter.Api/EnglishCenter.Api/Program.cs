@@ -87,7 +87,9 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+// Dev chạy profile http + Vite proxy; redirect sang https làm hỏng proxy nên chỉ bật ngoài Development
+if (!app.Environment.IsDevelopment())
+    app.UseHttpsRedirection();
 
 // Phục vụ file upload (tài liệu, ảnh đề, audio) tại /uploads/...
 app.UseStaticFiles();

@@ -1,4 +1,25 @@
 # Nhật ký bàn giao
+## [2026-11-02] Duy (Claude) — DB backup + FE Teacher nối API
+
+**Đã xong**
+- Soát file backup DB của nhóm (`tools/db/EnglishCenterDb.bak`): 12 bảng `InitialCreate`, đã ghi `__EFMigrationsHistory`, schema khớp snapshot; thiếu đúng 22 bảng Teacher + `Students.TargetBand`.
+- Thêm `tools/db/restore-db.ps1` (restore backup vào SQL Server local, kiểm tra phiên bản, không ghi đè nếu không có `-Force`). `teacher-features.ps1` xử lý máy chưa có DB: hỏi restore, hoặc `-CreateFresh` để EF tạo mới.
+- FE Teacher §1–§10 nối API thật (plan 30). Bỏ mock `src/data/TeacherData/*` không còn dùng.
+- `Program.cs`: chỉ `UseHttpsRedirection` ngoài Development (proxy Vite không còn bị redirect). `.env.example`: `VITE_API_URL=` để trống.
+- FE lint (0 lỗi, 1 warning cũ) + typecheck + build xanh. Chạy thử 18 màn Teacher với server giả: không lỗi runtime.
+
+**Đang dở**
+- Chưa sinh migration `TeacherFeatures` (máy làm việc không có .NET/SQL Server). Chưa chạy `dotnet build` sau khi sửa `Program.cs` (đổi 1 dòng).
+
+**Việc tiếp theo**
+- Trên Windows, từ gốc repo: `powershell -ExecutionPolicy Bypass -File tools\db\restore-db.ps1` → `powershell -ExecutionPolicy Bypass -File tools\db\teacher-features.ps1 -SeedDemo` → commit `Migrations/`.
+- `dotnet run --launch-profile http` + `npm run dev`, đăng nhập `teacher@demo.com` / `123456`, đi lần lượt các trang Teacher.
+
+**Bẫy cần biết**
+- Backup tạo từ SQL Server 2025 (MSSQL17): máy dùng SQL Server 2022 trở xuống không restore được → dùng `-CreateFresh`.
+- Sửa file dùng chung: `routes.tsx` (chỉ khối `/teacher`), `Program.cs` (1 dòng), `.env.example`; 4 file Student bỏ `import React` thừa để `npm run build` không lỗi (báo Nam).
+- Admin chưa có API duyệt đơn của giáo viên (đã gỡ ở c145cd9): đơn nghỉ / đổi buổi / mở lại điểm danh sẽ nằm ở "Chờ xử lý".
+
 ## [2026-10-31] Codex — Chuyển Admin sang DB thật
 
 **Đã xong**

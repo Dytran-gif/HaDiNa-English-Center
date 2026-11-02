@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { mockCourses } from "../../../../data/StudentData/MainData";
 import type { Course } from "../../../../types/StudentTypes/MainTypes";
 import './CourseMain.css';
