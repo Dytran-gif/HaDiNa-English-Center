@@ -7,11 +7,13 @@ Tất cả cần token của tài khoản **student**. Học viên chỉ thấy 
 
 Dữ liệu dùng chung với Teacher (bảng nào bên nào ghi): xem mục cuối [TEACHER_API.md](./TEACHER_API.md) và `.claude/context/data-model.md`.
 
-## 1. Dashboard ⬜ (plan 10)
+## 1. Dashboard ✅ (plan 10)
 
 | Method | URL | Mô tả |
 |---|---|---|
-| GET | `/api/student/dashboard` | `stats` (số lớp đang học, bài chưa nộp, tỉ lệ chuyên cần, band gần nhất), `todaySessions` (buổi hôm nay + `meetingUrl` + `status`), `nextSession`, `dueAssignments` (5 bài sắp đến hạn), `recentResults` (bài vừa công bố điểm), `unreadNotifications` |
+| GET | `/api/student/dashboard` | `student` (id, code, fullName, email, avatarUrl), `nextLesson` (khóa đang học đầu tiên), `courses` (khóa đang học theo `Enrollment.Status = Active`, shape theo `Course` trong FE `GeneralTypes.ts`), `notifications` (rỗng vì DB chưa có bảng thông báo) |
+
+> Chỉ dùng các bảng có sẵn trong DB: `Students`, `Users`, `Enrollments`, `Classes`, `Courses` (khớp `types/StudentTypes/MainTypes/GeneralTypes.ts`). Khi DB có bảng thông báo (type `AppNotification`), gán dữ liệu vào `notifications` tại chỗ đã ghi chú trong `Controllers/Student/DashboardController.cs`.
 
 ## 2. Hồ sơ & lớp của tôi ⬜ (plan 10)
 

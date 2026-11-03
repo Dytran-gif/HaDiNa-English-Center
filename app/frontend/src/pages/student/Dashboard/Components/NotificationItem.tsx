@@ -1,13 +1,11 @@
 import { useMemo } from 'react';
 import { 
     mockNotifications, 
-    mockEnrollments, 
-    mockClasses 
+    mockEnrollments 
 } from "../../../../data/StudentData/MainData";
 import type { 
     AppNotification, 
-    Enrollment, 
-    ClassItem 
+    Enrollment 
 } from "../../../../types/StudentTypes/MainTypes";
 import "./NotificationItem.css";
 
@@ -51,9 +49,9 @@ export default function NotificationItemFE({ notifications }: NotificationItemPr
     // ID học viên đang đăng nhập (đồng bộ với toàn hệ thống)
     const currentStudentId = "usr-06";
 
-    // Tự động lọc các thông báo liên quan đến các lớp học mà học viên đã đăng ký
+    // Có dữ liệu từ API thì dùng dữ liệu API (kể cả rỗng); chưa tải được thì dùng dữ liệu mẫu
     const studentNotifications = useMemo(() => {
-        if (notifications && notifications.length > 0) return notifications;
+        if (notifications) return notifications;
 
         // 1. Lấy danh sách classId mà học viên đã đăng ký (Active)
         const studentClassIds = mockEnrollments

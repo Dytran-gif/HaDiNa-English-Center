@@ -35,11 +35,9 @@ export default function CourseFE({ courses }: CourseProps) {
     // ID học viên đang đăng nhập (khớp với dữ liệu mẫu hệ thống)
     const currentStudentId = "std-01";
 
-    // Tự động lọc các khóa học mà học viên đã đăng ký thông qua Enrollment -> ClassItem -> Course
+    // Có dữ liệu từ API thì dùng dữ liệu API (kể cả rỗng); chưa tải được thì dùng dữ liệu mẫu
     const studentEnrolledCourses = useMemo(() => {
-        if (courses && courses.length > 0) return courses;
-
-        return mockEnrollments
+        const list = courses ?? mockEnrollments
             .filter((enr: Enrollment) => enr.studentId === currentStudentId)
             .map((enr: Enrollment) => {
                 const classItem = mockClasses.find((c: ClassItem) => c.id === enr.classId);
@@ -47,6 +45,9 @@ export default function CourseFE({ courses }: CourseProps) {
                 return course;
             })
             .filter((course): course is Course => course !== null);
+
+        // Một khóa có thể lặp lại khi học viên học nhiều lớp cùng khóa -> bỏ trùng để key React là duy nhất
+        return list.filter((course, i) => list.findIndex(c => c.id === course.id) === i);
     }, [courses, currentStudentId]);
 
     const list = studentEnrolledCourses;

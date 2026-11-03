@@ -1,4 +1,3 @@
-import { useState } from "react";
 import "../General.css";
 import PaymentFE from "./Components/Payment";
 import PaymentHistory from "./Components/PaymentHistory";

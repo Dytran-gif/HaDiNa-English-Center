@@ -4,114 +4,38 @@ import { ApiError, request } from "../apiClient";
 
 export interface StudentDashboardResponse {
   student: {
-    id: number;
+    id: string;
     code: string;
     fullName: string;
+    email: string;
     avatarUrl?: string;
-    targetBand?: number;
-  };
-  stats: {
-    ongoingClasses: number;
-    pendingAssignments: number;
-    attendanceRate: number;
-    targetBand?: number;
-    latestBand?: number;
   };
   nextLesson?: {
-    classId: number;
-    className: string;
     courseName: string;
+    bandFrom: string;
+    bandTo: string;
     description?: string;
-    bandFrom: number;
-    bandTo: number;
-    totalSessions: number;
+    totalSessions?: number;
     imageUrl?: string;
-    teacherName?: string;
-    nextDate?: string;
-    startTime?: string;
-    endTime?: string;
-    roomName?: string;
-    meetingUrl?: string;
-  };
-  todaySessions: Array<{
-    sessionId: number;
-    classId: number;
-    kind: string;
-    title: string;
-    sessionNo: number;
-    date: string;
-    startTime: string;
-    endTime: string;
-    roomName?: string;
-    teacherName?: string;
-    meetingUrl?: string;
-    status: string;
-  }>;
-  nextSession?: {
-    sessionId: number;
-    classId: number;
-    kind: string;
-    title: string;
-    sessionNo: number;
-    date: string;
-    startTime: string;
-    endTime: string;
-    roomName?: string;
-    teacherName?: string;
-    meetingUrl?: string;
-    status: string;
   };
   courses: Array<{
-    id: number;
-    classId: number;
+    id: string;
     name: string;
-    className: string;
-    description?: string;
-    bandFrom: number;
-    bandTo: number;
+    description: string;
+    bandFrom: string;
+    bandTo: string;
     totalSessions: number;
     sessionsPerWeek: number;
     tuition: number;
     discountPercent: number;
     imageUrl?: string;
-    teacherName?: string;
-    progressPercent: number;
-    startDate: string;
-    endDate: string;
   }>;
-  dueAssignments: Array<{
-    id: number;
-    classId: number;
-    className: string;
-    title: string;
-    skill: string;
+  notifications: Array<{
+    id: string;
     type: string;
-    dueAt: string;
-    allowLate: boolean;
-  }>;
-  recentResults: Array<{
-    submissionId: number;
-    assignmentId: number;
     title: string;
-    skill: string;
-    overallBand?: number;
-    autoScore?: number;
-    autoMaxScore?: number;
-    publishedAt?: string;
+    message: string;
   }>;
-  notifications: {
-    unreadCount: number;
-    items: Array<{
-      id: number;
-      type: string;
-      title: string;
-      message: string;
-      content: string;
-      link?: string;
-      isRead: boolean;
-      createdAt: string;
-    }>;
-  };
 }
 
 export function useStudentApi() {

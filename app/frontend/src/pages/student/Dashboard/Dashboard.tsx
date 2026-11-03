@@ -28,17 +28,7 @@ export default function StudentDashboard() {
 
                         <div className="col-12">
                             <div className="CourseCard">
-                                <CourseFE courses={data?.courses?.map(c => ({
-                                    id: c.id,
-                                    name: c.name,
-                                    bandFrom: c.bandFrom,
-                                    bandTo: c.bandTo,
-                                    totalSessions: c.totalSessions,
-                                    sessionsPerWeek: c.sessionsPerWeek,
-                                    tuition: c.tuition,
-                                    discountPercent: c.discountPercent,
-                                    imageUrl: c.imageUrl
-                                }))} />
+                                <CourseFE courses={data?.courses} />
                             </div>
                         </div>
                     </div>
@@ -53,12 +43,7 @@ export default function StudentDashboard() {
                         </div>
                         <div className="col-12">
                             <div className="card">
-                                <NotificationItemFE notifications={data?.notifications?.items?.map(n => ({
-                                    id: n.id,
-                                    type: n.type,
-                                    title: n.title,
-                                    message: n.message || n.content
-                                }))} />
+                                <NotificationItemFE notifications={data?.notifications} />
                             </div>
                         </div>
                     </div>
