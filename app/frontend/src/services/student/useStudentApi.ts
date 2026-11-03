@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { ApiError, request } from "../apiClient";
+import type { Course } from "../../types/StudentTypes/MainTypes";
 
 export interface StudentDashboardResponse {
   student: {
@@ -100,3 +101,39 @@ export function useStudentDashboard() {
   return { data, error, loading };
 }
 
+
+// GET api/student/courses - danh sách khóa học của trung tâm (trang Courses)
+export function useStudentCourses() {
+  const api = useStudentApi();
+  const { token } = useAuth();
+  const [data, setData] = useState<Course[]>([]);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+    const controller = new AbortController();
+    setLoading(true);
+    setError("");
+
+    api.get<Course[]>("courses", controller.signal)
+      .then((res) => {
+        if (!controller.signal.aborted) setData(res);
+      })
+      .catch((err) => {
+        if (!controller.signal.aborted) {
+          setError(err instanceof Error ? err.message : "Không tải được danh sách khóa học.");
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [api, token]);
+
+  return { data, error, loading };
+}

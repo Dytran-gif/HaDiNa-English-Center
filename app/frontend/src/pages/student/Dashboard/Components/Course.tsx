@@ -1,6 +1,7 @@
 import { useRef, useState, useMemo, type MouseEvent } from 'react';
 import { mockCourses, mockEnrollments, mockClasses } from "../../../../data/StudentData/MainData";
 import type { Course, ClassItem, Enrollment } from "../../../../types/StudentTypes/MainTypes";
+import defaultCourseImage from "../../../../assets/images/next-lesson-mock.jpg";
 import "./Course.css";
 
 interface CourseProps {
@@ -82,7 +83,7 @@ export default function CourseFE({ courses }: CourseProps) {
                         key={course.id}
                         className="course-card scroll-item"
                         style={{
-                            backgroundImage: course.imageUrl ? `url("${course.imageUrl}")` : undefined
+                            backgroundImage: `url("${course.imageUrl || defaultCourseImage}")`
                         }}
                     >
                         <div className="course-content">

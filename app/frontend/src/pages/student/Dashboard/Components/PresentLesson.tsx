@@ -3,6 +3,7 @@ import { mockCourses, mockEnrollments, mockClasses } from "../../../../data/Stud
 import type { Course, ClassItem, Enrollment } from "../../../../types/StudentTypes/MainTypes";
 import bannerImage from "../../../../assets/images/Banner-dashboard.png";
 import bannerArrowImage from "../../../../assets/images/Banner-arrow-dashboard.png";
+import defaultCourseImage from "../../../../assets/images/next-lesson-mock.jpg";
 import "./PresentLesson.css";
 
 interface PresentLessonProps {
@@ -74,7 +75,7 @@ export default function PresentLessonFE({ lesson }: PresentLessonProps) {
 
             <div className="middle-column card">
                 <img
-                    src={displayCourse.imageUrl || "/api/placeholder/400/200"}
+                    src={displayCourse.imageUrl || defaultCourseImage}
                     alt={displayCourse.name}
                     className="card-image"
                 />

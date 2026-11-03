@@ -1,13 +1,15 @@
 
 import type { Course } from '../../../../types/StudentTypes/MainTypes';
+import defaultCourseImage from "../../../../assets/images/next-lesson-mock.jpg";
 import './CourseBottom.css';
 
 interface CourseBottomProps {
     selectedCourses: Course[];
     onRemoveCourse: (courseId: string) => void; // Hàm xử lý khi bấm nút xóa ở từng course
+    onRegister: () => void; // Hàm gọi khi bấm nút đăng ký tổng
 }
 
-export default function CourseBottomFE({ selectedCourses, onRemoveCourse }: CourseBottomProps) {
+export default function CourseBottomFE({ selectedCourses, onRemoveCourse, onRegister }: CourseBottomProps) {
     // Nếu chưa chọn khóa nào thì ẩn khu vực này
     if (selectedCourses.length === 0) return null;
 
@@ -28,7 +30,7 @@ export default function CourseBottomFE({ selectedCourses, onRemoveCourse }: Cour
                             {/* 1. Thông tin khóa học */}
                             <div className="cb-course-info">
                                 <img 
-                                    src={course.imageUrl || "/api/placeholder/400/200"} 
+                                    src={course.imageUrl || defaultCourseImage} 
                                     alt={course.name} 
                                     className="cb-img" 
                                 />
@@ -62,7 +64,7 @@ export default function CourseBottomFE({ selectedCourses, onRemoveCourse }: Cour
                 <div className="cb-summary-card">
                     <span className="cb-summary-label">Total Price</span>
                     <span className="cb-summary-price">{totalPrice.toLocaleString('vi-VN')} VND</span>
-                    <button className="cb-register-btn">Register Now</button>
+                    <button className="cb-register-btn" onClick={onRegister}>Register Now</button>
                     <p className="cb-summary-note">
                         You will be redirected to the registration form to complete your enrollment.
                     </p>

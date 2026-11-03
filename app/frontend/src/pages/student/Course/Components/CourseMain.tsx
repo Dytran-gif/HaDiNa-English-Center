@@ -1,14 +1,15 @@
 import { useState, useMemo } from 'react';
-import { mockCourses } from "../../../../data/StudentData/MainData";
 import type { Course } from "../../../../types/StudentTypes/MainTypes";
+import defaultCourseImage from "../../../../assets/images/next-lesson-mock.jpg";
 import './CourseMain.css';
 
 // Component nhận vào hàm onSelectCourse để truyền dữ liệu xuống Khu vực 2 (Bottom)
 interface CourseMainProps {
+    courses: Course[];
     onSelectCourse: (course: Course) => void;
 }
 
-export default function CourseMainFE({ onSelectCourse }: CourseMainProps) {
+export default function CourseMainFE({ courses, onSelectCourse }: CourseMainProps) {
     // STATES CHO BỘ LỌC
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedLevel, setSelectedLevel] = useState('All Levels');
@@ -17,7 +18,7 @@ export default function CourseMainFE({ onSelectCourse }: CourseMainProps) {
 
     // LOGIC LỌC KHÓA HỌC (Kết hợp nhiều điều kiện dựa trên thuộc tính DB)
     const filteredCourses = useMemo(() => {
-        return mockCourses.filter((course: Course) => {
+        return courses.filter((course: Course) => {
             // 1. Lọc theo Search (Tên khóa học)
             const matchSearch = course.name.toLowerCase().includes(searchQuery.toLowerCase());
 
@@ -48,7 +49,7 @@ export default function CourseMainFE({ onSelectCourse }: CourseMainProps) {
 
             return matchSearch && matchLevel && matchSkill && matchType;
         });
-    }, [searchQuery, selectedLevel, selectedSkill, selectedType]);
+    }, [courses, searchQuery, selectedLevel, selectedSkill, selectedType]);
 
     // Các mốc Level để render nút
     const levels = ['All Levels', 'Beginner', 'Intermediate', 'Advanced'];
@@ -116,7 +117,7 @@ export default function CourseMainFE({ onSelectCourse }: CourseMainProps) {
                             <div key={course.id} className="cm-course-card">
                                 {/* Ảnh và Level Badge */}
                                 <div className="cm-card-image">
-                                    <img src={course.imageUrl || "/api/placeholder/400/200"} alt={course.name} />
+                                    <img src={course.imageUrl || defaultCourseImage} alt={course.name} />
                                     <span className="cm-badge badge-beginner">
                                         Band {course.bandFrom} - {course.bandTo}
                                     </span>

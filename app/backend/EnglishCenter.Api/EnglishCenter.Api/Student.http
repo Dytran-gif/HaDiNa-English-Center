@@ -17,3 +17,14 @@ Content-Type: application/json
 GET http://localhost:5220/api/student/dashboard
 Authorization: Bearer {{token}}
 
+### Lấy danh sách khóa học của trung tâm (trang Courses)
+# Trả về: mảng khóa học theo type Course trong FE GeneralTypes.ts
+# (imageUrl luôn null vì bảng Courses chưa có cột ảnh, FE tự dùng ảnh mặc định)
+GET http://localhost:5220/api/student/courses
+Authorization: Bearer {{token}}
+
+### Đăng ký khóa học (tạo Enrollment vào lớp đầu tiên của khóa)
+# 409 nếu đã đăng ký khóa này rồi, 409 nếu khóa chưa có lớp
+POST http://localhost:5220/api/student/courses/5/register
+Authorization: Bearer {{token}}
+
