@@ -368,3 +368,99 @@ export function useStudentScheduleHistory() {
 
   return { data, error, loading };
 }
+
+export interface StudentFeedbackClass {
+  classId: number;
+  className: string;
+  courseId: string;
+  courseName: string;
+  description: string;
+  bandFrom: string;
+  bandTo: string;
+  totalSessions: number;
+  sessionsPerWeek: number;
+  tuition: number;
+  teacherId: number;
+  teacherName: string;
+}
+
+// GET api/student/feedback/classes - các lớp đang học để gửi phản hồi
+export function useStudentFeedbackClasses() {
+  const api = useStudentApi();
+  const { token } = useAuth();
+  const [data, setData] = useState<StudentFeedbackClass[]>([]);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+    const controller = new AbortController();
+    setLoading(true);
+    setError("");
+
+    api.get<StudentFeedbackClass[]>("feedback/classes", controller.signal)
+      .then((res) => {
+        if (!controller.signal.aborted) setData(res);
+      })
+      .catch((err) => {
+        if (!controller.signal.aborted) {
+          setError(err instanceof Error ? err.message : "Không tải được danh sách lớp học.");
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [api, token]);
+
+  return { data, error, loading };
+}
+
+export interface StudentFeedbackItem {
+  id: number;
+  content: string;
+  createdAt: string;
+  studentName: string;
+}
+
+// GET api/student/feedback?classId= - phản hồi của lớp (classId null thì không gọi)
+export function useStudentFeedbackList(classId: number | null) {
+  const api = useStudentApi();
+  const { token } = useAuth();
+  const [data, setData] = useState<StudentFeedbackItem[]>([]);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    if (!token || classId == null) {
+      setData([]);
+      setLoading(false);
+      return;
+    }
+    const controller = new AbortController();
+    setLoading(true);
+    setError("");
+
+    api.get<StudentFeedbackItem[]>(`feedback?classId=${classId}`, controller.signal)
+      .then((res) => {
+        if (!controller.signal.aborted) setData(res);
+      })
+      .catch((err) => {
+        if (!controller.signal.aborted) {
+          setError(err instanceof Error ? err.message : "Không tải được danh sách phản hồi.");
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [api, token, classId, reloadKey]);
+
+  return { data, error, loading, reload: () => setReloadKey(k => k + 1) };
+}

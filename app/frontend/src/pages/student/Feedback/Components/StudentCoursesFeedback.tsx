@@ -1,61 +1,34 @@
-import React, { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import {
-    mockCourses,
-    mockEnrollments,
-    mockClasses,
-    mockTeachers
-} from "../../../../data/StudentData/MainData";
-import type { Course, ClassItem, Teacher, Enrollment } from "../../../../types/StudentTypes/MainTypes";
+    useStudentFeedbackClasses,
+    useStudentFeedbackList,
+    useStudentApi,
+    type StudentFeedbackClass
+} from "../../../../services/student/useStudentApi";
 import './StudentCoursesFeedback.css';
 
-const StudentCoursesFeedback: React.FC = () => {
-    // Giả lập ID học viên đang đăng nhập (hoặc bạn có thể lấy từ context/auth thực tế)
-    const currentStudentId = "std-01";
+const StudentCoursesFeedback = () => {
+    // 1. Danh sách lớp đang học (từ BE) + lớp đang mở modal
+    const { data: enrolledClasses } = useStudentFeedbackClasses();
+    const [selectedItem, setSelectedItem] = useState<StudentFeedbackClass | null>(null);
 
-    // 1. Lọc danh sách các khóa học mà học viên đã đăng ký thông qua Enrollment -> ClassItem -> Course & Teacher
-    const enrolledCoursesData = mockEnrollments
-        .filter((enr: Enrollment) => enr.studentId === currentStudentId)
-        .map((enr: Enrollment) => {
-            const classItem = mockClasses.find((c: ClassItem) => c.id === enr.classId);
-            const course = classItem ? mockCourses.find((co: Course) => co.id === classItem.courseId) : null;
-            const teacher = classItem?.teacherId ? mockTeachers.find((t: Teacher) => t.id === classItem.teacherId) : null;
-
-            return {
-                enrollment: enr,
-                classItem,
-                course,
-                teacherName: teacher ? teacher.fullName : "Chưa phân công"
-            };
-        })
-        .filter((item): item is { enrollment: Enrollment; classItem: ClassItem; course: Course; teacherName: string } =>
-            item.course !== null && item.classItem !== null
-        );
-
-    // State quản lý cửa sổ nổi (Modal) khi click vào khóa học
-    const [selectedItem, setSelectedItem] = useState<{
-        course: Course;
-        classItem: ClassItem;
-        teacherName: string;
-    } | null>(null);
-
-    // State quản lý nội dung feedback theo courseId
+    // 2. Phản hồi của lớp đang chọn + form
+    const { data: feedbacks, reload: reloadFeedbacks } = useStudentFeedbackList(selectedItem?.classId ?? null);
     const [feedbackText, setFeedbackText] = useState("");
-    const [feedbacks, setFeedbacks] = useState<{ [key: string]: string[] }>({
-        "c1": ["Giáo viên giảng dạy rất nhiệt tình, dễ hiểu."],
-        "c2": ["Khóa học thực chiến giúp tôi tự tin giao tiếp hơn."]
-    });
+    const api = useStudentApi();
 
-    const handleSendFeedback = (e: React.FormEvent) => {
+    const handleSendFeedback = async (e: FormEvent) => {
         e.preventDefault();
         if (!selectedItem || !feedbackText.trim()) return;
 
-        const courseId = selectedItem.course.id;
-        setFeedbacks(prev => ({
-            ...prev,
-            [courseId]: [...(prev[courseId] || []), feedbackText.trim()]
-        }));
-        setFeedbackText("");
-        alert("Gửi phản hồi thành công!");
+        try {
+            await api.send("POST", "feedback", { classId: selectedItem.classId, content: feedbackText.trim() });
+            setFeedbackText("");
+            reloadFeedbacks();
+            alert("Gửi phản hồi thành công!");
+        } catch (err) {
+            alert(err instanceof Error ? err.message : "Gửi phản hồi thất bại.");
+        }
     };
 
     const formatCurrency = (amount: number) => {
@@ -77,32 +50,27 @@ const StudentCoursesFeedback: React.FC = () => {
             <div className="courses-grid-section">
                 <h3 className="section-heading">Enrolled Courses</h3>
                 <div className="courses-grid">
-                    {enrolledCoursesData.map((item, index) => {
-                        const course = item.course;
+                    {enrolledClasses.map((item) => {
                         return (
                             <div
-                                key={index}
+                                key={item.classId}
                                 className="course-card"
-                                onClick={() => setSelectedItem({
-                                    course,
-                                    classItem: item.classItem,
-                                    teacherName: item.teacherName
-                                })}
+                                onClick={() => setSelectedItem(item)}
                             >
                                 <div className="card-top">
-                                    <span className="badge-level">Band {course.bandFrom} - {course.bandTo}</span>
-                                    <span className="sessions-count">{course.totalSessions} Sessions</span>
+                                    <span className="badge-level">Band {item.bandFrom} - {item.bandTo}</span>
+                                    <span className="sessions-count">{item.totalSessions} Sessions</span>
                                 </div>
-                                <h4 className="course-name">{course.name}</h4>
-                                <p className="course-desc">{course.description}</p>
+                                <h4 className="course-name">{item.courseName}</h4>
+                                <p className="course-desc">{item.description}</p>
                                 <div className="card-footer">
-                                    <span className="tuition-price">{formatCurrency(course.tuition)}</span>
+                                    <span className="tuition-price">{formatCurrency(item.tuition)}</span>
                                     <span className="view-detail-link">View Details →</span>
                                 </div>
                             </div>
                         );
                     })}
-                    {enrolledCoursesData.length === 0 && (
+                    {enrolledClasses.length === 0 && (
                         <p className="no-courses">Bạn chưa đăng ký khóa học nào.</p>
                     )}
                 </div>
@@ -113,7 +81,7 @@ const StudentCoursesFeedback: React.FC = () => {
                 <div className="modal-overlay" onClick={() => setSelectedItem(null)}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h2>{selectedItem.course.name}</h2>
+                            <h2>{selectedItem.courseName}</h2>
                             <button className="close-btn" onClick={() => setSelectedItem(null)}>×</button>
                         </div>
 
@@ -122,13 +90,13 @@ const StudentCoursesFeedback: React.FC = () => {
                             <div className="modal-column">
                                 <h3>Course Information</h3>
                                 <ul className="info-list">
-                                    <li><strong>Class Name:</strong> <span className="text-blue">{selectedItem.classItem.name}</span></li>
+                                    <li><strong>Class Name:</strong> <span className="text-blue">{selectedItem.className}</span></li>
                                     <li><strong>Instructor:</strong> <span className="teacher-name">{selectedItem.teacherName}</span></li>
-                                    <li><strong>Description:</strong> {selectedItem.course.description}</li>
-                                    <li><strong>Target Band:</strong> {selectedItem.course.bandFrom} - {selectedItem.course.bandTo}</li>
-                                    <li><strong>Total Sessions:</strong> {selectedItem.course.totalSessions} sessions</li>
-                                    <li><strong>Sessions / Week:</strong> {selectedItem.course.sessionsPerWeek} sessions/wk</li>
-                                    <li><strong>Tuition Fee:</strong> {formatCurrency(selectedItem.course.tuition)}</li>
+                                    <li><strong>Description:</strong> {selectedItem.description}</li>
+                                    <li><strong>Target Band:</strong> {selectedItem.bandFrom} - {selectedItem.bandTo}</li>
+                                    <li><strong>Total Sessions:</strong> {selectedItem.totalSessions} sessions</li>
+                                    <li><strong>Sessions / Week:</strong> {selectedItem.sessionsPerWeek} sessions/wk</li>
+                                    <li><strong>Tuition Fee:</strong> {formatCurrency(selectedItem.tuition)}</li>
                                 </ul>
                             </div>
 
@@ -137,11 +105,13 @@ const StudentCoursesFeedback: React.FC = () => {
                                 <h3>Student & Teacher Feedback</h3>
 
                                 <div className="feedback-list">
-                                    {(feedbacks[selectedItem.course.id] || []).length > 0 ? (
-                                        (feedbacks[selectedItem.course.id]).map((fb, idx) => (
-                                            <div key={idx} className="feedback-item">
-                                                <p>{fb}</p>
-                                                <span className="feedback-time">Today</span>
+                                    {feedbacks.length > 0 ? (
+                                        feedbacks.map((fb) => (
+                                            <div key={fb.id} className="feedback-item">
+                                                <p>{fb.content}</p>
+                                                <span className="feedback-time">
+                                                    {fb.studentName} · {fb.createdAt.slice(0, 10)}
+                                                </span>
                                             </div>
                                         ))
                                     ) : (
