@@ -72,7 +72,7 @@ export default function NotificationItemFE({ notifications }: NotificationItemPr
         <section className="notification-card">
             <header className="notif-header">
                 <h2 className="notif-title">Recent Notifications</h2>
-                <a href="#notifications" className="notif-view-all">View all</a>
+                {/* <a href="#notifications" className="notif-view-all">View all</a> */}
             </header>
 
             <div className="notif-list">

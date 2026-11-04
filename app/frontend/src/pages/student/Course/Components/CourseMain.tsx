@@ -13,8 +13,10 @@ export default function CourseMainFE({ courses, onRegisterCourse }: CourseMainPr
     // STATES CHO BỘ LỌC
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedLevel, setSelectedLevel] = useState('All Levels');
-    const [selectedSkill, setSelectedSkill] = useState('All Skills');
-    const [selectedType, setSelectedType] = useState('All Types');
+    // Bộ lọc Skill/Type đang tắt (JSX "Hàng 2" bên dưới đang bị comment).
+    // Bỏ comment hàng 2 thì bỏ comment luôn các dòng này + 2 khối lọc + 2 mảng tùy chọn.
+    // const [selectedSkill, setSelectedSkill] = useState('All Skills');
+    // const [selectedType, setSelectedType] = useState('All Types');
 
     // LOGIC LỌC KHÓA HỌC (Kết hợp nhiều điều kiện dựa trên thuộc tính DB)
     const filteredCourses = useMemo(() => {
@@ -32,31 +34,31 @@ export default function CourseMainFE({ courses, onRegisterCourse }: CourseMainPr
             }
 
             // 3. Lọc theo Skill (Kiểm tra từ khóa trong Tên hoặc Mô tả)
-            let matchSkill = true;
-            if (selectedSkill !== 'All Skills') {
-                const content = `${course.name} ${course.description}`.toLowerCase();
-                matchSkill = content.includes(selectedSkill.toLowerCase());
-            }
+            // let matchSkill = true;
+            // if (selectedSkill !== 'All Skills') {
+            //     const content = `${course.name} ${course.description}`.toLowerCase();
+            //     matchSkill = content.includes(selectedSkill.toLowerCase());
+            // }
 
             // 4. Lọc theo Type (Kiểm tra từ khóa trong Tên khóa học)
-            let matchType = true;
-            if (selectedType !== 'All Types') {
-                const name = course.name.toLowerCase();
-                if (selectedType === 'General') matchType = name.includes('general') || name.includes('daily');
-                if (selectedType === 'Academic') matchType = name.includes('academic') || name.includes('ielts');
-                if (selectedType === 'Business') matchType = name.includes('business') || name.includes('practical');
-            }
+            // let matchType = true;
+            // if (selectedType !== 'All Types') {
+            //     const name = course.name.toLowerCase();
+            //     if (selectedType === 'General') matchType = name.includes('general') || name.includes('daily');
+            //     if (selectedType === 'Academic') matchType = name.includes('academic') || name.includes('ielts');
+            //     if (selectedType === 'Business') matchType = name.includes('business') || name.includes('practical');
+            // }
 
-            return matchSearch && matchLevel && matchSkill && matchType;
+            return matchSearch && matchLevel;
         });
-    }, [courses, searchQuery, selectedLevel, selectedSkill, selectedType]);
+    }, [courses, searchQuery, selectedLevel]);
 
     // Các mốc Level để render nút
     const levels = ['All Levels', 'Beginner', 'Intermediate', 'Advanced'];
 
     // Các tùy chọn cho Dropdown
-    const skills = ['All Skills', 'Speaking', 'Listening', 'Reading', 'Writing', 'Grammar', 'Vocabulary', 'Pronunciation'];
-    const courseTypes = ['All Types', 'General', 'Academic', 'Business'];
+    // const skills = ['All Skills', 'Speaking', 'Listening', 'Reading', 'Writing', 'Grammar', 'Vocabulary', 'Pronunciation'];
+    // const courseTypes = ['All Types', 'General', 'Academic', 'Business'];
 
     return (
         <div className="course-main-section">
@@ -95,7 +97,7 @@ export default function CourseMainFE({ courses, onRegisterCourse }: CourseMainPr
                 </div>
 
                 {/* Hàng 2: Dropdowns */}
-                <div className="cm-filter-row-2">
+                {/* <div className="cm-filter-row-2">
                     <div className="cm-dropdown">
                         <select value={selectedSkill} onChange={(e) => setSelectedSkill(e.target.value)}>
                             {skills.map(skill => <option key={skill} value={skill}>{skill === 'All Skills' ? 'Skill' : skill}</option>)}
@@ -106,7 +108,7 @@ export default function CourseMainFE({ courses, onRegisterCourse }: CourseMainPr
                             {courseTypes.map(type => <option key={type} value={type}>{type === 'All Types' ? 'Course Type' : type}</option>)}
                         </select>
                     </div>
-                </div>
+                </div> */}
             </div>
 
             {/* DANH SÁCH KHÓA HỌC */}

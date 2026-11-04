@@ -35,8 +35,8 @@ export default function PresentLessonFE({ lesson }: PresentLessonProps) {
 
             <div className="left-column">
                 <span className="badge">
-                    Continue Learning
-                </span>
+                    Next Lesson
+                </span> 
 
                 <h2 className="title">
                     Your next lesson is ready!

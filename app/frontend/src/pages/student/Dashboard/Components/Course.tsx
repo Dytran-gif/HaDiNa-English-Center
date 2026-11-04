@@ -65,7 +65,7 @@ export default function CourseFE({ courses }: CourseProps) {
                         <p className="section-subtitle">Pick up where you left off</p>
                     </div>
                 </div>
-                <a href="#courses" className="view-all-link">
+                <a href="/student/courses" className="view-all-link">
                     View all courses <span>→</span>
                 </a>
             </header>
