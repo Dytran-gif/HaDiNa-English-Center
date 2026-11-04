@@ -1,56 +1,34 @@
-import React, { useState, useMemo } from 'react';
-import { 
-    mockCourses, 
-    mockEnrollments, 
-    mockClasses 
-} from "../../../../data/StudentData/MainData";
-import type { Course, ClassItem, Enrollment } from "../../../../types/StudentTypes/MainTypes";
+import { useState, useMemo, type ChangeEvent } from 'react';
+import type { StudentTuitionItem } from "../../../../services/student/useStudentApi";
 import './Payment.css';
 
-const PaymentFE: React.FC = () => {
-    // ID học viên đang đăng nhập (khớp với hệ thống dữ liệu mẫu)
-    const currentStudentId = "std-01";
+interface PaymentProps {
+    items: StudentTuitionItem[]; // Các ghi danh chưa thanh toán (đọc từ BE)
+    onPay: (enrollmentIds: number[]) => void; // Hàm thanh toán (gọi BE, lưu phiếu thu xuống DB)
+}
 
-    // Lọc và ánh xạ danh sách các khóa học đã đăng ký thông qua Enrollment -> ClassItem -> Course[cite: 10, 11]
-    const studentEnrollments = useMemo(() => {
-        return mockEnrollments
-            .filter((enr: Enrollment) => enr.studentId === currentStudentId)
-            .map((enr: Enrollment) => {
-                const classItem = mockClasses.find((c: ClassItem) => c.id === enr.classId);
-                const course = classItem ? mockCourses.find((co: Course) => co.id === classItem.courseId) : null;
-                return {
-                    enrollment: enr,
-                    classItem,
-                    course,
-                    fee: enr.finalTuitionFee ?? course?.tuition ?? 0
-                };
-            })
-            .filter((item): item is { enrollment: Enrollment; classItem: ClassItem; course: Course; fee: number } => 
-                item.course !== null && item.classItem !== null
-            );
-    }, [currentStudentId]);
+const PaymentFE = ({ items, onPay }: PaymentProps) => {
+    const [selectedEnrollmentIds, setSelectedEnrollmentIds] = useState<number[]>([]);
 
-    const [selectedEnrollmentIds, setSelectedEnrollmentIds] = useState<string[]>([]);
-
-    const handleSelect = (enrollmentId: string) => {
+    const handleSelect = (enrollmentId: number) => {
         setSelectedEnrollmentIds(prev =>
             prev.includes(enrollmentId) ? prev.filter(id => id !== enrollmentId) : [...prev, enrollmentId]
         );
     };
 
-    const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleSelectAll = (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.checked) {
-            setSelectedEnrollmentIds(studentEnrollments.map(item => item.enrollment.id));
+            setSelectedEnrollmentIds(items.map(item => item.enrollmentId));
         } else {
             setSelectedEnrollmentIds([]);
         }
     };
 
     const totalAmount = useMemo(() => {
-        return studentEnrollments
-            .filter(item => selectedEnrollmentIds.includes(item.enrollment.id))
-            .reduce((sum, item) => sum + item.fee, 0);
-    }, [studentEnrollments, selectedEnrollmentIds]);
+        return items
+            .filter(item => selectedEnrollmentIds.includes(item.enrollmentId))
+            .reduce((sum, item) => sum + item.finalTuitionFee, 0);
+    }, [items, selectedEnrollmentIds]);
 
     const formatCurrency = (amount: number) => {
         return amount.toLocaleString('vi-VN') + ' VNĐ';
@@ -78,7 +56,7 @@ const PaymentFE: React.FC = () => {
                                     <input
                                         type="checkbox"
                                         className="custom-checkbox"
-                                        checked={selectedEnrollmentIds.length === studentEnrollments.length && studentEnrollments.length > 0}
+                                        checked={selectedEnrollmentIds.length === items.length && items.length > 0}
                                         onChange={handleSelectAll}
                                     />
                                 </th>
@@ -90,24 +68,24 @@ const PaymentFE: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {studentEnrollments.map(({ enrollment, classItem, course, fee }) => (
-                                <tr key={enrollment.id}>
+                            {items.map((item) => (
+                                <tr key={item.enrollmentId}>
                                     <td className="text-center">
                                         <input
                                             type="checkbox"
                                             className="custom-checkbox"
-                                            checked={selectedEnrollmentIds.includes(enrollment.id)}
-                                            onChange={() => handleSelect(enrollment.id)}
+                                            checked={selectedEnrollmentIds.includes(item.enrollmentId)}
+                                            onChange={() => handleSelect(item.enrollmentId)}
                                         />
                                     </td>
-                                    <td className="font-medium">{course.name}</td>
-                                    <td className="text-muted">{classItem.name}</td>
-                                    <td className="text-muted">{course.bandFrom} - {course.bandTo}</td>
-                                    <td className="text-muted">{course.totalSessions} sessions</td>
-                                    <td className="font-medium">{formatCurrency(fee)}</td>
+                                    <td className="font-medium">{item.courseName}</td>
+                                    <td className="text-muted">{item.className}</td>
+                                    <td className="text-muted">{item.bandFrom} - {item.bandTo}</td>
+                                    <td className="text-muted">{item.totalSessions} sessions</td>
+                                    <td className="font-medium">{formatCurrency(item.finalTuitionFee)}</td>
                                 </tr>
                             ))}
-                            {studentEnrollments.length === 0 && (
+                            {items.length === 0 && (
                                 <tr>
                                     <td colSpan={6} className="text-center p-8 text-muted">
                                         Không có khóa học nào cần thanh toán.
@@ -142,7 +120,7 @@ const PaymentFE: React.FC = () => {
                     <button
                         className="btn-primary"
                         disabled={selectedEnrollmentIds.length === 0}
-                        onClick={() => alert(`Thanh toán thành công ${formatCurrency(totalAmount)} cho ${selectedEnrollmentIds.length} khóa học!`)}
+                        onClick={() => onPay(selectedEnrollmentIds)}
                     >
                         Payment Now
                     </button>

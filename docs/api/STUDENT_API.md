@@ -74,11 +74,12 @@ Quiz `answers`: `{ "12": "B", "13": "photosynthesis" }` (key = id câu hỏi).
 | GET | `/api/student/final-report?classId=` | Phiếu cuối khóa (JSON). `/print` trả HTML để in |
 | POST | `/api/student/teacher-ratings` | `{ classId, score: 1-5, comment }`. 409 nếu đã đánh giá lớp này |
 
-## 6. Học phí ⬜ (plan 14)
+## 6. Học phí ✅ (plan 14) — trang Tuition
 
 | Method | URL | Mô tả |
 |---|---|---|
-| GET | `/api/student/tuition` | Mỗi ghi danh: `className, courseName, tuitionFee, discountPercent, discountAmount, finalTuitionFee, paidAmount, paidDate, method, isPaid` |
+| GET | `/api/student/tuition` ✅ | Mỗi ghi danh: `enrollmentId, className, courseName, bandFrom, bandTo, totalSessions, tuitionFee, discountPercent, discountAmount, finalTuitionFee, paymentId, paidAmount, paidDate, method, note, isPaid` (mới nhất trước) |
+| POST | `/api/student/tuition/pay` ✅ | Body `{ enrollmentIds: number[] }`. Tạo `Payment` (Amount = `finalTuitionFee`, Method `Cash` giả lập, PaidDate hôm nay) cho các ghi danh **chưa thanh toán** của mình; bỏ qua khoản đã đóng. `409` nếu không còn khoản nào hợp lệ. Trả `{ created, message }` |
 
 ## 7. Thông báo ⬜ (plan 14)
 

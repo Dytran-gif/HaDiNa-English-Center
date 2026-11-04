@@ -38,3 +38,18 @@ Authorization: Bearer {{token}}
 DELETE http://localhost:5220/api/student/enrollments/17
 Authorization: Bearer {{token}}
 
+### Lấy danh sách học phí của học viên (trang Tuition)
+# Trả về: [{ enrollmentId, courseName, className, finalTuitionFee, isPaid, paymentId, paidAmount, paidDate, method, note, ... }]
+GET http://localhost:5220/api/student/tuition
+Authorization: Bearer {{token}}
+
+### Thanh toán học phí (bấm Payment Now) - tạo phiếu thu cho các ghi danh chưa thanh toán
+# Method mặc định Cash, PaidDate = hôm nay. 409 nếu các khoản đã chọn đều đã thanh toán
+POST http://localhost:5220/api/student/tuition/pay
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "enrollmentIds": [6]
+}
+

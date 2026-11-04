@@ -180,3 +180,59 @@ export function useStudentEnrollments() {
 
   return { data, error, loading, reload: () => setReloadKey(k => k + 1) };
 }
+
+export interface StudentTuitionItem {
+  enrollmentId: number;
+  className: string;
+  courseName: string;
+  bandFrom: string;
+  bandTo: string;
+  totalSessions: number;
+  tuitionFee: number;
+  discountPercent: number;
+  discountAmount: number;
+  finalTuitionFee: number;
+  paymentId?: number;
+  paidAmount?: number;
+  paidDate?: string;
+  method?: string;
+  note?: string;
+  isPaid: boolean;
+}
+
+// GET api/student/tuition - danh sách học phí của học viên (trang Tuition)
+export function useStudentTuition() {
+  const api = useStudentApi();
+  const { token } = useAuth();
+  const [data, setData] = useState<StudentTuitionItem[]>([]);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+    const controller = new AbortController();
+    setLoading(true);
+    setError("");
+
+    api.get<StudentTuitionItem[]>("tuition", controller.signal)
+      .then((res) => {
+        if (!controller.signal.aborted) setData(res);
+      })
+      .catch((err) => {
+        if (!controller.signal.aborted) {
+          setError(err instanceof Error ? err.message : "Không tải được dữ liệu học phí.");
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [api, token, reloadKey]);
+
+  return { data, error, loading, reload: () => setReloadKey(k => k + 1) };
+}
