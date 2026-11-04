@@ -132,6 +132,9 @@ export default function CourseMainFE({ courses, onRegisterCourse }: CourseMainPr
                                     <div className="cm-card-meta">
                                         <span><i className="fa-regular fa-clock"></i> {course.totalSessions} sessions</span>
                                         <span><i className="fa-solid fa-calendar-days"></i> {course.sessionsPerWeek} sessions/wk</span>
+                                        {course.teacherName && (
+                                            <span><i className="fa-solid fa-chalkboard-user"></i> {course.teacherName}</span>
+                                        )}
                                     </div>
 
                                     {/* Tags Thông tin bổ sung */}
@@ -157,15 +160,7 @@ export default function CourseMainFE({ courses, onRegisterCourse }: CourseMainPr
                                         >
                                             Register
                                         </button>
-
-                                        <button
-                                            className="cm-view-btn"
-                                            onClick={() => {
-                                                console.log("Sẽ mở popup cho khóa học:", course.name);
-                                            }}
-                                        >
-                                            View details <i className="fa-solid fa-arrow-right"></i>
-                                        </button>
+                       
                                     </div>
                                 </div>
                             </div>

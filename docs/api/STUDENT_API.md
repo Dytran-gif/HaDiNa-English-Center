@@ -11,7 +11,7 @@ Dữ liệu dùng chung với Teacher (bảng nào bên nào ghi): xem mục cu�
 
 | Method | URL | Mô tả |
 |---|---|---|
-| GET | `/api/student/dashboard` | `student` (id, code, fullName, email, avatarUrl), `nextLesson` (khóa đang học đầu tiên), `courses` (khóa đang học theo `Enrollment.Status = Active`, shape theo `Course` trong FE `GeneralTypes.ts`), `notifications` (rỗng vì DB chưa có bảng thông báo) |
+| GET | `/api/student/dashboard` | `student` (id, code, fullName, email, avatarUrl), `nextLesson` (buổi học sắp tới **gần nhất** theo `ClassSchedules` của các lớp đang học, kèm `nextDate/startTime/endTime`; không có lịch thì lấy khóa đang học đầu tiên; không có khóa nào thì `null`), `courses` (khóa đang học theo `Enrollment.Status = Active`, shape theo `Course` trong FE `GeneralTypes.ts`), `notifications` (rỗng vì DB chưa có bảng thông báo) |
 
 > Chỉ dùng các bảng có sẵn trong DB: `Students`, `Users`, `Enrollments`, `Classes`, `Courses` (khớp `types/StudentTypes/MainTypes/GeneralTypes.ts`). Khi DB có bảng thông báo (type `AppNotification`), gán dữ liệu vào `notifications` tại chỗ đã ghi chú trong `Controllers/Student/DashboardController.cs`.
 
@@ -29,13 +29,19 @@ Dữ liệu dùng chung với Teacher (bảng nào bên nào ghi): xem mục cu�
 | GET | `/api/student/courses` ✅ | Danh sách khóa học của trung tâm (trang Courses): mảng khóa học theo type `Course` trong FE `GeneralTypes.ts`; `imageUrl` luôn `null` vì bảng Courses chưa có cột ảnh (FE tự dùng ảnh mặc định) |
 | POST | `/api/student/courses/{id}/register` ✅ | Đăng ký giả lập: tạo `Enrollment` (status `Active`, snapshot học phí từ khóa) vào **lớp đầu tiên** của khóa. `409` nếu đã có enrollment bất kỳ cho khóa này (chặn đăng ký trùng) hoặc khóa chưa có lớp. Trả `201 { id, message }` |
 | GET | `/api/student/enrollments` ✅ | Các ghi danh của học viên (khối Registered Courses trang Courses): `[{ enrollmentId, status, course }]`, mới nhất trước |
-| DELETE | `/api/student/enrollments/{id}` ✅ | Hủy ghi danh của chính mình (xóa dòng trong bảng Enrollments). `409` nếu ghi danh đã có phiếu thu kèm theo |
+| DELETE | `/api/student/enrollments/{id}` ✅ | Hủy ghi danh của chính mình. `409` nếu ghi danh **đã thanh toán** (có phiếu thu) — không cho tự hủy |
 
-## 3. Lịch học & yêu cầu ⬜ (plan 11)
+## 3. Lịch học & yêu cầu 🔵 (plan 11) — phần Lịch học ✅
 
 | Method | URL | Mô tả |
 |---|---|---|
-| GET | `/api/student/schedule?view=week\|month&date=2026-11-04` | `events` (`kind`: Class / Makeup / OneOnOne, giờ, lớp, phòng, GV, `status`, `meetingUrl`), `days`, `previous`/`next` (giống Teacher) |
+| GET | `/api/student/schedule?date=YYYY-MM-DD` ✅ | Thời khóa biểu **tuần** chứa ngày `date` của học viên đang đăng nhập: `{ weekStart, weekEnd, days, sessions, notices }`. `sessions` tính từ `ClassSchedules` của các lớp đang học (Active): chỉ buổi trong khoảng `[StartDate, EndDate]` của lớp, kèm `sessionNo` (buổi thứ mấy của khóa), `teacherName`, `roomName`, `startTime/endTime` ("HH:mm"). Tuần không có buổi nào thì trả mảng rỗng. `notices` luôn rỗng vì DB chưa có bảng thông báo |
+| GET | `/api/student/schedule/history` ✅ | Khóa đã qua = các ghi danh **không còn Active** (`OnHold`/`Dropped`): `[{ enrollmentId, status, registeredAt, classId, className, startDate, endDate, courseName, band, totalSessions, teacherName }]` |
+
+> ⚠️ Giới hạn DB: chưa có bảng **semester** (học kỳ), bảng **thông báo** (AppNotification) và bảng **buổi hủy** (ClassSessions) — nên không có dữ liệu kỳ học, thông báo hủy/đổi lịch, và không đánh dấu buổi hủy trong thời khóa biểu. Khi có các bảng này thì bổ sung endpoint/field tương ứng.
+
+| Method | URL | Mô tả |
+|---|---|---|
 | GET | `/api/student/requests?status=` | Đơn đã gửi + trạng thái + `responseNote` |
 | POST | `/api/student/requests` | Xem body dưới. → `201 { id }` |
 | DELETE | `/api/student/requests/{id}` | Hủy đơn `Pending` của mình |

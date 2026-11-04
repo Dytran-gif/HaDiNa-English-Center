@@ -12,6 +12,7 @@ export interface Course {
     imageUrl?: string; 
     createdAt?: string;
     availableClasses?: ClassItem[];
+    teacherName?: string; // tên giáo viên của khóa (lấy từ các lớp của khóa)
 }
 
 // 2. Bảng Classes

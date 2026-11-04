@@ -7,4 +7,10 @@ public class StudentEnrollmentItemDto
     public int EnrollmentId { get; set; }
     public string Status { get; set; } = "";
     public CourseItemDto Course { get; set; } = new();
+
+    // Thông tin thanh toán (null khi chưa thanh toán) - để FE hiển thị trạng thái đã đóng học phí
+    public bool IsPaid { get; set; }
+    public decimal? PaidAmount { get; set; }
+    public DateOnly? PaidDate { get; set; }
+    public string? Method { get; set; }
 }

@@ -34,7 +34,7 @@ GET http://localhost:5220/api/student/enrollments
 Authorization: Bearer {{token}}
 
 ### Hủy ghi danh (bấm nút xóa ở khối Registered Courses)
-# 409 nếu ghi danh đã có phiếu thu
+# 409 nếu ghi danh đã thanh toán (có phiếu thu) - không cho tự hủy
 DELETE http://localhost:5220/api/student/enrollments/17
 Authorization: Bearer {{token}}
 
@@ -52,4 +52,13 @@ Content-Type: application/json
 {
   "enrollmentIds": [6]
 }
+
+### Lấy thời khóa biểu tuần của học viên (trang Schedule, date = ngày bất kỳ trong tuần)
+# Trả về: { weekStart, weekEnd, days, sessions (buổi học theo ClassSchedules, kèm sessionNo/teacherName/roomName), notices (rỗng vì DB chưa có bảng thông báo) }
+GET http://localhost:5220/api/student/schedule?date=2026-11-04
+Authorization: Bearer {{token}}
+
+### Lấy lịch sử khóa đã qua (ghi danh không còn Active: OnHold/Dropped)
+GET http://localhost:5220/api/student/schedule/history
+Authorization: Bearer {{token}}
 

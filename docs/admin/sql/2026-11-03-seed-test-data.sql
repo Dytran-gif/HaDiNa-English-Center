@@ -7,7 +7,7 @@ SET NOCOUNT ON;
 
 DECLARE @teacherId int = 1;      -- Nguyen Van A
 DECLARE @studentId int = 3;      -- Pham Van D (không phải tài khoản demo)
-DECLARE @adminUserId int = 1;    -- admin@demo.com
+DECLARE @payerUserId int = 6;    -- Users.Id của học viên test (người thanh toán = chủ ghi danh)
 DECLARE @today date = CAST(GETDATE() AS date);
 
 -- Bảng tạm chứa 10 khóa mới kèm phòng/lịch/phương thức thanh toán
@@ -73,9 +73,9 @@ JOIN Courses c ON c.Name = s.Name
 JOIN Classes cl ON cl.CourseId = c.Id
 WHERE NOT EXISTS (SELECT 1 FROM Enrollments e WHERE e.StudentId = @studentId AND e.ClassId = cl.Id);
 
--- 6) Payments: 10 phiếu thu tương ứng
+-- 6) Payments: 10 phiếu thu tương ứng (CreatedByUserId = người thanh toán = chính học viên)
 INSERT INTO Payments (EnrollmentId, CreatedByUserId, Amount, Method, PaidDate, Note)
-SELECT e.Id, @adminUserId, e.FinalTuitionFee, s.PayMethod, @today, N'Thu học phí đăng ký (dữ liệu test)'
+SELECT e.Id, @payerUserId, e.FinalTuitionFee, s.PayMethod, @today, N'Thu học phí đăng ký (dữ liệu test)'
 FROM #seed s
 JOIN Courses c ON c.Name = s.Name
 JOIN Classes cl ON cl.CourseId = c.Id

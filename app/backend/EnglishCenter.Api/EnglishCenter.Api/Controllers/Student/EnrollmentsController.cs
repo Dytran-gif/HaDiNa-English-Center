@@ -53,7 +53,11 @@ public class EnrollmentsController : ControllerBase
                 TotalSessions = e.Class.Course.TotalSessions,
                 SessionsPerWeek = e.Class.Course.SessionsPerWeek,
                 Tuition = e.Class.Course.Tuition,
-                DiscountPercent = e.Class.Course.DiscountPercent
+                DiscountPercent = e.Class.Course.DiscountPercent,
+                IsPaid = e.Payment != null,
+                PaidAmount = e.Payment != null ? (decimal?)e.Payment.Amount : null,
+                PaidDate = e.Payment != null ? (DateOnly?)e.Payment.PaidDate : null,
+                Method = e.Payment != null ? e.Payment.Method : null
             })
             .ToListAsync();
 
@@ -61,6 +65,10 @@ public class EnrollmentsController : ControllerBase
         {
             EnrollmentId = e.Id,
             Status = e.Status,
+            IsPaid = e.IsPaid,
+            PaidAmount = e.PaidAmount,
+            PaidDate = e.PaidDate,
+            Method = e.Method,
             Course = new CourseItemDto
             {
                 Id = e.CourseId.ToString(),
@@ -79,7 +87,8 @@ public class EnrollmentsController : ControllerBase
         return Ok(items);
     }
 
-    // DELETE api/student/enrollments/{enrollmentId} - hủy ghi danh của chính mình
+    // DELETE api/student/enrollments/{enrollmentId} - hủy ghi danh của chính mình.
+    // Khóa đã thanh toán thì không cho tự hủy (đã có phiếu thu).
     [HttpDelete("{enrollmentId}")]
     public async Task<IActionResult> Delete(int enrollmentId)
     {
@@ -95,22 +104,17 @@ public class EnrollmentsController : ControllerBase
             return StatusCode(403, new { message = "Tài khoản chưa có hồ sơ học viên" });
 
         var enrollment = await _db.Enrollments
+            .Include(e => e.Payment)
             .FirstOrDefaultAsync(e => e.Id == enrollmentId && e.StudentId == studentId);
 
         if (enrollment == null)
             return NotFound(new { message = "Không tìm thấy ghi danh" });
 
-        _db.Enrollments.Remove(enrollment);
+        if (enrollment.Payment != null)
+            return StatusCode(409, new { message = "Ghi danh đã thanh toán, không thể tự hủy" });
 
-        try
-        {
-            await _db.SaveChangesAsync();
-        }
-        catch (DbUpdateException)
-        {
-            // Ghi danh đã có phiếu thu (Payment 1-1): không cho tự xóa
-            return StatusCode(409, new { message = "Ghi danh đã có phiếu thu, không thể tự hủy" });
-        }
+        _db.Enrollments.Remove(enrollment);
+        await _db.SaveChangesAsync();
 
         return Ok(new { message = "Đã hủy đăng ký khóa học" });
     }

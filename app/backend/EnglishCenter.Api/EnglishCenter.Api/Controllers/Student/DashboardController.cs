@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using EnglishCenter.Api.Data;
 using EnglishCenter.Api.Dtos.StudentPortal;
+using EnglishCenter.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +12,7 @@ namespace EnglishCenter.Api.Controllers.StudentPortal;
 
 // Dashboard học viên - viết ĐỘC LẬP (không theo khuôn Teacher/Admin), truy vấn thẳng AppDbContext.
 // Chỉ dùng các bảng có sẵn trong DB, khớp với types/StudentTypes/MainTypes/GeneralTypes.ts:
-//   Students, Users, Enrollments, Classes, Courses.
+//   Students, Users, Enrollments, Classes, Courses, ClassSchedules.
 [ApiController]
 [Authorize(Roles = "student")]
 [Route("api/student/dashboard")]
@@ -53,6 +54,7 @@ public class DashboardController : ControllerBase
             .OrderBy(e => e.Class.StartDate)
             .Select(e => new
             {
+                ClassId = e.ClassId,
                 CourseId = e.Class.CourseId,
                 CourseName = e.Class.Course.Name,
                 Description = e.Class.Course.Description,
@@ -79,17 +81,68 @@ public class DashboardController : ControllerBase
             ImageUrl = null // bảng Courses chưa có cột ảnh
         }).ToList();
 
-        // ---------- Khối "Your next lesson": lấy khóa đang học đầu tiên ----------
-        var first = courses.FirstOrDefault();
-        var nextLesson = first == null ? null : new NextLessonInfoDto
+        // ---------- Khối "Your next lesson": buổi học sắp tới GẦN NHẤT theo lịch tuần ----------
+        // Với mỗi lớp đang học, tính buổi kế tiếp theo ClassSchedules (DayOfWeek 1=Thứ 2 .. 7=CN),
+        // rồi chọn lớp có buổi sớm nhất so với bây giờ. Kèm ngày và giờ học.
+        var now = AppTime.Now;
+        var today = AppTime.Today;
+        var todayDayNo = AppTime.DayNo(today);
+        var nowTime = TimeOnly.FromDateTime(now);
+
+        var classIds = enrollments.Select(e => e.ClassId).ToList();
+        var schedules = (await _db.ClassSchedules.AsNoTracking()
+                .Where(s => classIds.Contains(s.ClassId))
+                .Select(s => new { s.ClassId, s.DayOfWeek, s.StartTime, s.EndTime })
+                .ToListAsync())
+            .ToLookup(s => s.ClassId);
+
+        NextLessonInfoDto? nextLesson = null;
+        DateOnly? bestDate = null;
+        TimeOnly? bestStart = null;
+
+        foreach (var e in enrollments)
         {
-            CourseName = first.Name,
-            BandFrom = first.BandFrom,
-            BandTo = first.BandTo,
-            Description = first.Description,
-            TotalSessions = first.TotalSessions,
-            ImageUrl = first.ImageUrl
-        };
+            foreach (var s in schedules[e.ClassId])
+            {
+                var diff = s.DayOfWeek - todayDayNo;
+                if (diff < 0 || (diff == 0 && s.StartTime <= nowTime)) diff += 7;
+                var nextDate = today.AddDays(diff);
+
+                if (bestDate == null || nextDate < bestDate
+                    || (nextDate == bestDate && s.StartTime < bestStart))
+                {
+                    bestDate = nextDate;
+                    bestStart = s.StartTime;
+                    nextLesson = new NextLessonInfoDto
+                    {
+                        CourseName = e.CourseName,
+                        BandFrom = e.BandFrom.ToString("0.#"),
+                        BandTo = e.BandTo.ToString("0.#"),
+                        Description = e.Description ?? "",
+                        TotalSessions = e.TotalSessions,
+                        ImageUrl = null,
+                        NextDate = nextDate,
+                        StartTime = s.StartTime,
+                        EndTime = s.EndTime
+                    };
+                }
+            }
+        }
+
+        // Không có lịch tuần thì lấy khóa đang học đầu tiên (không kèm giờ)
+        if (nextLesson == null && courses.Count > 0)
+        {
+            var first = courses[0];
+            nextLesson = new NextLessonInfoDto
+            {
+                CourseName = first.Name,
+                BandFrom = first.BandFrom,
+                BandTo = first.BandTo,
+                Description = first.Description,
+                TotalSessions = first.TotalSessions,
+                ImageUrl = first.ImageUrl
+            };
+        }
 
         return Ok(new StudentDashboardDto
         {

@@ -1,6 +1,3 @@
-import { useMemo } from 'react';
-import { mockCourses, mockEnrollments, mockClasses } from "../../../../data/StudentData/MainData";
-import type { Course, ClassItem, Enrollment } from "../../../../types/StudentTypes/MainTypes";
 import bannerImage from "../../../../assets/images/Banner-dashboard.png";
 import bannerArrowImage from "../../../../assets/images/Banner-arrow-dashboard.png";
 import defaultCourseImage from "../../../../assets/images/next-lesson-mock.jpg";
@@ -14,39 +11,23 @@ interface PresentLessonProps {
         description?: string;
         totalSessions?: number;
         imageUrl?: string;
+        nextDate?: string;   // "YYYY-MM-DD"
+        startTime?: string;  // "HH:mm:ss"
+        endTime?: string;
     };
 }
 
 export default function PresentLessonFE({ lesson }: PresentLessonProps) {
-    // ID học viên đang đăng nhập (khớp với dữ liệu mẫu hệ thống)
-    const currentStudentId = "std-01";
+    // Chỉ hiển thị khi có dữ liệu thật từ BE (không còn fallback dữ liệu mẫu)
+    if (!lesson) return null;
 
-    // Tự động liên kết lấy khóa học đã đăng ký đầu tiên của học viên qua Enrollment -> ClassItem -> Course
-    const studentFirstCourse = useMemo(() => {
-        const studentEnrollment = mockEnrollments.find((enr: Enrollment) => enr.studentId === currentStudentId);
-        if (!studentEnrollment) return null;
+    const timeLabel = lesson.startTime && lesson.endTime
+        ? `${lesson.startTime.slice(0, 5)} - ${lesson.endTime.slice(0, 5)}`
+        : null;
 
-        const classItem = mockClasses.find((c: ClassItem) => c.id === studentEnrollment.classId);
-        if (!classItem) return null;
-
-        return mockCourses.find((co: Course) => co.id === classItem.courseId) || null;
-    }, [currentStudentId]);
-
-    const displayCourse = lesson ? {
-        name: lesson.courseName,
-        bandFrom: lesson.bandFrom,
-        bandTo: lesson.bandTo,
-        description: lesson.description || `${lesson.totalSessions ?? 0} Sessions`,
-        imageUrl: lesson.imageUrl
-    } : studentFirstCourse ? {
-        name: studentFirstCourse.name,
-        bandFrom: studentFirstCourse.bandFrom,
-        bandTo: studentFirstCourse.bandTo,
-        description: studentFirstCourse.description || `${studentFirstCourse.totalSessions} Sessions`,
-        imageUrl: studentFirstCourse.imageUrl
-    } : null;
-
-    if (!displayCourse) return null;
+    const dateLabel = lesson.nextDate
+        ? lesson.nextDate.split("-").reverse().join("/")
+        : null;
 
     return (
         <section className="next-lesson-section">
@@ -64,27 +45,27 @@ export default function PresentLessonFE({ lesson }: PresentLessonProps) {
                 <p className="description">
                     Continue where you left off and make progress towards your goals.
                 </p>
-
-                <button className="continue-btn" type="button">
-                    <svg className="icon-play" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z" />
-                    </svg>
-                    <span>Continue Lesson</span>
-                </button>
             </div>
 
             <div className="middle-column card">
                 <img
-                    src={displayCourse.imageUrl || defaultCourseImage}
-                    alt={displayCourse.name}
+                    src={lesson.imageUrl || defaultCourseImage}
+                    alt={lesson.courseName}
                     className="card-image"
                 />
                 <h3 className="card-title">
-                    Band {displayCourse.bandFrom} - {displayCourse.bandTo}: {displayCourse.name}
+                    Band {lesson.bandFrom} - {lesson.bandTo}: {lesson.courseName}
                 </h3>
                 <p className="card-subtitle">
-                    {displayCourse.description}
+                    {lesson.description || `${lesson.totalSessions ?? 0} Sessions`}
                 </p>
+                {(timeLabel || dateLabel) && (
+                    <p className="card-schedule">
+                        {dateLabel && `Ngày học: ${dateLabel}`}
+                        {dateLabel && timeLabel && " · "}
+                        {timeLabel && `Giờ học: ${timeLabel}`}
+                    </p>
+                )}
             </div>
 
             <div className="right-column">
@@ -98,7 +79,7 @@ export default function PresentLessonFE({ lesson }: PresentLessonProps) {
                 />
                 <img
                     src={bannerImage}
-                    alt={displayCourse.name}
+                    alt={lesson.courseName}
                     className="illustration-image"
                 />
             </div>

@@ -18,6 +18,9 @@ export interface StudentDashboardResponse {
     description?: string;
     totalSessions?: number;
     imageUrl?: string;
+    nextDate?: string;
+    startTime?: string;
+    endTime?: string;
   };
   courses: Array<{
     id: string;
@@ -142,6 +145,10 @@ export interface StudentEnrollmentItem {
   enrollmentId: number;
   status: string;
   course: Course;
+  isPaid: boolean;
+  paidAmount?: number;
+  paidDate?: string;
+  method?: string;
 }
 
 // GET api/student/enrollments - các ghi danh của học viên (khối khóa đã đăng ký trang Courses)
@@ -235,4 +242,129 @@ export function useStudentTuition() {
   }, [api, token, reloadKey]);
 
   return { data, error, loading, reload: () => setReloadKey(k => k + 1) };
+}
+
+export interface StudentScheduleDay {
+  key: string;
+  label: string;
+  dateStr: string;
+}
+
+export interface StudentScheduleSession {
+  classId: string;
+  className: string;
+  courseName: string;
+  bandFrom: string;
+  bandTo: string;
+  description: string;
+  totalSessions: number;
+  teacherName?: string;
+  roomName?: string;
+  dayOfWeek: string;
+  dateStr: string;
+  startTime: string;
+  endTime: string;
+  sessionNo: number;
+  isCancelled: boolean;
+  cancelReason?: string;
+}
+
+export interface StudentScheduleNotice {
+  title: string;
+  dateStr: string;
+  message: string;
+}
+
+export interface StudentScheduleResponse {
+  weekStart: string;
+  weekEnd: string;
+  days: StudentScheduleDay[];
+  sessions: StudentScheduleSession[];
+  notices: StudentScheduleNotice[];
+}
+
+// GET api/student/schedule?date= - thời khóa biểu tuần chứa ngày date
+export function useStudentSchedule(dateStr: string) {
+  const api = useStudentApi();
+  const { token } = useAuth();
+  const [data, setData] = useState<StudentScheduleResponse>();
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+    const controller = new AbortController();
+    setLoading(true);
+    setError("");
+
+    api.get<StudentScheduleResponse>(`schedule?date=${dateStr}`, controller.signal)
+      .then((res) => {
+        if (!controller.signal.aborted) setData(res);
+      })
+      .catch((err) => {
+        if (!controller.signal.aborted) {
+          setError(err instanceof Error ? err.message : "Không tải được lịch học.");
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [api, token, dateStr]);
+
+  return { data, error, loading };
+}
+
+export interface StudentScheduleHistoryItem {
+  enrollmentId: number;
+  status: string;
+  registeredAt: string;
+  classId: string;
+  className: string;
+  startDate: string;
+  endDate: string;
+  courseName: string;
+  band: string;
+  totalSessions: number;
+  teacherName: string;
+}
+
+// GET api/student/schedule/history - khóa đã qua (ghi danh không còn Active)
+export function useStudentScheduleHistory() {
+  const api = useStudentApi();
+  const { token } = useAuth();
+  const [data, setData] = useState<StudentScheduleHistoryItem[]>([]);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+    const controller = new AbortController();
+    setLoading(true);
+    setError("");
+
+    api.get<StudentScheduleHistoryItem[]>("schedule/history", controller.signal)
+      .then((res) => {
+        if (!controller.signal.aborted) setData(res);
+      })
+      .catch((err) => {
+        if (!controller.signal.aborted) {
+          setError(err instanceof Error ? err.message : "Không tải được lịch sử khóa học.");
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [api, token]);
+
+  return { data, error, loading };
 }

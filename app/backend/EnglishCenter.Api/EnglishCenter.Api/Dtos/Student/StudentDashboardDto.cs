@@ -23,7 +23,7 @@ public class StudentInfoDto
     public string? AvatarUrl { get; set; }
 }
 
-// Khối "Your next lesson" (PresentLesson) - lấy từ khóa đang học đầu tiên
+// Khối "Your next lesson" (PresentLesson) - buổi học sắp tới gần nhất theo lịch tuần
 public class NextLessonInfoDto
 {
     public string CourseName { get; set; } = "";
@@ -32,6 +32,9 @@ public class NextLessonInfoDto
     public string Description { get; set; } = "";
     public int TotalSessions { get; set; }
     public string? ImageUrl { get; set; }
+    public DateOnly? NextDate { get; set; }
+    public TimeOnly? StartTime { get; set; }
+    public TimeOnly? EndTime { get; set; }
 }
 
 // Khớp type Course trong GeneralTypes.ts
@@ -47,6 +50,7 @@ public class CourseItemDto
     public decimal Tuition { get; set; }
     public decimal DiscountPercent { get; set; }
     public string? ImageUrl { get; set; }
+    public string TeacherName { get; set; } = ""; // giáo viên của khóa (rỗng nếu khóa chưa có lớp)
 }
 
 // Khớp type AppNotification trong GeneralTypes.ts (rút gọn phần Dashboard cần)

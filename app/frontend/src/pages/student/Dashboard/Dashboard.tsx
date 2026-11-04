@@ -21,7 +21,10 @@ export default function StudentDashboard() {
                                     bandTo: data.nextLesson.bandTo,
                                     description: data.nextLesson.description,
                                     totalSessions: data.nextLesson.totalSessions,
-                                    imageUrl: data.nextLesson.imageUrl
+                                    imageUrl: data.nextLesson.imageUrl,
+                                    nextDate: data.nextLesson.nextDate,
+                                    startTime: data.nextLesson.startTime,
+                                    endTime: data.nextLesson.endTime
                                 } : undefined} />
                             </div>
                         </div>

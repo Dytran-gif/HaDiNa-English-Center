@@ -1,43 +1,14 @@
-import { useMemo } from 'react';
-import { 
-    mockNotifications, 
-    mockClasses, 
-    mockCourses 
-} from "../../../../data/StudentData/MainData";
-import type { 
-    AppNotification, 
-    ClassItem, 
-    Course 
-} from "../../../../types/StudentTypes/MainTypes";
+import type { StudentScheduleNotice } from "../../../../services/student/useStudentApi";
 import './ScheduleNotice.css';
 
-export default function ScheduleNoticeFE() {
-    // Truy vấn trực tiếp thông báo hủy ca học gần nhất từ bảng Notifications và JOIN với Classes & Courses
-    const notice = useMemo(() => {
-        const cancelNotif = mockNotifications.find(
-            (n: AppNotification) => n.type === 'Cancellation'
-        );
+interface ScheduleNoticeProps {
+    notices: StudentScheduleNotice[]; // Thông báo lịch học (từ BE; DB chưa có bảng nên thường rỗng)
+}
 
-        if (!cancelNotif) return null;
+export default function ScheduleNoticeFE({ notices }: ScheduleNoticeProps) {
+    if (notices.length === 0) return null;
 
-        let courseTitle = cancelNotif.title;
-        if (cancelNotif.classId) {
-            const cls = mockClasses.find((c: ClassItem) => c.id === cancelNotif.classId);
-            if (cls) {
-                const course = mockCourses.find((co: Course) => co.id === cls.courseId);
-                courseTitle = course ? course.name : cls.name;
-            }
-        }
-
-        return {
-            courseTitle,
-            cancelledDate: cancelNotif.noticeDate || "Today",
-            reason: cancelNotif.message,
-            timestamp: cancelNotif.createdAt || ""
-        };
-    }, []);
-
-    if (!notice) return null;
+    const notice = notices[0];
 
     return (
         <div className="schedule-notice-container">
@@ -59,10 +30,9 @@ export default function ScheduleNoticeFE() {
                         <i className="fa-solid fa-circle-exclamation"></i>
                     </span>
                     <p className="cancellation-text">
-                        <strong>{notice.courseTitle}</strong> on <span>{notice.cancelledDate}</span> is cancelled: {notice.reason}.
+                        <strong>{notice.title}</strong> on <span>{notice.dateStr}</span>: {notice.message}.
                     </p>
                 </div>
-                <span className="cancellation-time">{notice.timestamp}</span>
             </div>
         </div>
     );

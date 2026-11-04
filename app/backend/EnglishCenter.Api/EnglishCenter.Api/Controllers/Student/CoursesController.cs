@@ -45,6 +45,14 @@ public class CoursesController : ControllerBase
             })
             .ToListAsync();
 
+        // Giáo viên của từng khóa (lấy từ các lớp của khóa, bỏ trùng)
+        var courseIds = rows.Select(r => r.Id).ToList();
+        var teachers = await _db.Classes.AsNoTracking()
+            .Where(c => courseIds.Contains(c.CourseId))
+            .Select(c => new { c.CourseId, TeacherName = c.Teacher.FullName })
+            .Distinct()
+            .ToListAsync();
+
         var courses = rows.Select(c => new CourseItemDto
         {
             Id = c.Id.ToString(),
@@ -56,7 +64,8 @@ public class CoursesController : ControllerBase
             SessionsPerWeek = c.SessionsPerWeek,
             Tuition = c.Tuition,
             DiscountPercent = c.DiscountPercent,
-            ImageUrl = null // bảng Courses chưa có cột ảnh; FE tự dùng ảnh mặc định
+            ImageUrl = null, // bảng Courses chưa có cột ảnh; FE tự dùng ảnh mặc định
+            TeacherName = string.Join(", ", teachers.Where(t => t.CourseId == c.Id).Select(t => t.TeacherName))
         }).ToList();
 
         return Ok(courses);
