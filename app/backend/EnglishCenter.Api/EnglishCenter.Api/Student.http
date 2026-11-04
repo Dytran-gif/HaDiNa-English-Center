@@ -81,3 +81,19 @@ Content-Type: application/json
   "classId": 5,
   "content": "Giáo viên giảng dạy rất nhiệt tình, dễ hiểu."
 }
+
+### Lấy hồ sơ học viên đang đăng nhập (Header / Personal Info)
+GET http://localhost:5220/api/student/profile
+Authorization: Bearer {{token}}
+
+### Đổi mật khẩu -> TokenVersion tăng, trả token mới (dùng token mới cho các request sau)
+# 400 nếu sai mật khẩu hiện tại / mật khẩu mới < 8 ký tự / trùng mật khẩu cũ
+POST http://localhost:5220/api/student/profile/change-password
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "currentPassword": "123456",
+  "newPassword": "12345678",
+  "confirmPassword": "12345678"
+}

@@ -1,10 +1,20 @@
 import React, { useState } from 'react';
 import { useLocation } from "react-router-dom";
-import { studentUser } from "../../../../data/StudentData/HeaderData";
+import { useAuth } from "../../../../context/AuthContext";
+import { useStudentApi, useStudentProfile } from "../../../../services/student/useStudentApi";
 import "./Header.css";
 
 function Header() {
     const location = useLocation();
+
+    // Hồ sơ học viên đang đăng nhập (từ BE)
+    const { data: profile } = useStudentProfile();
+    const { replaceToken } = useAuth();
+    const api = useStudentApi();
+
+    const displayName = profile?.fullName ?? "";
+    const displayEmail = profile?.email ?? "";
+    const displayRole = profile?.role ? profile.role.charAt(0).toUpperCase() + profile.role.slice(1) : "";
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'info' | 'password'>('info');
@@ -12,9 +22,9 @@ function Header() {
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [avatar, setAvatar] = useState(studentUser.avatar);
+    const [avatar, setAvatar] = useState("👨‍💻");
 
-    const handlePasswordChange = (e: React.FormEvent) => {
+    const handlePasswordChange = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!currentPassword || !newPassword || !confirmPassword) {
             alert("Vui lòng điền đầy đủ thông tin mật khẩu!");
@@ -24,11 +34,20 @@ function Header() {
             alert("Mật khẩu mới không khớp!");
             return;
         }
-        alert("Đổi mật khẩu thành công!");
-        setCurrentPassword('');
-        setNewPassword('');
-        setConfirmPassword('');
-        setIsModalOpen(false);
+        try {
+            const res = await api.send<{ message?: string; token?: string }>(
+                "POST", "profile/change-password",
+                { currentPassword, newPassword, confirmPassword }
+            );
+            if (res.token) replaceToken(res.token); // giữ phiên đăng nhập với token mới
+            alert(res.message ?? "Đổi mật khẩu thành công!");
+            setCurrentPassword('');
+            setNewPassword('');
+            setConfirmPassword('');
+            setIsModalOpen(false);
+        } catch (err) {
+            alert(err instanceof Error ? err.message : "Đổi mật khẩu thất bại.");
+        }
     };
 
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,7 +76,7 @@ function Header() {
             <header className="student-header">
                 <div className="header-title">
                     <h1>{title}</h1>
-                    <p>Welcome to Class, {studentUser.name}! <i className="fa-solid fa-hand-sparkles"></i></p>
+                    <p>Welcome to Class, {displayName}! <i className="fa-solid fa-hand-sparkles"></i></p>
                 </div>
 
                 <div className="header-right">
@@ -71,8 +90,8 @@ function Header() {
                         </div>
 
                         <div className="user-info">
-                            <strong>{studentUser.name}</strong>
-                            <span>{studentUser.email}</span>
+                            <strong>{displayName}</strong>
+                            <span>{displayEmail}</span>
                         </div>
 
                         <span className="user-arrow">
@@ -132,15 +151,15 @@ function Header() {
                                     <div className="info-details">
                                         <div className="info-row">
                                             <span>Full Name:</span>
-                                            <strong>{studentUser.name}</strong>
+                                            <strong>{displayName}</strong>
                                         </div>
                                         <div className="info-row">
                                             <span>Email:</span>
-                                            <strong>{studentUser.email}</strong>
+                                            <strong>{displayEmail}</strong>
                                         </div>
                                         <div className="info-row">
                                             <span>Role:</span>
-                                            <strong>Student</strong>
+                                            <strong>{displayRole}</strong>
                                         </div>
                                     </div>
                                 </div>

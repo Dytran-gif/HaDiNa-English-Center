@@ -15,14 +15,14 @@ Dữ liệu dùng chung với Teacher (bảng nào bên nào ghi): xem mục cu�
 
 > Chỉ dùng các bảng có sẵn trong DB: `Students`, `Users`, `Enrollments`, `Classes`, `Courses` (khớp `types/StudentTypes/MainTypes/GeneralTypes.ts`). Khi DB có bảng thông báo (type `AppNotification`), gán dữ liệu vào `notifications` tại chỗ đã ghi chú trong `Controllers/Student/DashboardController.cs`.
 
-## 2. Hồ sơ & lớp của tôi ⬜ (plan 10)
+## 2. Hồ sơ & lớp của tôi 🔵 (plan 10) — phần Hồ sơ ✅
 
 | Method | URL | Mô tả |
 |---|---|---|
-| GET | `/api/student/profile` | `{ code, fullName, email, phone, dateOfBirth, address, parentName, parentPhone, targetBand, avatarUrl }` |
+| GET | `/api/student/profile` ✅ | `{ code, fullName, email, role, avatarUrl, phone, dateOfBirth, address, parentName, parentPhone, targetBand }` của học viên đang đăng nhập |
 | PUT | `/api/student/profile` | `{ phone, address, parentName, parentPhone }` (họ tên, email, mã do Admin quản lý) |
-| POST | `/api/student/profile/avatar` | multipart `file` (jpg/png/webp ≤ 5 MB) |
-| POST | `/api/student/profile/change-password` | `{ currentPassword, newPassword, confirmPassword }`. Trả `token` mới |
+| POST | `/api/student/profile/avatar` | multipart `file` (jpg/png/webp ≤ 5 MB) — CHƯA LÀM, đang chọn phương án |
+| POST | `/api/student/profile/change-password` ✅ | `{ currentPassword, newPassword, confirmPassword }`. `400` sai mật khẩu cũ / mật khẩu mới < 8 ký tự / trùng mật khẩu cũ. Thành công: `TokenVersion++` (token cũ mất hiệu lực) và trả `{ message, token }` mới — FE dùng `replaceToken` giữ phiên |
 | POST | `/api/student/profile/logout` | Tăng `TokenVersion` |
 | GET | `/api/student/classes?status=Ongoing\|Upcoming\|Finished` | Lớp đã/đang học: khóa, GV, lịch tuần, `progressPercent`, `attendanceRate` |
 | GET | `/api/student/classes/{id}` | Chi tiết: syllabus (bài nào đã dạy), danh sách buổi, tài liệu từng buổi, `meetingUrl`. 404 nếu không học lớp này |

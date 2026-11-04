@@ -464,3 +464,53 @@ export function useStudentFeedbackList(classId: number | null) {
 
   return { data, error, loading, reload: () => setReloadKey(k => k + 1) };
 }
+
+export interface StudentProfile {
+  code: string;
+  fullName: string;
+  email: string;
+  role: string;
+  avatarUrl?: string;
+  phone?: string;
+  dateOfBirth?: string;
+  address?: string;
+  parentName?: string;
+  parentPhone?: string;
+  targetBand?: number;
+}
+
+// GET api/student/profile - hồ sơ học viên đang đăng nhập
+export function useStudentProfile() {
+  const api = useStudentApi();
+  const { token } = useAuth();
+  const [data, setData] = useState<StudentProfile>();
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+    const controller = new AbortController();
+    setLoading(true);
+    setError("");
+
+    api.get<StudentProfile>("profile", controller.signal)
+      .then((res) => {
+        if (!controller.signal.aborted) setData(res);
+      })
+      .catch((err) => {
+        if (!controller.signal.aborted) {
+          setError(err instanceof Error ? err.message : "Không tải được hồ sơ.");
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [api, token]);
+
+  return { data, error, loading };
+}
