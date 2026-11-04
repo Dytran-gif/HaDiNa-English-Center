@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useLocation } from "react-router-dom";
 import { useAuth } from "../../../../context/AuthContext";
 import { useStudentApi, useStudentProfile } from "../../../../services/student/useStudentApi";
+import { assetUrl } from "../../../../services/apiClient";
 import "./Header.css";
 
 function Header() {
@@ -22,7 +23,10 @@ function Header() {
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [avatar, setAvatar] = useState("👨‍💻");
+    // Avatar thật: đọc từ Users.AvatarUrl (lưu trên server), state chỉ là ảnh vừa upload phiên này.
+    const [uploadedAvatar, setUploadedAvatar] = useState('');
+    const [avatarBusy, setAvatarBusy] = useState(false);
+    const avatar = uploadedAvatar || assetUrl(profile?.avatarUrl) || '';
 
     const handlePasswordChange = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -50,14 +54,22 @@ function Header() {
         }
     };
 
-    const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setAvatar(reader.result as string);
-            };
-            reader.readAsDataURL(file);
+        e.target.value = ''; // cho phép chọn lại đúng file này sau
+        if (!file || avatarBusy) return;
+
+        setAvatarBusy(true);
+        try {
+            const form = new FormData();
+            form.append('file', file);
+            const res = await api.upload<{ avatarUrl: string; message?: string }>('profile/avatar', form);
+            setUploadedAvatar(assetUrl(res.avatarUrl) ?? res.avatarUrl);
+            alert(res.message ?? 'Đổi ảnh đại diện thành công!');
+        } catch (err) {
+            alert(err instanceof Error ? err.message : 'Đổi ảnh đại diện thất bại.');
+        } finally {
+            setAvatarBusy(false);
         }
     };
 
@@ -82,11 +94,7 @@ function Header() {
                 <div className="header-right">
                     <div className="header-user" onClick={() => setIsModalOpen(true)}>
                         <div className="user-avatar">
-                            {typeof avatar === 'string' && avatar.startsWith('data:') ? (
-                                <img src={avatar} alt="Avatar" className="avatar-img" />
-                            ) : (
-                                avatar
-                            )}
+                            {avatar ? <img src={avatar} alt="Avatar" className="avatar-img" /> : "👨‍💻"}
                         </div>
 
                         <div className="user-info">
@@ -130,20 +138,17 @@ function Header() {
                                 <div className="profile-info-section">
                                     <div className="avatar-upload-box">
                                         <div className="preview-avatar">
-                                            {typeof avatar === 'string' && avatar.startsWith('data:') ? (
-                                                <img src={avatar} alt="Avatar" className="avatar-img-large" />
-                                            ) : (
-                                                avatar
-                                            )}
+                                            {avatar ? <img src={avatar} alt="Avatar" className="avatar-img-large" /> : "👨‍💻"}
                                         </div>
                                         <label htmlFor="avatar-file" className="btn-upload">
-                                            <i className="fa-solid fa-camera"></i> Change Avatar
+                                            <i className="fa-solid fa-camera"></i> {avatarBusy ? 'Đang tải lên...' : 'Change Avatar'}
                                         </label>
                                         <input 
                                             id="avatar-file" 
                                             type="file" 
                                             accept="image/*" 
                                             onChange={handleAvatarChange} 
+                                            disabled={avatarBusy}
                                             style={{ display: 'none' }}
                                         />
                                     </div>

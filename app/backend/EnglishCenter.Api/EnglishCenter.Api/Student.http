@@ -97,3 +97,16 @@ Content-Type: application/json
   "newPassword": "12345678",
   "confirmPassword": "12345678"
 }
+
+### Đổi avatar (multipart) -> lưu file vào wwwroot/uploads/avatars/, ghi Users.AvatarUrl, XÓA file avatar cũ
+# Sửa đường dẫn bên dưới tới ảnh thật (jpg/jpeg/png/webp, tối đa 5 MB); 400 nếu sai định dạng/quá cỡ
+POST http://localhost:5220/api/student/profile/avatar
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=--HTTPBoundary
+
+----HTTPBoundary
+Content-Disposition: form-data; name="file"; filename="avatar.jpg"
+Content-Type: image/jpeg
+
+< D:/Capstone/HaDiNa-English-Center/app/frontend/src/assets/images/next-lesson-mock.jpg
+----HTTPBoundary--

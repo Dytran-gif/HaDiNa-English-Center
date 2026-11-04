@@ -21,7 +21,7 @@ Dữ liệu dùng chung với Teacher (bảng nào bên nào ghi): xem mục cu�
 |---|---|---|
 | GET | `/api/student/profile` ✅ | `{ code, fullName, email, role, avatarUrl, phone, dateOfBirth, address, parentName, parentPhone, targetBand }` của học viên đang đăng nhập |
 | PUT | `/api/student/profile` | `{ phone, address, parentName, parentPhone }` (họ tên, email, mã do Admin quản lý) |
-| POST | `/api/student/profile/avatar` | multipart `file` (jpg/png/webp ≤ 5 MB) — CHƯA LÀM, đang chọn phương án |
+| POST | `/api/student/profile/avatar` ✅ | multipart `file` (jpg/jpeg/png/webp ≤ 5 MB). Ảnh lưu vào `wwwroot/uploads/avatars/`, đường dẫn `/uploads/avatars/{ten}` ghi vào `Users.AvatarUrl`; **file avatar cũ bị xóa khỏi đĩa** (chỉ xóa khi đường dẫn cũ bắt đầu bằng `/uploads/avatars/` nên ảnh của tài khoản khác hay link ngoài không bị đụng). Trả `{ avatarUrl, message }`; `400` khi sai định dạng/quá cỡ/chưa chọn file |
 | POST | `/api/student/profile/change-password` ✅ | `{ currentPassword, newPassword, confirmPassword }`. `400` sai mật khẩu cũ / mật khẩu mới < 8 ký tự / trùng mật khẩu cũ. Thành công: `TokenVersion++` (token cũ mất hiệu lực) và trả `{ message, token }` mới — FE dùng `replaceToken` giữ phiên |
 | POST | `/api/student/profile/logout` | Tăng `TokenVersion` |
 | GET | `/api/student/classes?status=Ongoing\|Upcoming\|Finished` | Lớp đã/đang học: khóa, GV, lịch tuần, `progressPercent`, `attendanceRate` |

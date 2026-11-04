@@ -65,6 +65,16 @@ export function useStudentApi() {
         if (error instanceof ApiError && error.status === 401) logout();
         throw error;
       }
+    },
+    // Upload file (multipart/form-data), ví dụ đổi avatar
+    async upload<T>(path: string, form: FormData) {
+      if (!token) throw new ApiError(401, "Chưa đăng nhập.");
+      try {
+        return await request<T>(`/api/student/${path}`, token, { method: "POST", body: form });
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 401) logout();
+        throw error;
+      }
     }
   }), [token, logout]);
 }

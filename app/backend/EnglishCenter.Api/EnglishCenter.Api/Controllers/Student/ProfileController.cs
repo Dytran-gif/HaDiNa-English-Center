@@ -17,13 +17,19 @@ namespace EnglishCenter.Api.Controllers.StudentPortal;
 [Route("api/student/profile")]
 public class ProfileController : ControllerBase
 {
+    private const long AvatarMaxBytes = 5 * 1024 * 1024; // 5 MB
+
     private readonly AppDbContext _db;
     private readonly TokenService _tokens;
+    private readonly FileStorageService _files;
+    private readonly IWebHostEnvironment _env;
 
-    public ProfileController(AppDbContext db, TokenService tokens)
+    public ProfileController(AppDbContext db, TokenService tokens, FileStorageService files, IWebHostEnvironment env)
     {
         _db = db;
         _tokens = tokens;
+        _files = files;
+        _env = env;
     }
 
     // GET api/student/profile
@@ -72,6 +78,37 @@ public class ProfileController : ControllerBase
         });
     }
 
+    // POST api/student/profile/avatar  (multipart/form-data, field "file": ảnh jpg/jpeg/png/webp, tối đa 5 MB)
+    // Ảnh mới lưu ở wwwroot/uploads/avatars/, đường dẫn tương đối ghi vào Users.AvatarUrl.
+    // Ảnh cũ được xóa khỏi đĩa để thư mục không phình to.
+    [HttpPost("avatar")]
+    [RequestSizeLimit(AvatarMaxBytes)]
+    public async Task<IActionResult> UploadAvatar(IFormFile file)
+    {
+        if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            return Unauthorized(new { message = "Token không hợp lệ" });
+
+        var user = await _db.Users.FindAsync(userId);
+        if (user == null)
+            return NotFound(new { message = "Không tìm thấy tài khoản" });
+
+        var error = FileStorageService.Validate(file, "avatars");
+        if (error != null) return BadRequest(new { message = error });
+
+        var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+        if (ext is not (".jpg" or ".jpeg" or ".png" or ".webp"))
+            return BadRequest(new { message = "Ảnh đại diện phải là jpg, png hoặc webp" });
+        if (file.Length > AvatarMaxBytes)
+            return BadRequest(new { message = "Ảnh đại diện tối đa 5 MB" });
+
+        var saved = await _files.SaveAsync(file, "avatars");
+        DeleteOldAvatar(user.AvatarUrl);
+        user.AvatarUrl = saved.Url;
+        await _db.SaveChangesAsync();
+
+        return Ok(new { avatarUrl = saved.Url, message = "Đổi ảnh đại diện thành công" });
+    }
+
     // POST api/student/profile/change-password - body { currentPassword, newPassword, confirmPassword }
     [HttpPost("change-password")]
     public async Task<IActionResult> ChangePassword(StudentChangePasswordRequest req)
@@ -95,5 +132,22 @@ public class ProfileController : ControllerBase
 
         // Trả token mới để học viên không bị đá ra khỏi phiên hiện tại
         return Ok(new { message = "Đổi mật khẩu thành công", token = _tokens.CreateToken(user) });
+    }
+
+    // Xóa file avatar cũ trên đĩa. Chỉ nhận đường dẫn do chính endpoint này tạo ra
+    // ("/uploads/avatars/...") nên link ngoài hay ảnh người khác không bị đụng tới.
+    private void DeleteOldAvatar(string? oldUrl)
+    {
+        if (string.IsNullOrWhiteSpace(oldUrl)
+            || !oldUrl.StartsWith("/uploads/avatars/", StringComparison.OrdinalIgnoreCase)) return;
+
+        var root = Path.GetFullPath(_env.WebRootPath ?? Path.Combine(_env.ContentRootPath, "wwwroot"));
+        var rootPrefix = root.EndsWith(Path.DirectorySeparatorChar) ? root : root + Path.DirectorySeparatorChar;
+        var relative = oldUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
+        var fullPath = Path.GetFullPath(Path.Combine(root, relative));
+
+        if (!fullPath.StartsWith(rootPrefix, StringComparison.OrdinalIgnoreCase)) return;
+        // System.IO.File (không dùng File trần vì ControllerBase.File đã chiếm tên này)
+        if (System.IO.File.Exists(fullPath)) System.IO.File.Delete(fullPath);
     }
 }
