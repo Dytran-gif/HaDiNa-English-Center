@@ -137,3 +137,46 @@ export function useStudentCourses() {
 
   return { data, error, loading };
 }
+
+export interface StudentEnrollmentItem {
+  enrollmentId: number;
+  status: string;
+  course: Course;
+}
+
+// GET api/student/enrollments - các ghi danh của học viên (khối khóa đã đăng ký trang Courses)
+export function useStudentEnrollments() {
+  const api = useStudentApi();
+  const { token } = useAuth();
+  const [data, setData] = useState<StudentEnrollmentItem[]>([]);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+    const controller = new AbortController();
+    setLoading(true);
+    setError("");
+
+    api.get<StudentEnrollmentItem[]>("enrollments", controller.signal)
+      .then((res) => {
+        if (!controller.signal.aborted) setData(res);
+      })
+      .catch((err) => {
+        if (!controller.signal.aborted) {
+          setError(err instanceof Error ? err.message : "Không tải được danh sách ghi danh.");
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [api, token, reloadKey]);
+
+  return { data, error, loading, reload: () => setReloadKey(k => k + 1) };
+}

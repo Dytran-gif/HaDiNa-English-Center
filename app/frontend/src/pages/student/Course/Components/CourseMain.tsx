@@ -3,13 +3,13 @@ import type { Course } from "../../../../types/StudentTypes/MainTypes";
 import defaultCourseImage from "../../../../assets/images/next-lesson-mock.jpg";
 import './CourseMain.css';
 
-// Component nhận vào hàm onSelectCourse để truyền dữ liệu xuống Khu vực 2 (Bottom)
+// Component nhận vào hàm onRegisterCourse để đăng ký khóa học (lưu thẳng xuống DB)
 interface CourseMainProps {
     courses: Course[];
-    onSelectCourse: (course: Course) => void;
+    onRegisterCourse: (course: Course) => void;
 }
 
-export default function CourseMainFE({ courses, onSelectCourse }: CourseMainProps) {
+export default function CourseMainFE({ courses, onRegisterCourse }: CourseMainProps) {
     // STATES CHO BỘ LỌC
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedLevel, setSelectedLevel] = useState('All Levels');
@@ -153,7 +153,7 @@ export default function CourseMainFE({ courses, onSelectCourse }: CourseMainProp
                                     <div className="cm-card-actions">
                                         <button
                                             className="cm-register-btn"
-                                            onClick={() => onSelectCourse(course)}
+                                            onClick={() => onRegisterCourse(course)}
                                         >
                                             Register
                                         </button>

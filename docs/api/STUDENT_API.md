@@ -28,6 +28,8 @@ Dữ liệu dùng chung với Teacher (bảng nào bên nào ghi): xem mục cu�
 | GET | `/api/student/classes/{id}` | Chi tiết: syllabus (bài nào đã dạy), danh sách buổi, tài liệu từng buổi, `meetingUrl`. 404 nếu không học lớp này |
 | GET | `/api/student/courses` ✅ | Danh sách khóa học của trung tâm (trang Courses): mảng khóa học theo type `Course` trong FE `GeneralTypes.ts`; `imageUrl` luôn `null` vì bảng Courses chưa có cột ảnh (FE tự dùng ảnh mặc định) |
 | POST | `/api/student/courses/{id}/register` ✅ | Đăng ký giả lập: tạo `Enrollment` (status `Active`, snapshot học phí từ khóa) vào **lớp đầu tiên** của khóa. `409` nếu đã có enrollment bất kỳ cho khóa này (chặn đăng ký trùng) hoặc khóa chưa có lớp. Trả `201 { id, message }` |
+| GET | `/api/student/enrollments` ✅ | Các ghi danh của học viên (khối Registered Courses trang Courses): `[{ enrollmentId, status, course }]`, mới nhất trước |
+| DELETE | `/api/student/enrollments/{id}` ✅ | Hủy ghi danh của chính mình (xóa dòng trong bảng Enrollments). `409` nếu ghi danh đã có phiếu thu kèm theo |
 
 ## 3. Lịch học & yêu cầu ⬜ (plan 11)
 

@@ -23,8 +23,18 @@ Authorization: Bearer {{token}}
 GET http://localhost:5220/api/student/courses
 Authorization: Bearer {{token}}
 
-### Đăng ký khóa học (tạo Enrollment vào lớp đầu tiên của khóa)
+### Đăng ký khóa học (bấm Register trên thẻ khóa -> lưu thẳng Enrollment vào DB)
 # 409 nếu đã đăng ký khóa này rồi, 409 nếu khóa chưa có lớp
 POST http://localhost:5220/api/student/courses/5/register
+Authorization: Bearer {{token}}
+
+### Lấy danh sách ghi danh của học viên (khối Registered Courses trang Courses)
+# Trả về: [{ enrollmentId, status, course }] mới nhất trước
+GET http://localhost:5220/api/student/enrollments
+Authorization: Bearer {{token}}
+
+### Hủy ghi danh (bấm nút xóa ở khối Registered Courses)
+# 409 nếu ghi danh đã có phiếu thu
+DELETE http://localhost:5220/api/student/enrollments/17
 Authorization: Bearer {{token}}
 
