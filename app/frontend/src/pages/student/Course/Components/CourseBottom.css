@@ -223,3 +223,14 @@
     line-height: 1.5;
     margin: 0;
 }
+
+.cb-paid-badge {
+    font-size: 10px;
+    font-weight: 700;
+    color: #ffffff;
+    background-color: #64748b;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    align-self: flex-start;
+    margin-bottom: 4px;
+}

@@ -23,3 +23,10 @@ Schema hiện có đủ cho phần Payments còn lại và classes/available. Co
 - Số liệu xác minh:1khóa/1lớp/2GV/2HV/0phiếu, KPI Studying2/OpenClasses1/Teachers2/Revenue0. Không thực hiện API mutation trong kiểm tra.
 - Program mặc định không migrate/seed; Database:InitializeOnStartup=false khi chạy thử. Bản mock5174 đã dừng. Hướng dẫn FE-ADMIN.md.
 - Các kết luận chưa chạy BE/DB trong mục cũ là lịch sử trước lần kết nối này. Chưa xác nhận toàn bộ schema TeacherPortal hay luồng ghi dữ liệu.
+
+## Bảng StudentFeedbacks cho trang Feedback — 2026-11-04
+
+- Đã tạo bảng dbo.StudentFeedbacks (Id, StudentId, ClassId, TeacherId, Content nvarchar(1000), CreatedAt) + FK tới Students/Classes/Teachers + index ClassId. Không có dữ liệu mẫu.
+- Tạo bằng script có guard chạy lại: sql/2026-11-04-student-feedback-table.sql (tiền lệ TokenVersion, vì DB local drift schema — chưa dùng `dotnet ef migrations add` để tránh kéo theo toàn bộ bảng TeacherFeatures).
+- Entity StudentFeedback + cấu hình nằm ở Entities/StudentFeedback.cs và Data/AppDbContext.Student.cs.
+- ⚠️ KHI TẠO MIGRATION TeacherFeatures (plan 00): nhớ gộp bảng StudentFeedbacks vào migration đó, nếu không `migrations add` sau này sẽ sinh CREATE TABLE trùng.

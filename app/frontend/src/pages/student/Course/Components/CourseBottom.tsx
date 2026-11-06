@@ -1,57 +1,68 @@
 
-import type { Course } from '../../../../types/StudentTypes/MainTypes';
+import type { StudentEnrollmentItem } from '../../../../services/student/useStudentApi';
+import defaultCourseImage from "../../../../assets/images/next-lesson-mock.jpg";
 import './CourseBottom.css';
 
 interface CourseBottomProps {
-    selectedCourses: Course[];
-    onRemoveCourse: (courseId: string) => void; // Hàm xử lý khi bấm nút xóa ở từng course
+    enrolledCourses: StudentEnrollmentItem[]; // Các khóa học viên đã đăng ký (đọc từ DB)
+    onDelete: (enrollmentId: number) => void; // Hàm hủy ghi danh (xóa trong DB)
+    onGoTuition: () => void; // Hàm điều hướng sang trang học phí
 }
 
-export default function CourseBottomFE({ selectedCourses, onRemoveCourse }: CourseBottomProps) {
-    // Nếu chưa chọn khóa nào thì ẩn khu vực này
-    if (selectedCourses.length === 0) return null;
+export default function CourseBottomFE({ enrolledCourses, onDelete, onGoTuition }: CourseBottomProps) {
+    // Nếu chưa đăng ký khóa nào thì ẩn khu vực này
+    if (enrolledCourses.length === 0) return null;
 
-    // Tính tổng học phí của tất cả các khóa học được chọn (chuẩn thuộc tính tuition từ DB)
-    const totalPrice = selectedCourses.reduce((sum, course) => sum + course.tuition, 0);
+    // Tổng tiền chỉ tính các khóa CHƯA thanh toán (khóa đã đóng tiền không cộng nữa)
+    const totalPrice = enrolledCourses
+        .filter(item => !item.isPaid)
+        .reduce((sum, item) => sum + item.course.tuition, 0);
+
+    const hasUnpaid = enrolledCourses.some(item => !item.isPaid);
 
     return (
         <section className="course-bottom-section">
-            {/* Cột trái: Danh sách các khóa học đã chọn */}
+            {/* Cột trái: Danh sách các khóa học đã đăng ký */}
             <div className="cb-left-panel">
-                <h3 className="cb-panel-title">Selected Courses ({selectedCourses.length})</h3>
+                <h3 className="cb-panel-title">Registered Courses ({enrolledCourses.length})</h3>
                 
                 {/* Danh sách có thanh trượt nếu quá 10 item */}
                 <div className="cb-list-wrapper">
-                    {selectedCourses.map((course) => (
-                        <div key={course.id} className="cb-course-item">
+                    {enrolledCourses.map((item) => (
+                        <div key={item.enrollmentId} className="cb-course-item">
                             
                             {/* 1. Thông tin khóa học */}
                             <div className="cb-course-info">
                                 <img 
-                                    src={course.imageUrl || "/api/placeholder/400/200"} 
-                                    alt={course.name} 
+                                    src={item.course.imageUrl || defaultCourseImage} 
+                                    alt={item.course.name} 
                                     className="cb-img" 
                                 />
                                 <div className="cb-info-text">
                                     <span className="cb-level badge-beginner">
-                                        Band {course.bandFrom} - {course.bandTo}
+                                        Band {item.course.bandFrom} - {item.course.bandTo}
                                     </span>
-                                    <h4 className="cb-title">{course.name}</h4>
+                                    {item.isPaid && (
+                                        <span className="cb-paid-badge">Đã thanh toán</span>
+                                    )}
+                                    <h4 className="cb-title">{item.course.name}</h4>
                                     <div className="cb-meta">
-                                        <span><i className="fa-regular fa-clock"></i> {course.totalSessions} sessions</span>
-                                        <span className="cb-price-item">{course.tuition.toLocaleString('vi-VN')} VND</span>
+                                        <span><i className="fa-regular fa-clock"></i> {item.course.totalSessions} sessions</span>
+                                        <span className="cb-price-item">{item.course.tuition.toLocaleString('vi-VN')} VND</span>
                                     </div>
                                 </div>
                             </div>
                             
-                            {/* 3. Nút Xóa khóa học */}
-                            <button 
-                                className="cb-delete-btn" 
-                                onClick={() => onRemoveCourse(course.id)}
-                                title="Remove this course"
-                            >
-                                <i className="fa-regular fa-trash-can"></i>
-                            </button>
+                            {/* 3. Nút Xóa khóa học (khóa đã thanh toán thì không cho xóa) */}
+                            {!item.isPaid && (
+                                <button 
+                                    className="cb-delete-btn" 
+                                    onClick={() => onDelete(item.enrollmentId)}
+                                    title="Remove this course"
+                                >
+                                    <i className="fa-regular fa-trash-can"></i>
+                                </button>
+                            )}
                         </div>
                     ))}
                 </div>
@@ -60,12 +71,20 @@ export default function CourseBottomFE({ selectedCourses, onRemoveCourse }: Cour
             {/* Cột phải: Tổng tiền và Nút thanh toán */}
             <div className="cb-right-panel">
                 <div className="cb-summary-card">
-                    <span className="cb-summary-label">Total Price</span>
+                    <span className="cb-summary-label">Total Price (chưa thanh toán)</span>
                     <span className="cb-summary-price">{totalPrice.toLocaleString('vi-VN')} VND</span>
-                    <button className="cb-register-btn">Register Now</button>
-                    <p className="cb-summary-note">
-                        You will be redirected to the registration form to complete your enrollment.
-                    </p>
+                    {hasUnpaid ? (
+                        <>
+                            <button className="cb-register-btn" onClick={onGoTuition}>Payment Now</button>
+                            <p className="cb-summary-note">
+                                You will be redirected to the tuition page to complete your payment.
+                            </p>
+                        </>
+                    ) : (
+                        <p className="cb-summary-note">
+                            All courses have been paid.
+                        </p>
+                    )}
                 </div>
             </div>
         </section>

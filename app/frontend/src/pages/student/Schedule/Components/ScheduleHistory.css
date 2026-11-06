@@ -154,3 +154,12 @@
     font-size: 0.75rem;
     color: #64748b;
 }
+.th-status-badge.status-onhold {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.th-status-badge.status-dropped {
+    background: #fee2e2;
+    color: #991b1b;
+}

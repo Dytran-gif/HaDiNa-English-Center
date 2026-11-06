@@ -1,18 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { 
-    mockEnrollments, 
-    mockClasses, 
-    mockClassSchedules, 
-    mockCourses, 
-    mockNotifications 
-} from "../../../../data/StudentData/MainData";
-import type { 
-    Course, 
-    ClassItem, 
-    ClassScheduleItem, 
-    Enrollment, 
-    AppNotification 
-} from "../../../../types/StudentTypes/MainTypes";
+import { useMemo } from 'react';
+import type { StudentScheduleSession } from "../../../../services/student/useStudentApi";
 import './ScheduleMain.css';
 
 const TIME_SLOTS = [
@@ -27,44 +14,19 @@ const TIME_SLOTS = [
 
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-// Hàm tính chính xác thứ tự buổi học thực tế dựa trên ngày khai giảng
-const getSessionNumber = (startDateStr: string, targetDateStr: string, classSchedules: ClassScheduleItem[]) => {
-    const start = new Date(startDateStr);
-    const target = new Date(targetDateStr);
-    if (target < start) return 0;
+interface ScheduleGridProps {
+    weekStart: Date; // Thứ 2 của tuần đang xem
+    sessions: StudentScheduleSession[]; // Các buổi học trong tuần (từ BE)
+    onPrevWeek: () => void;
+    onNextWeek: () => void;
+}
 
-    let count = 0;
-    const cur = new Date(start);
-
-    while (cur <= target) {
-        const jsDay = cur.getDay();
-        const dayName = DAY_NAMES[jsDay === 0 ? 6 : jsDay - 1];
-        
-        const year = cur.getFullYear();
-        const month = String(cur.getMonth() + 1).padStart(2, '0');
-        const day = String(cur.getDate()).padStart(2, '0');
-        const dateStr = `${year}-${month}-${day}`;
-
-        const isScheduleDay = classSchedules.some(s => s.dayOfWeek === dayName);
-        if (isScheduleDay) {
-            count++;
-        }
-
-        if (dateStr === targetDateStr) break;
-        cur.setDate(cur.getDate() + 1);
-    }
-
-    return count;
-};
-
-export default function ScheduleGrid() {
-    const [currentWeekStart, setCurrentWeekStart] = useState<Date>(new Date(2025, 4, 19)); // Thứ 2, 19/05/2025
-
+export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWeek }: ScheduleGridProps) {
     // Danh sách các ngày trong tuần hiện tại
     const daysOfWeek = useMemo(() => {
         return DAY_NAMES.map((name, idx) => {
-            const d = new Date(currentWeekStart);
-            d.setDate(currentWeekStart.getDate() + idx);
+            const d = new Date(weekStart);
+            d.setDate(weekStart.getDate() + idx);
 
             const year = d.getFullYear();
             const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -77,79 +39,7 @@ export default function ScheduleGrid() {
                 displayDate: `${day}/${month}`
             };
         });
-    }, [currentWeekStart]);
-
-    // TRUY VẤN DỮ LIỆU TRỰC TIẾP TỪ 10 BẢNG DATABASE
-    const currentWeekSessions = useMemo(() => {
-        const studentId = "std-01"; // Sinh viên đang đăng nhập
-
-        // 1. Lấy các lượt đăng ký Active (Bảng Enrollment)
-        const activeEnrollments = mockEnrollments.filter(
-            (e: Enrollment) => e.studentId === studentId && e.status === 'Active'
-        );
-
-        const sessions: Array<{
-            classId: string;
-            className: string;
-            course: Course;
-            classSchedule: ClassScheduleItem;
-            dateStr: string;
-            sessionIndex: number;
-            isCancelled: boolean;
-            cancelReason?: string;
-        }> = [];
-
-        activeEnrollments.forEach((enrollment) => {
-            // 2. Bảng Classes
-            const cls = mockClasses.find((c: ClassItem) => c.id === enrollment.classId);
-            if (!cls) return;
-
-            // 3. Bảng Courses
-            const course = mockCourses.find((co: Course) => co.id === cls.courseId);
-            if (!course) return;
-
-            // 4. Bảng ClassSchedule
-            const schedules = mockClassSchedules.filter((cs: ClassScheduleItem) => cs.classId === cls.id);
-
-            // 5. Duyệt từng ngày trong tuần
-            daysOfWeek.forEach((day) => {
-                const dayDate = new Date(day.dateStr);
-                const classStartDate = new Date(cls.startDate);
-
-                if (dayDate < classStartDate) return;
-
-                schedules.forEach((sch) => {
-                    if (sch.dayOfWeek === day.label) {
-                        // Tính số thứ tự buổi học
-                        const sessionIndex = getSessionNumber(cls.startDate, day.dateStr, schedules);
-
-                        // ĐÃ HỌC ĐỦ SỐ BUỔI KHÓA HỌC -> CHẶN KHÔNG HIỂN THỊ NỮA
-                        if (sessionIndex === 0 || sessionIndex > course.totalSessions) {
-                            return;
-                        }
-
-                        // 6. Bảng Notifications
-                        const cancelNotif = mockNotifications.find(
-                            (n: AppNotification) => n.classId === cls.id && n.noticeDate === day.dateStr && n.type === 'Cancellation'
-                        );
-
-                        sessions.push({
-                            classId: cls.id,
-                            className: cls.name,
-                            course,
-                            classSchedule: sch,
-                            dateStr: day.dateStr,
-                            sessionIndex,
-                            isCancelled: !!cancelNotif,
-                            cancelReason: cancelNotif ? cancelNotif.message : undefined
-                        });
-                    }
-                });
-            });
-        });
-
-        return sessions;
-    }, [daysOfWeek]);
+    }, [weekStart]);
 
     const timeToMinutes = (timeStr: string) => {
         if (!timeStr) return 0;
@@ -170,29 +60,15 @@ export default function ScheduleGrid() {
         <div className="schedule-clean-container">
             {/* ĐIỀU HƯỚNG TUẦN */}
             <div className="schedule-header-simple">
-                <button 
-                    className="nav-btn" 
-                    onClick={() => {
-                        const prev = new Date(currentWeekStart);
-                        prev.setDate(prev.getDate() - 7);
-                        setCurrentWeekStart(prev);
-                    }}
-                >
+                <button className="nav-btn" onClick={onPrevWeek}>
                     <i className="fa-solid fa-chevron-left"></i>
                 </button>
 
                 <span className="week-label">
-                    Week of {currentWeekStart.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    Week of {weekStart.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                 </span>
 
-                <button 
-                    className="nav-btn" 
-                    onClick={() => {
-                        const next = new Date(currentWeekStart);
-                        next.setDate(next.getDate() + 7);
-                        setCurrentWeekStart(next);
-                    }}
-                >
+                <button className="nav-btn" onClick={onNextWeek}>
                     <i className="fa-solid fa-chevron-right"></i>
                 </button>
             </div>
@@ -220,34 +96,32 @@ export default function ScheduleGrid() {
 
                     <div className="days-col-wrapper">
                         {daysOfWeek.map((day) => {
-                            const sessionsToday = currentWeekSessions.filter(s => s.dateStr === day.dateStr);
+                            const sessionsToday = sessions.filter(s => s.dateStr === day.dateStr);
 
                             return (
                                 <div key={day.key} className="day-col">
                                     {TIME_SLOTS.map(slot => <div key={slot.start} className="line-bg"></div>)}
 
                                     {sessionsToday.map((item) => {
-                                        const { startTime, endTime } = item.classSchedule;
-
                                         return (
                                             <div
-                                                key={`${item.classId}-${item.dateStr}-${startTime}`}
+                                                key={`${item.classId}-${item.dateStr}-${item.startTime}`}
                                                 className={`class-card-styled ${item.isCancelled ? 'is-cancelled' : ''}`}
-                                                style={getCardStyle(startTime, endTime)}
+                                                style={getCardStyle(item.startTime, item.endTime)}
                                             >
                                                 <div className="card-content">
                                                     <div className="card-top-row">
-                                                        <h4 className="title">{item.course.name}</h4>
+                                                        <h4 className="title">{item.courseName}</h4>
                                                         {item.isCancelled ? (
                                                             <span className="cancelled-badge">Cancelled</span>
                                                         ) : (
                                                             <span className="lesson-badge">
-                                                                Lesson {item.sessionIndex}/{item.course.totalSessions}
+                                                                Lesson {item.sessionNo}/{item.totalSessions}
                                                             </span>
                                                         )}
                                                     </div>
                                                     <p className="time">
-                                                        <i className="fa-regular fa-clock"></i> {startTime} - {endTime}
+                                                        <i className="fa-regular fa-clock"></i> {item.startTime} - {item.endTime}
                                                     </p>
                                                 </div>
 
@@ -255,30 +129,40 @@ export default function ScheduleGrid() {
                                                 <div className="card-hover-popup">
                                                     <div className="popup-top">
                                                         <span className={`popup-level ${item.isCancelled ? 'popup-cancelled-tag' : ''}`}>
-                                                            {item.isCancelled ? 'Cancelled' : `Band ${item.course.bandFrom} - ${item.course.bandTo}`}
+                                                            {item.isCancelled ? 'Cancelled' : `Band ${item.bandFrom} - ${item.bandTo}`}
                                                         </span>
                                                         <span className="popup-index">
-                                                            Session {item.sessionIndex} of {item.course.totalSessions}
+                                                            Session {item.sessionNo} of {item.totalSessions}
                                                         </span>
                                                     </div>
 
-                                                    <h5 className="popup-course-title">{item.course.name}</h5>
+                                                    <h5 className="popup-course-title">{item.courseName}</h5>
 
                                                     {item.isCancelled ? (
                                                         <p className="popup-cancel-reason">
                                                             <i className="fa-solid fa-circle-exclamation"></i> Notice: Class cancelled ({item.cancelReason || "No reason provided"})
                                                         </p>
                                                     ) : (
-                                                        <p className="popup-desc">{item.course.description}</p>
+                                                        <p className="popup-desc">{item.description}</p>
                                                     )}
 
                                                     <div className="popup-info-grid">
                                                         <div>
-                                                            <i className="fa-solid fa-hashtag"></i> Class: <strong>{item.classId}</strong>
+                                                            <i className="fa-solid fa-hashtag"></i> Class: <strong>{item.className}</strong>
                                                         </div>
                                                         <div>
-                                                            <i className="fa-regular fa-clock"></i> {startTime} - {endTime}
+                                                            <i className="fa-regular fa-clock"></i> {item.startTime} - {item.endTime}
                                                         </div>
+                                                        {item.teacherName && (
+                                                            <div>
+                                                                <i className="fa-solid fa-chalkboard-user"></i> Teacher: <strong>{item.teacherName}</strong>
+                                                            </div>
+                                                        )}
+                                                        {item.roomName && (
+                                                            <div>
+                                                                <i className="fa-solid fa-location-dot"></i> Room: <strong>{item.roomName}</strong>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>

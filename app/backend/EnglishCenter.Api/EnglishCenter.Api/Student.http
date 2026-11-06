@@ -5,13 +5,108 @@ Content-Type: application/json
 
 {
   "email": "student@demo.com",
-  "password": "password"
+  "password": "123456"
 }
 
 ### Lưu token
 @token = {{login.response.body.token}}
 
 ### Lấy thông tin Dashboard học viên
+# Trả về: student (hồ sơ), nextLesson (khóa đang học đầu tiên), courses (khóa đang học theo Enrollment Active),
+# notifications (rỗng vì DB chưa có bảng thông báo - xem ghi chú trong DashboardController)
 GET http://localhost:5220/api/student/dashboard
 Authorization: Bearer {{token}}
 
+### Lấy danh sách khóa học của trung tâm (trang Courses)
+# Trả về: mảng khóa học theo type Course trong FE GeneralTypes.ts
+# (imageUrl luôn null vì bảng Courses chưa có cột ảnh, FE tự dùng ảnh mặc định)
+GET http://localhost:5220/api/student/courses
+Authorization: Bearer {{token}}
+
+### Đăng ký khóa học (bấm Register trên thẻ khóa -> lưu thẳng Enrollment vào DB)
+# 409 nếu đã đăng ký khóa này rồi, 409 nếu khóa chưa có lớp
+POST http://localhost:5220/api/student/courses/5/register
+Authorization: Bearer {{token}}
+
+### Lấy danh sách ghi danh của học viên (khối Registered Courses trang Courses)
+# Trả về: [{ enrollmentId, status, course }] mới nhất trước
+GET http://localhost:5220/api/student/enrollments
+Authorization: Bearer {{token}}
+
+### Hủy ghi danh (bấm nút xóa ở khối Registered Courses)
+# 409 nếu ghi danh đã thanh toán (có phiếu thu) - không cho tự hủy
+DELETE http://localhost:5220/api/student/enrollments/17
+Authorization: Bearer {{token}}
+
+### Lấy danh sách học phí của học viên (trang Tuition)
+# Trả về: [{ enrollmentId, courseName, className, finalTuitionFee, isPaid, paymentId, paidAmount, paidDate, method, note, ... }]
+GET http://localhost:5220/api/student/tuition
+Authorization: Bearer {{token}}
+
+### Thanh toán học phí (bấm Payment Now) - tạo phiếu thu cho các ghi danh chưa thanh toán
+# Method mặc định Cash, PaidDate = hôm nay. 409 nếu các khoản đã chọn đều đã thanh toán
+POST http://localhost:5220/api/student/tuition/pay
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "enrollmentIds": [6]
+}
+
+### Lấy thời khóa biểu tuần của học viên (trang Schedule, date = ngày bất kỳ trong tuần)
+# Trả về: { weekStart, weekEnd, days, sessions (buổi học theo ClassSchedules, kèm sessionNo/teacherName/roomName), notices (rỗng vì DB chưa có bảng thông báo) }
+GET http://localhost:5220/api/student/schedule?date=2026-11-04
+Authorization: Bearer {{token}}
+
+### Lấy lịch sử khóa đã qua (ghi danh không còn Active: OnHold/Dropped)
+GET http://localhost:5220/api/student/schedule/history
+Authorization: Bearer {{token}}
+
+
+### Lấy danh sách lớp đang học để gửi phản hồi (trang Feedback)
+GET http://localhost:5220/api/student/feedback/classes
+Authorization: Bearer {{token}}
+
+### Lấy phản hồi của một lớp (chỉ lớp mình có ghi danh, 403 nếu không thuộc lớp)
+GET http://localhost:5220/api/student/feedback?classId=5
+Authorization: Bearer {{token}}
+
+### Gửi phản hồi về giáo viên/lớp -> lưu bảng StudentFeedbacks
+# 400 nếu content rỗng/quá 1000 ký tự; 403 nếu không đang học lớp này
+POST http://localhost:5220/api/student/feedback
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "classId": 5,
+  "content": "Giáo viên giảng dạy rất nhiệt tình, dễ hiểu."
+}
+
+### Lấy hồ sơ học viên đang đăng nhập (Header / Personal Info)
+GET http://localhost:5220/api/student/profile
+Authorization: Bearer {{token}}
+
+### Đổi mật khẩu -> TokenVersion tăng, trả token mới (dùng token mới cho các request sau)
+# 400 nếu sai mật khẩu hiện tại / mật khẩu mới < 8 ký tự / trùng mật khẩu cũ
+POST http://localhost:5220/api/student/profile/change-password
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "currentPassword": "123456",
+  "newPassword": "12345678",
+  "confirmPassword": "12345678"
+}
+
+### Đổi avatar (multipart) -> lưu file vào wwwroot/uploads/avatars/, ghi Users.AvatarUrl, XÓA file avatar cũ
+# Sửa đường dẫn bên dưới tới ảnh thật (jpg/jpeg/png/webp, tối đa 5 MB); 400 nếu sai định dạng/quá cỡ
+POST http://localhost:5220/api/student/profile/avatar
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=--HTTPBoundary
+
+----HTTPBoundary
+Content-Disposition: form-data; name="file"; filename="avatar.jpg"
+Content-Type: image/jpeg
+
+< D:/Capstone/HaDiNa-English-Center/app/frontend/src/assets/images/next-lesson-mock.jpg
+----HTTPBoundary--
