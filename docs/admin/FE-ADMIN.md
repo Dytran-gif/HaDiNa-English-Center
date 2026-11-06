@@ -102,3 +102,41 @@ npm.cmd run dev -- --host 127.0.0.1 --port 5173 --strictPort
 Đã kiểm tra login/JWT, KPI, revenue, danh sách Khóa/GV/HV/Lớp/Phòng/Payments/Center và các GET chi tiết qua Vite proxy. DB hiện1khóa/1lớp/2GV/2HV/0phiếu; không ghi thêm dữ liệu thử. Các thao tác bạn tự bấm thêm/sửa/xóa trên5173 sẽ dùng DB thật.
 
 Chưa thử mutation hoặc xác nhận toàn TeacherPortal vì DB thiếu các bảng mở rộng; Blog vẫn demo riêng. Không bật khởi tạo DB tự động để xử lý phần schema còn thiếu.
+## To-do — Mobile Admin UI/UX (deferred by user, 2026-11-06)
+
+Mobile UI/UX is postponed. The current work targets desktop; shared fixes already made are retained, but mobile acceptance is not complete.
+
+- [ ] Review navigation drawer, header/account controls and back navigation at320/390/768px.
+- [ ] Review Students/Teachers profiles and section navigation; test long names, email and large text.
+- [ ] Optimize Classes roster, schedule summaries and add-student controls for touch screens.
+- [ ] Review Payments search/date/method filters, table scrolling and receipt dialogs on narrow screens.
+- [ ] Review Courses card density, buttons/action groups and loading/empty states on mobile.
+- [ ] Check dialogs with the on-screen keyboard: focus, scroll, close behavior and busy states.
+- [ ] Review Dashboard date controls and Reports chart/table on mobile.
+- [ ] Check touch targets, keyboard navigation, text zoom and horizontal overflow across all Admin pages.
+- [ ] Perform mobile visual QA and save screenshots before marking this list complete.
+
+Browser regression script defaults to desktop. Mobile checks are opt-in through ADMIN_UX_MOBILE=1 for the later mobile pass.
+
+## Desktop Admin update — 2026-11-06 (plan28)
+
+- Students: `/admin/students/:id`, sections for profile, enrollments/classes and tuition history. Teachers: `/admin/teachers/:id`, profile and assigned classes. Sections persist in `?tab=`; edit opens the existing CRUD form with `?edit=id`.
+- Classes: `/admin/classes/:id`, roster and add/withdraw student actions using existing endpoints. List schedules are summarized; status/capacity use badges. Named confirmation before deletion/withdrawal.
+- Courses: desktop card grid with band, sessions/week, tuition/discount and active-student count. Maximum capacity is not invented when absent from the API.
+- Students/Teachers/Rooms CRUD share skeleton/empty/retry/toast and named confirmations. Account security actions are grouped; password errors clear between accounts.
+- Payments:5-column table, date/method filters stored in URL. Active date/method filters load all pages of the API search result before filtering and paginating; large histories can take longer. Create dialog locks close/student switching while saving. Receipt uses the Admin dialog; physical print output remains to be checked.
+- Dashboard date heading follows the selected day and class names open their profiles. Reports is fixed at12months with no monthly data table. Removed debt/detail-export/teacher-request features remain removed.
+- Admin uses its own Modal adapter backed by native Dialog for focus/Escape; shared Public/Teacher/Student Modal is unchanged.
+- Validation: build/typecheck PASS, lint0error/1existing AuthContext warning;28Admin+28UI+16Blog+17desktop browser checks PASS. Browser API was fully intercepted with fixtures; no DB mutations. ReviewPASS for desktop. Mobile acceptance is deferred per to-do above.
+
+To run desktop browser checks, launch a separate Chrome headless profile on debugging port9227, start Vite5173, then run `node scripts/verify-admin-ux.mjs` from app/frontend. Script requires no extra library; ADMIN_UX_DEBUG_URL and ADMIN_UX_BASE_URL can override local endpoints.
+
+## Simplification requested — 2026-11-06
+
+- Account actions: rename “Thêm thao tác” to “Tùy chọn”; opening the group keeps Edit at its normal height. Clicking outside leaves the group open; its trigger and Escape can close it, and choosing an action closes it before opening the dialog.
+
+- Courses and Rooms: remove the detail action/dialog; show Edit and Delete directly. Delete still requires a named confirmation and uses the existing BE checks.
+- Account action groups remain on Students/Teachers only.
+- Reports: fixed12months; remove period selector and monthly data table. Revenue chart, KPI summary and CSV for12months remain.
+- AdminManagement.css is absent from the workspace. Removed dangling imports and placed required desktop component styles in Components/Api/AdminApi.css; no mobile media queries added. Mobile remains deferred.
+- Validation: buildPASS, lint0errors/1existingwarning,28Admin checksPASS.

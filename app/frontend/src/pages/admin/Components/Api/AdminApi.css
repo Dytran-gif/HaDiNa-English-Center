@@ -6,7 +6,7 @@
 .admin-api-error { color: var(--red); background: var(--paper); border: 1px solid var(--red); }
 .admin-api-notice { color: var(--blue-dark); background: var(--blue-light); }
 .admin-api-table { overflow-x: auto; }
-.admin-api-table .admin-row-actions { flex-wrap: wrap; }
+.admin-api-table .admin-row-actions { flex-wrap: wrap; align-items: flex-start; }
 .admin-api-stack { display: grid; gap: calc(var(--gutter) / 2); }
 .admin-api-stack > .field { margin: 0; }
 .admin-api-muted { color: var(--muted); }
@@ -19,6 +19,10 @@
 .admin-api-receipt h2 { font-family: var(--font-display); }
 .admin-api-demo { margin-block-end: calc(var(--gutter) / 2); }
 @media print {
+  body:has(.admin-api-receipt) .admin-receipt-dialog { position: absolute; inset: 0; margin: 0; padding: 0; width: 100%; max-width: none; max-height: none; overflow: visible; border: 0; box-shadow: none; }
+  body:has(.admin-api-receipt) .admin-receipt-dialog .admin-dialog-inner,
+  body:has(.admin-api-receipt) .admin-receipt-dialog .admin-dialog-body { max-height: none; overflow: visible; }
+  body:has(.admin-api-receipt) .admin-receipt-dialog::backdrop { background: transparent; }
   body:has(.admin-api-receipt) * { visibility: hidden; }
   body:has(.admin-api-receipt) .admin-api-receipt, body:has(.admin-api-receipt) .admin-api-receipt * { visibility: visible; }
   .admin-api-receipt { position: absolute; inset: 0; padding: var(--gutter); }
@@ -28,3 +32,36 @@
 .admin-main, .admin-content, .admin-api-stack { min-width: 0; }
 .admin-api-fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
 .admin-api-fieldset:disabled { opacity: .65; }
+
+/* Desktop management components; mobile refinements remain deferred. */
+.admin-layout .admin-api-stack { grid-template-columns: minmax(0, 1fr); }
+.admin-layout .admin-api-stack > * { min-width: 0; }
+.admin-layout .admin-api-filters > .admin-field { flex: 1 1 10em; min-width: 0; }
+.admin-layout .admin-api-filters > .admin-field .field { min-width: 0; }
+.admin-layout .admin-api-filters input, .admin-layout .admin-api-filters select { max-width: 100%; min-width: 0; }
+.admin-layout .admin-action-menu { min-width: 0; }
+.admin-layout .admin-action-menu summary { box-sizing: border-box; cursor: pointer; min-height: var(--admin-control-height); color: var(--admin-text); background: var(--admin-surface); border: 1px solid var(--admin-border); padding: var(--admin-space-2) var(--admin-space-4); border-radius: var(--admin-radius-control); font-size: var(--admin-font-sm); font-weight: 600; line-height: var(--admin-leading); align-content: center; transition: background var(--admin-motion), border-color var(--admin-motion), color var(--admin-motion); }
+.admin-layout .admin-action-menu summary:hover, .admin-layout .admin-action-menu[open] > summary { background: var(--admin-primary-soft); color: var(--admin-primary-ink); border-color: var(--admin-primary); }
+.admin-layout .admin-action-menu summary:focus-visible { outline: 2px solid var(--admin-primary); outline-offset: var(--admin-space-1); }
+.admin-layout .admin-action-menu > div { display: grid; gap: var(--admin-space-2); padding-block: var(--admin-space-2); }
+.admin-layout .admin-management-name { color: var(--admin-primary); font-weight: 600; text-decoration: none; overflow-wrap: anywhere; }
+.admin-layout .admin-management-name:hover { text-decoration: underline; }
+.admin-layout .admin-management-name:focus-visible { outline: 2px solid var(--admin-primary); outline-offset: var(--admin-space-1); }
+.admin-layout .admin-management-subtitle { display: block; color: var(--admin-muted); font-size: var(--admin-font-xs); margin-block-start: var(--admin-space-1); }
+.admin-layout .admin-management-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--admin-space-3); }
+.admin-layout .admin-management-tabs { display: flex; flex-wrap: wrap; gap: var(--admin-space-2); padding-block-end: var(--admin-space-3); border-bottom: 1px solid var(--admin-border); }
+.admin-layout .admin-management-tabs a { padding: var(--admin-space-3) var(--admin-space-4); color: var(--admin-muted); text-decoration: none; border-radius: var(--admin-radius-control); font-size: var(--admin-font-sm); font-weight: 600; }
+.admin-layout .admin-management-tabs a[aria-current="page"] { background: var(--admin-primary-soft); color: var(--admin-primary-ink); }
+.admin-layout .admin-management-tabs a:focus-visible { outline: 2px solid var(--admin-primary); }
+.admin-layout .admin-management-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--admin-space-4); margin: 0; }
+.admin-layout .admin-management-fields > div { min-width: 0; }
+.admin-layout .admin-management-fields dt { color: var(--admin-muted); font-size: var(--admin-font-sm); margin-block-end: var(--admin-space-2); }
+.admin-layout .admin-management-fields dd { margin: 0; color: var(--admin-text); overflow-wrap: anywhere; }
+.admin-layout .admin-course-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--admin-space-4); }
+.admin-layout .admin-course-card { display: flex; flex-direction: column; gap: var(--admin-space-4); min-width: 0; }
+.admin-layout .admin-course-card h3 { margin: 0; font-size: var(--admin-font-section); overflow-wrap: anywhere; }
+.admin-layout .admin-course-card p { margin: 0; color: var(--admin-muted); }
+.admin-layout .admin-course-price { color: var(--admin-text); font-weight: 700; font-size: var(--admin-font-lg); }
+.admin-layout .admin-course-card footer { margin-block-start: auto; display: flex; flex-wrap: wrap; gap: var(--admin-space-2); }
+.admin-layout .admin-table td { vertical-align: top; }
+.admin-layout .admin-dialog-body > .admin-api-stack { min-width: 0; }
