@@ -9,7 +9,6 @@ import { errorMessage, useTeacherApi, useTeacherQuery } from "../../../services/
 import type { SessionDetail as Detail, SyllabusResponse } from "../../../types/teacherApi";
 import { Empty, Notice, QueryState, StatusTag } from "../Components/Common/Feedback";
 import { dayNames, dayNo, fmtDate, fmtDateTime, fmtTime, sessionStatusLabel } from "../Components/Common/format";
-import { LeaveRequestModal } from "../Schedule/LeaveRequestModal";
 
 const materialKinds = [
   { value: "Pdf", label: "PDF" }, { value: "Audio", label: "Audio" }, { value: "Video", label: "Video" },
@@ -30,7 +29,6 @@ export default function SessionDetail() {
   const [material, setMaterial] = useState({ title: "", kind: "Pdf", url: "" });
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
-  const [leave, setLeave] = useState(false);
 
   useEffect(() => {
     if (!s) return;
@@ -81,7 +79,6 @@ export default function SessionDetail() {
                 <div className="t-row">
                   <StatusTag status={s.status} labels={sessionStatusLabel} />
                   {s.status !== "Cancelled" && <Button to={`/teacher/attendance?session=${s.id}`}>Điểm danh</Button>}
-                  {s.status === "Upcoming" && <Button variant="outline" onClick={() => setLeave(true)}>Xin nghỉ / đổi buổi</Button>}
                 </div>
               </div>
               <div className="t-row" style={{ marginTop: 12 }}>
@@ -156,8 +153,6 @@ export default function SessionDetail() {
               </div>
             </Card>
 
-            <LeaveRequestModal open={leave} session={{ id: s.id, label: `Buổi ${s.sessionNo} · ${s.className} · ${fmtDate(s.date)}` }}
-              onClose={() => setLeave(false)} onDone={msg => { setLeave(false); setNotice({ text: msg, tone: "ok" }); }} />
           </>
         )}
       </QueryState>

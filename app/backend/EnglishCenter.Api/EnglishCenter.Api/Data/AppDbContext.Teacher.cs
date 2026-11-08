@@ -159,6 +159,7 @@ public partial class AppDbContext
         b.Entity<Submission>(e =>
         {
             e.Property(x => x.AudioUrl).HasMaxLength(500);
+            e.Property(x => x.AttachmentUrl).HasMaxLength(500);
             e.Property(x => x.FeedbackAudioUrl).HasMaxLength(500);
             e.Property(x => x.ReturnNote).HasMaxLength(2000);
             e.Property(x => x.Status).HasMaxLength(20).IsRequired();

@@ -18,7 +18,7 @@ const tabs = [
 
 export default function Grading() {
   const [params] = useSearchParams();
-  const [status, setStatus] = useState("pending");
+  const [status, setStatus] = useState(() => params.get("status") ?? "pending");
   const [classId, setClassId] = useState("");
   const [skill, setSkill] = useState("");
   const assignmentId = params.get("assignmentId") ?? "";

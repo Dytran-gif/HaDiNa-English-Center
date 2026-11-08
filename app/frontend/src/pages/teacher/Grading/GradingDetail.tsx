@@ -175,7 +175,12 @@ export default function GradingDetail() {
                       Bài viết · {s.wordCount ?? 0} từ
                       {canEdit && <span className="t-muted t-small">Bôi đen một đoạn để đánh dấu lỗi</span>}
                     </h3>
-                    {s.minWordsWarning && <Notice tone="warn" message={s.minWordsMessage ?? "Bài viết ít hơn số từ yêu cầu"} />}
+                    {s.attachmentUrl && (
+                      <p style={{ margin: "0 0 8px" }}>
+                        <a className="t-link" href={assetUrl(s.attachmentUrl) ?? s.attachmentUrl} target="_blank" rel="noreferrer">Tải file bài làm học viên đính kèm</a>
+                      </p>
+                    )}
+                    {s.minWordsWarning && !s.attachmentUrl && <Notice tone="warn" message={s.minWordsMessage ?? "Bài viết ít hơn số từ yêu cầu"} />}
                     <div ref={essayRef} className="t-essay" onMouseUp={canEdit ? captureSelection : undefined}>
                       <Highlighted text={s.content ?? ""} annotations={annotations} />
                     </div>
@@ -216,6 +221,7 @@ export default function GradingDetail() {
                     <h3 className="t-card-title">Bài nói</h3>
                     {s.audioUrl ? <audio controls src={assetUrl(s.audioUrl) ?? s.audioUrl} style={{ width: "100%" }} /> : <p className="t-muted">Không có file ghi âm.</p>}
                     {s.content && <p className="t-pre" style={{ marginTop: 12 }}>{s.content}</p>}
+                    {s.attachmentUrl && <p><a className="t-link" href={assetUrl(s.attachmentUrl) ?? s.attachmentUrl} target="_blank" rel="noreferrer">File đính kèm của học viên</a></p>}
                   </Card>
                 )}
 

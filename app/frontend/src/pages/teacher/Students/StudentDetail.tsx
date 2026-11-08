@@ -1,24 +1,20 @@
-import { useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import "../teacher-shared.css";
 import Card from "../../../components/ui/Card";
 import Button from "../../../components/ui/Button";
 import Modal from "../../../components/ui/Modal";
 import Tag from "../../../components/ui/Tag";
 import { errorMessage, useTeacherApi, useTeacherQuery } from "../../../services/teacher/teacherApi";
-import type { ReviewPeriod, StudentProfile, StudentReview, StudentReviewBody, TeacherClass } from "../../../types/teacherApi";
+import type { StudentProfile, StudentReview, StudentReviewBody, TeacherClass } from "../../../types/teacherApi";
 import { Empty, Notice, QueryState, StatusTag } from "../Components/Common/Feedback";
 import {
   bandOptions, enrollmentLabel, examTypeLabel, fmtDate, fmtDateTime, fmtNumber, submissionStatusLabel,
 } from "../Components/Common/format";
 import { AnnounceModal } from "../Classes/ClassDetail";
+import { ReviewFormModal } from "./ReviewFormModal";
+import { blankReview, periodLabel, reviewFields } from "./reviewFields";
 
-const periodLabel: Record<ReviewPeriod, string> = { Monthly: "Hằng tháng", MidCourse: "Giữa khóa", EndCourse: "Cuối khóa" };
-const reviewFields: [keyof StudentReviewBody, string][] = [
-  ["attitude", "Thái độ học tập"], ["attendanceComment", "Chuyên cần"], ["strengths", "Điểm mạnh"], ["improvements", "Cần cải thiện"],
-  ["listeningComment", "Listening"], ["readingComment", "Reading"], ["writingComment", "Writing"], ["speakingComment", "Speaking"],
-  ["overallComment", "Nhận xét chung"],
-];
 type NoticeState = { text: string; tone: "ok" | "error" };
 
 export default function StudentDetail() {
@@ -183,22 +179,16 @@ function Reviews({ studentId, classes, onNotice }: { studentId: number; classes:
   const api = useTeacherApi();
   const { data, loading, error, reload } = useTeacherQuery<StudentReview[]>(`students/${studentId}/reviews`);
   const [form, setForm] = useState<(StudentReviewBody & { id?: number }) | null>(null);
-  const [saving, setSaving] = useState(false);
-  const blank = (): StudentReviewBody => {
-    const d = new Date();
-    return { classId: classes[0]?.id ?? 0, period: "Monthly", periodLabel: `${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}` };
-  };
-  async function save() {
-    if (!form) return;
-    setSaving(true);
-    try {
-      const { id: rid, ...body } = form;
-      if (rid) await api.send("PUT", `students/${studentId}/reviews/${rid}`, body);
-      else await api.send("POST", `students/${studentId}/reviews`, body);
-      setForm(null); onNotice({ text: "Đã lưu nhận xét", tone: "ok" }); reload();
-    } catch (e) { onNotice({ text: errorMessage(e), tone: "error" }); }
-    finally { setSaving(false); }
-  }
+  // ?review=<classId>: mở sẵn form nhận xét cho lớp đó (đi từ trang chi tiết lớp)
+  const [params, setParams] = useSearchParams();
+  useEffect(() => {
+    const cid = Number(params.get("review"));
+    if (cid && classes.some(c => c.id === cid)) {
+      setForm(blankReview(cid));
+      setParams(p => { p.delete("review"); return p; }, { replace: true });
+    }
+  }, [params, classes, setParams]);
+
   async function remove(rid: number) {
     if (!confirm("Xóa nhận xét này?")) return;
     try { await api.send("DELETE", `students/${studentId}/reviews/${rid}`); onNotice({ text: "Đã xóa nhận xét", tone: "ok" }); reload(); }
@@ -206,7 +196,7 @@ function Reviews({ studentId, classes, onNotice }: { studentId: number; classes:
   }
   return (
     <Card>
-      <h3 className="t-card-title">Nhận xét định kỳ <Button disabled={!classes.length} onClick={() => setForm(blank())}>+ Viết nhận xét</Button></h3>
+      <h3 className="t-card-title">Nhận xét định kỳ <Button disabled={!classes.length} onClick={() => setForm(blankReview(classes[0]?.id ?? 0))}>+ Viết nhận xét</Button></h3>
       <QueryState loading={loading} error={error} onRetry={reload}>
         {data && (data.length === 0 ? <Empty>Chưa có nhận xét.</Empty> : (
           <ul className="t-list">
@@ -226,28 +216,8 @@ function Reviews({ studentId, classes, onNotice }: { studentId: number; classes:
           </ul>
         ))}
       </QueryState>
-      <Modal open={form !== null} title={form?.id ? "Sửa nhận xét" : "Viết nhận xét"} onClose={() => setForm(null)}
-        footer={<><Button variant="ghost" onClick={() => setForm(null)}>Hủy</Button><Button disabled={saving} onClick={save}>{saving ? "Đang lưu..." : "Lưu"}</Button></>}>
-        {form && (
-          <div className="t-form" style={{ maxHeight: "60vh", overflowY: "auto" }}>
-            <div className="t-form-grid">
-              <label><span className="t-label">Lớp</span>
-                <select className="t-input" style={{ width: "100%" }} value={form.classId} onChange={e => setForm({ ...form, classId: Number(e.target.value) })}>
-                  {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select></label>
-              <label><span className="t-label">Kỳ</span>
-                <select className="t-input" style={{ width: "100%" }} value={form.period} onChange={e => setForm({ ...form, period: e.target.value as ReviewPeriod })}>
-                  {(Object.keys(periodLabel) as ReviewPeriod[]).map(k => <option key={k} value={k}>{periodLabel[k]}</option>)}
-                </select></label>
-              <label><span className="t-label">Nhãn kỳ</span><input className="t-input" style={{ width: "100%" }} value={form.periodLabel ?? ""} onChange={e => setForm({ ...form, periodLabel: e.target.value })} /></label>
-            </div>
-            {reviewFields.map(([k, l]) => (
-              <label key={k}><span className="t-label">{l}</span>
-                <textarea className="t-input" style={{ width: "100%", minHeight: 50 }} value={(form[k] as string | null | undefined) ?? ""} onChange={e => setForm({ ...form, [k]: e.target.value })} /></label>
-            ))}
-          </div>
-        )}
-      </Modal>
+      <ReviewFormModal studentId={studentId} classes={classes} value={form} onClose={() => setForm(null)}
+        onSaved={msg => { setForm(null); onNotice({ text: msg, tone: "ok" }); reload(); }} />
     </Card>
   );
 }

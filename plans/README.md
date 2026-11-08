@@ -44,7 +44,7 @@ Việc mới thì lấy số trống tiếp theo trong dải của vùng, ví d�
 | 26 | [FE Admin Blog: danh sách và soạn theo đợt](./26-fe-admin-blog-list.md) | Admin | Codex | 24; API thật chờ21 | 🔵 Đợt1 danh sách demo xong; tiếp editor đợt2 |
 | 27 | [Rà soát kết nối Admin FE/BE](./27-fs-admin-review.md) | Admin + thời gian dùng chung | Codex | 20, 23 | ✅ build/checks/review; chưa tích hợp SQL Server |
 | 28 | [Cải thiện UI/UX nhiều trang Admin](./28-fe-admin-ux.md) | FE Admin | Codex | 24, 27 | ✅ desktop; mobile hoãn theo to-do FE-ADMIN |
-| 30 | [FE Teacher: trang còn thiếu + nối API](./30-fe-teacher-trang-va-noi-api.md) | Teacher | Duy | 00, 01, 03 | 🟡 §1–§10 nối API, lint/typecheck/build xanh; chờ test với BE + DB thật |
+| 30 | [FE Teacher: trang còn thiếu + nối API](./30-fe-teacher-trang-va-noi-api.md) | Teacher | Duy | 00, 01, 03 | 🟡 §1–§10 nối API + hoàn thiện 08/11 (bỏ đơn nghỉ, giao bài từ lớp, nhận xét HV, dashboard); chờ `dotnet build` + QA với DB thật |
 | 40 | [BE Public: khóa học, giáo viên, blog, thông tin trung tâm](./40-be-public-api.md) | Public | Hoàng | — | ⬜ |
 | 41 | [FE Public: nối trang public vào API](./41-fe-public-noi-api.md) | Public | Hoàng | 01, 40 | ⬜ |
 | 90 | [Project test xUnit cho service thuần](./90-be-project-test.md) | Chung | — | — | ⬜ |

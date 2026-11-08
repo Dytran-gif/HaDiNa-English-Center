@@ -7,14 +7,18 @@ import Modal from "../../../components/ui/Modal";
 import Tag from "../../../components/ui/Tag";
 import { errorMessage, useTeacherApi, useTeacherQuery } from "../../../services/teacher/teacherApi";
 import type {
-  ClassAttendanceSummary, ClassSessionsResponse, SyllabusResponse, TeacherClassDetail,
+  AssignmentListItem, ClassAttendanceSummary, ClassSessionsResponse, StudentReviewBody, SyllabusResponse, TeacherClass,
+  TeacherClassDetail,
 } from "../../../types/teacherApi";
 import { Empty, Notice, QueryState, StatusTag } from "../Components/Common/Feedback";
+import { AssignmentForm } from "../Assignments/AssignmentForm";
+import { ReviewFormModal } from "../Students/ReviewFormModal";
+import { blankReview } from "../Students/reviewFields";
 import {
-  attendanceLabel, classStatusLabel, dayNames, dayNo, enrollmentLabel, fmtDate, fmtNumber, fmtTime, sessionStatusLabel,
+  attendanceLabel, classStatusLabel, dayNames, dayNo, enrollmentLabel, fmtDate, fmtDateTime, fmtNumber, fmtTime, sessionStatusLabel,
 } from "../Components/Common/format";
 
-type Tab = "students" | "sessions" | "syllabus" | "attendance";
+type Tab = "students" | "assignments" | "sessions" | "syllabus" | "attendance";
 
 export default function ClassDetail() {
   const id = Number(useParams().id);
@@ -24,6 +28,9 @@ export default function ClassDetail() {
   const [notice, setNotice] = useState<{ text: string; tone: "ok" | "error" }>({ text: "", tone: "ok" });
   const [editUrl, setEditUrl] = useState<string | null>(null);
   const [announce, setAnnounce] = useState(false);
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [assignVersion, setAssignVersion] = useState(0);   // tăng để tab Bài tập tải lại sau khi giao bài
+  const { data: myClasses } = useTeacherQuery<TeacherClass[]>(assignOpen ? "classes" : null);
 
   async function saveMeetingUrl() {
     try {
@@ -50,6 +57,7 @@ export default function ClassDetail() {
                 <div className="t-row">
                   <StatusTag status={c.status} labels={classStatusLabel} />
                   {c.defaultSessionId && <Button to={`/teacher/attendance?session=${c.defaultSessionId}`}>Điểm danh</Button>}
+                  <Button variant="outline" disabled={c.enrolledCount === 0} onClick={() => setAssignOpen(true)}>+ Giao bài tập</Button>
                   <Button variant="outline" onClick={() => setAnnounce(true)}>Gửi thông báo cả lớp</Button>
                 </div>
               </div>
@@ -80,15 +88,22 @@ export default function ClassDetail() {
             </Card>
 
             <div className="t-tabs">
-              {([["students", "Học viên"], ["sessions", "Buổi học"], ["syllabus", "Giáo án"], ["attendance", "Chuyên cần"]] as [Tab, string][]).map(([k, label]) => (
+              {([["students", "Học viên"], ["assignments", "Bài tập"], ["sessions", "Buổi học"], ["syllabus", "Giáo án"], ["attendance", "Chuyên cần"]] as [Tab, string][]).map(([k, label]) => (
                 <button key={k} type="button" className={`t-tab ${tab === k ? "active" : ""}`} onClick={() => setTab(k)}>{label}</button>
               ))}
             </div>
 
-            {tab === "students" && <StudentsTab c={c} />}
+            {tab === "students" && <StudentsTab c={c} onNotice={setNotice} />}
+            {tab === "assignments" && <AssignmentsTab key={assignVersion} classId={id} onAssign={() => setAssignOpen(true)} />}
             {tab === "sessions" && <SessionsTab classId={id} />}
             {tab === "syllabus" && <SyllabusTab classId={id} onNotice={setNotice} />}
             {tab === "attendance" && <AttendanceTab classId={id} />}
+
+            {myClasses && (
+              <AssignmentForm open={assignOpen} editId={null} classes={myClasses} defaultClassId={id}
+                onClose={() => setAssignOpen(false)}
+                onSaved={msg => { setAssignOpen(false); setNotice({ text: msg, tone: "ok" }); setTab("assignments"); setAssignVersion(v => v + 1); reload(); }} />
+            )}
 
             <AnnounceModal open={announce} classId={id} className={c.name} onClose={() => setAnnounce(false)}
               onDone={text => { setAnnounce(false); setNotice({ text, tone: "ok" }); }} />
@@ -99,12 +114,13 @@ export default function ClassDetail() {
   );
 }
 
-function StudentsTab({ c }: { c: TeacherClassDetail }) {
+function StudentsTab({ c, onNotice }: { c: TeacherClassDetail; onNotice: (n: { text: string; tone: "ok" | "error" }) => void }) {
+  const [review, setReview] = useState<{ studentId: number; name: string; body: StudentReviewBody } | null>(null);
   if (c.students.length === 0) return <Empty>Lớp chưa có học viên.</Empty>;
   return (
     <Card padded={false} className="t-table-wrap">
       <table className="teacher-table">
-        <thead><tr><th>Mã</th><th>Họ tên</th><th>SĐT</th><th>Email</th><th>Band mục tiêu</th><th>Trạng thái</th><th>Chuyên cần</th></tr></thead>
+        <thead><tr><th>Mã</th><th>Họ tên</th><th>SĐT</th><th>Email</th><th>Band mục tiêu</th><th>Trạng thái</th><th>Chuyên cần</th><th /></tr></thead>
         <tbody>
           {c.students.map(s => (
             <tr key={s.studentId} className={s.absenceWarning ? "t-row-warn" : ""}>
@@ -115,11 +131,52 @@ function StudentsTab({ c }: { c: TeacherClassDetail }) {
               <td>{fmtNumber(s.targetBand)}</td>
               <td><StatusTag status={s.status === "Active" ? "Ongoing" : s.status} labels={{ Ongoing: "Đang học", ...enrollmentLabel }} /></td>
               <td>{s.attendanceRate != null ? `${fmtNumber(s.attendanceRate)}%` : "—"} {s.absenceWarning && <Tag tone="red">Vắng &gt; 20%</Tag>}</td>
+              <td>
+                <div className="teacher-row-actions">
+                  <button type="button" className="teacher-action-link"
+                    onClick={() => setReview({ studentId: s.studentId, name: s.fullName, body: blankReview(c.id) })}>Nhận xét</button>
+                  <Link className="teacher-action-link" to={`/teacher/students/${s.studentId}`}>Hồ sơ</Link>
+                </div>
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
+      {review && (
+        <ReviewFormModal studentId={review.studentId} studentName={review.name} classes={[{ id: c.id, name: c.name }]}
+          value={review.body} onClose={() => setReview(null)}
+          onSaved={msg => { setReview(null); onNotice({ text: `${msg} cho ${review.name}`, tone: "ok" }); }} />
+      )}
     </Card>
+  );
+}
+
+// Bài tập đã giao cho lớp: số đã nộp / được giao, số bài chờ chấm
+function AssignmentsTab({ classId, onAssign }: { classId: number; onAssign: () => void }) {
+  const { data, loading, error, reload } = useTeacherQuery<AssignmentListItem[]>(`assignments?classId=${classId}`);
+  return (
+    <QueryState loading={loading} error={error} onRetry={reload}>
+      {data && (data.length === 0 ? (
+        <Empty>Lớp chưa có bài tập. <button type="button" className="teacher-action-link" onClick={onAssign}>Giao bài đầu tiên</button></Empty>
+      ) : (
+        <Card padded={false} className="t-table-wrap">
+          <table className="teacher-table">
+            <thead><tr><th>Bài</th><th>Kỹ năng</th><th>Hạn nộp</th><th>Đã nộp</th><th>Chờ chấm</th></tr></thead>
+            <tbody>
+              {data.map(a => (
+                <tr key={a.id}>
+                  <td className="t-wrap"><span className="t-strong">{a.title}</span> {a.type === "Quiz" && <Tag>Tự chấm</Tag>}</td>
+                  <td>{a.skill}</td>
+                  <td>{fmtDateTime(a.dueAt)} {a.isOpen ? <Tag tone="green">Còn hạn</Tag> : <Tag tone="red">Hết hạn</Tag>}</td>
+                  <td>{a.submittedCount}/{a.assignedCount}</td>
+                  <td>{a.pendingGrading > 0 ? <Link className="t-link" to={`/teacher/grading?assignmentId=${a.id}`}>{a.pendingGrading} bài</Link> : "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+      ))}
+    </QueryState>
   );
 }
 

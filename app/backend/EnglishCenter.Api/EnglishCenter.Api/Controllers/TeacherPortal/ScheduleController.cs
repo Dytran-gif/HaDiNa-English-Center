@@ -12,12 +12,10 @@ namespace EnglishCenter.Api.Controllers.TeacherPortal;
 public class ScheduleController : TeacherControllerBase
 {
     private readonly SessionService _sessions;
-    private readonly NotificationService _notify;
 
-    public ScheduleController(AppDbContext db, SessionService sessions, NotificationService notify) : base(db)
+    public ScheduleController(AppDbContext db, SessionService sessions) : base(db)
     {
         _sessions = sessions;
-        _notify = notify;
     }
 
     // GET api/teacher/schedule?view=week&date=2026-11-04
@@ -165,91 +163,6 @@ public class ScheduleController : TeacherControllerBase
         }));
 
         return events.OrderBy(e => e.Date).ThenBy(e => e.StartTime).ToList();
-    }
-
-    // ---------- Đơn xin nghỉ / đổi buổi gửi Admin ----------
-
-    // GET api/teacher/schedule/leave-requests?status=Pending
-    [HttpGet("leave-requests")]
-    public async Task<IActionResult> GetLeaveRequests(string? status)
-    {
-        var query = Db.TeacherRequests.Where(r => r.TeacherId == TeacherId && r.Type != "AttendanceUnlock");
-        if (!string.IsNullOrWhiteSpace(status)) query = query.Where(r => r.Status == status);
-
-        var items = await query
-            .OrderByDescending(r => r.CreatedAt)
-            .Select(r => new
-            {
-                r.Id, r.Type, r.Status, r.Reason, r.AdminNote, r.CreatedAt, r.ProcessedAt,
-                r.ProposedDate, r.ProposedStartTime, r.ProposedEndTime,
-                session = new
-                {
-                    r.Session.Id, r.Session.ClassId, ClassName = r.Session.Class.Name,
-                    r.Session.SessionNo, r.Session.Date, r.Session.StartTime, r.Session.EndTime
-                }
-            })
-            .ToListAsync();
-        return Ok(items);
-    }
-
-    // POST api/teacher/schedule/leave-requests
-    [HttpPost("leave-requests")]
-    public async Task<IActionResult> CreateLeaveRequest(LeaveRequestCreate req)
-    {
-        var session = await MySessionAsync(req.SessionId);
-        if (session == null) return Error(404, "Không tìm thấy buổi học");
-        if (session.Status == "Cancelled") return Error(409, "Buổi học này đã bị hủy");
-        if (AppTime.At(session.Date, session.StartTime) <= AppTime.Now)
-            return Error(409, "Chỉ gửi đơn cho buổi học chưa diễn ra");
-
-        if (await Db.TeacherRequests.AnyAsync(r => r.SessionId == req.SessionId && r.Status == "Pending"
-                && r.Type != "AttendanceUnlock"))
-            return Error(409, "Buổi này đã có đơn đang chờ duyệt");
-
-        if (req.ProposedDate != null)
-        {
-            if (req.ProposedDate < AppTime.Today) return Error(400, "Ngày dạy bù phải từ hôm nay trở đi");
-
-            var clash = await FindClashAsync(req.ProposedDate.Value, req.ProposedStartTime!.Value, req.ProposedEndTime!.Value);
-            if (clash != null) return Error(409, $"Buổi bù đề xuất bị trùng với lịch dạy: {clash}");
-        }
-
-        var r = new TeacherRequest
-        {
-            TeacherId = TeacherId,
-            Type = req.Type,
-            SessionId = req.SessionId,
-            Reason = req.Reason.Trim(),
-            ProposedDate = req.ProposedDate,
-            ProposedStartTime = req.ProposedStartTime,
-            ProposedEndTime = req.ProposedEndTime,
-            Status = "Pending",
-            CreatedAt = AppTime.Now
-        };
-        Db.TeacherRequests.Add(r);
-
-        var adminIds = await Db.Users.Where(u => u.Role == "admin" && !u.IsLocked).Select(u => u.Id).ToListAsync();
-        _notify.Add(adminIds, "Request",
-            $"{TeacherName} gửi đơn {(req.Type == "Leave" ? "xin nghỉ" : "đổi buổi")}",
-            $"Lớp {session.Class.Name}, buổi {session.SessionNo} ngày {session.Date:dd/MM/yyyy}. Lý do: {r.Reason}",
-            null, UserId);
-
-        await Db.SaveChangesAsync();
-        return StatusCode(201, new { r.Id, r.Status, message = "Đã gửi đơn, chờ Admin duyệt" });
-    }
-
-    // DELETE api/teacher/schedule/leave-requests/5  (hủy đơn đang chờ)
-    [HttpDelete("leave-requests/{id}")]
-    public async Task<IActionResult> CancelLeaveRequest(int id)
-    {
-        var r = await Db.TeacherRequests.FirstOrDefaultAsync(x => x.Id == id && x.TeacherId == TeacherId);
-        if (r == null) return Error(404, "Không tìm thấy đơn");
-        if (r.Status != "Pending") return Error(409, "Chỉ hủy được đơn đang chờ duyệt");
-
-        r.Status = "Cancelled";
-        r.ProcessedAt = AppTime.Now;
-        await Db.SaveChangesAsync();
-        return Ok(new { message = "Đã hủy đơn" });
     }
 
     // ---------- Lịch rảnh cho học viên đặt 1 kèm 1 ----------

@@ -135,7 +135,7 @@ function RatingsCard() {
     <Card>
       <h3 className="t-card-title">Đánh giá từ học viên</h3>
       <QueryState loading={loading} error={error} onRetry={reload}>
-        {data && (data.totalRatings === 0 ? <Empty>Chưa có đánh giá.</Empty> : (
+        {data && (data.totalRatings === 0 ? <Empty>Chưa có đánh giá sao.</Empty> : (
           <>
             <div className="t-row"><span className="t-overall">{fmtNumber(data.averageScore, 2)}</span><span className="t-muted">/ 5 · {data.totalRatings} lượt</span></div>
             {[...data.distribution].reverse().map(d => (
@@ -152,6 +152,21 @@ function RatingsCard() {
             </ul>
           </>
         ))}
+        {data && (
+          <>
+            <h4 style={{ margin: "16px 0 4px" }}>Phản hồi học viên gửi ({data.feedbacks?.length ?? 0})</h4>
+            {!data.feedbacks?.length ? <Empty>Chưa có phản hồi.</Empty> : (
+              <ul className="t-list">
+                {data.feedbacks.map(f => (
+                  <li key={f.id}>
+                    <div><div className="t-muted t-small">{f.studentName} · {f.className}</div><div className="t-wrap">{f.content}</div></div>
+                    <span className="t-muted t-small">{fmtDateTime(f.createdAt)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
+        )}
       </QueryState>
     </Card>
   );

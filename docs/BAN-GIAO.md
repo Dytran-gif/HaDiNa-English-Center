@@ -1,4 +1,25 @@
 # Nhật ký bàn giao
+## [2026-11-08] Duy (Claude) — Teacher-Module: hoàn thiện cổng Giáo viên + migration mới
+
+**Đã xong**
+- Merge `origin/main` (PR #3 Student, #4 Admin) vào nhánh Teacher: 4 file Student lấy bản của Nam (bỏ thay đổi `import React` cũ), gộp `BAN-GIAO.md` + `plans/README.md`.
+- DB: migration **`20261108140000_StudentFeedbackAndSubmissionFile`** (viết tay, máy làm không có NuGet): bảng `StudentFeedbacks` của Nam (trước chỉ có script SQL, thiếu migration → snapshot lệch) dùng `IF NOT EXISTS`; cột `Submissions.AttachmentUrl` cho học viên đính kèm file bài làm. Tài liệu mới `docs/DATABASE.md`.
+- Bỏ chức năng **GV gửi đơn xin nghỉ / đổi buổi** (BE endpoint + DTO, FE tab + modal); Admin cũng đã gỡ phần duyệt.
+- Chi tiết lớp: nút **Giao bài tập** cho lớp, tab **Bài tập** của lớp, cột **Nhận xét** từng học viên (form dùng chung `Students/ReviewFormModal.tsx`).
+- Dashboard: thêm *Lớp đang dạy* (sĩ số, tiến độ, buổi tới, HV cần chú ý), *Hạn nộp 7 ngày tới*, *Buổi chưa điểm danh* (sắp khóa 48h).
+- Chấm bài hiện file học viên đính kèm; Hồ sơ GV hiện phản hồi từ `StudentFeedbacks`.
+- Sửa lỗi: (1) chuông "học viên vừa nộp bài" trỏ `/teacher/grading/{assignmentId}` → đúng là `{submissionId}`; (2) `SessionService.SyncAsync` khi Admin đổi lịch tuần giữa khóa sinh thêm buổi "ma" ở quá khứ → nay chỉ sinh phần còn lại từ hôm nay; (3) buổi điểm danh mặc định bị quay vòng giờ qua nửa đêm.
+- FE: lint 0 lỗi (1 warning cũ AuthContext), typecheck + build xanh. BE: Roslyn soát cú pháp các file sửa — **chưa `dotnet build` được** (NuGet bị chặn trên máy làm).
+
+**Việc tiếp theo (trên máy Duy)**
+- `app\backend\EnglishCenter.Api`: `dotnet build` → `EnglishCenter.Api`: `dotnet ef migrations has-pending-model-changes` (phải *No changes*) → `dotnet ef database update`.
+- QA lại Teacher với BE thật (dashboard, giao bài từ lớp, nhận xét HV).
+- Nam: API Student nộp bài (gọi `SubmissionService.SubmitAsync(..., attachmentUrl)`) + xem tài liệu buổi học (`SessionMaterials`).
+
+**Bẫy cần biết**
+- Yêu cầu *mở lại điểm danh* vẫn gửi được nhưng Admin chưa có API duyệt → nhóm cần chốt.
+- Ai đã chạy `docs/admin/sql/2026-11-04-student-feedback-table.sql` vẫn `database update` bình thường (migration có kiểm tra tồn tại).
+
 ## [2026-11-06] Codex — Rút gọn Khóa học/Phòng học/Báo cáo
 
 **Đã xong**

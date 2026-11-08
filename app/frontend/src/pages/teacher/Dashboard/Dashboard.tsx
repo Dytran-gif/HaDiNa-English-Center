@@ -8,6 +8,55 @@ import type { TeacherDashboard } from "../../../types/teacherApi";
 import { Empty, QueryState, StatusTag } from "../Components/Common/Feedback";
 import { eventKindLabel, fmtDate, fmtDateTime, fmtTime, requestTypeLabel, sessionStatusLabel } from "../Components/Common/format";
 
+// Lối vào nhanh mỗi lớp đang dạy: sĩ số, tiến độ, buổi kế tiếp, số HV cần chú ý
+function MyClasses({ data }: { data: TeacherDashboard }) {
+  return (
+    <Card>
+      <h3 className="t-card-title">Lớp đang dạy <Link className="t-link t-small" to="/teacher/classes">Tất cả lớp</Link></h3>
+      {data.myClasses.length === 0 ? <Empty>Hiện chưa có lớp nào đang diễn ra.</Empty> : (
+        <ul className="t-list">
+          {data.myClasses.map(c => (
+            <li key={c.id}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="t-row t-row--between">
+                  <Link className="t-link t-strong" to={`/teacher/classes/${c.id}`}>{c.name}</Link>
+                  <span className="t-muted t-small">{c.enrolledCount}/{c.maxStudents} HV · {c.doneSessions}/{c.totalSessions} buổi</span>
+                </div>
+                <div className="t-progress" style={{ margin: "6px 0" }}><span style={{ width: `${c.progressPercent}%` }} /></div>
+                <div className="t-muted t-small">
+                  {c.nextSession ? `Buổi tới: B${c.nextSession.sessionNo} · ${fmtDate(c.nextSession.date)} ${fmtTime(c.nextSession.startTime)}` : "Đã hết buổi"}
+                  {c.attentionCount > 0 && <> · <Tag tone="red">{c.attentionCount} HV cần chú ý</Tag></>}
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Card>
+  );
+}
+
+function Deadlines({ data }: { data: TeacherDashboard }) {
+  return (
+    <Card>
+      <h3 className="t-card-title">Hạn nộp 7 ngày tới <Link className="t-link t-small" to="/teacher/assignments">Bài tập</Link></h3>
+      {data.upcomingDeadlines.length === 0 ? <Empty>Không có bài nào sắp đến hạn.</Empty> : (
+        <ul className="t-list">
+          {data.upcomingDeadlines.map(a => (
+            <li key={a.id}>
+              <div>
+                <div className="t-strong">{a.title}</div>
+                <div className="t-muted t-small">{a.className} · {a.skill} · hạn {fmtDateTime(a.dueAt)}</div>
+              </div>
+              <Tag tone={a.submittedCount >= a.assignedCount ? "green" : undefined}>{a.submittedCount}/{a.assignedCount} đã nộp</Tag>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Card>
+  );
+}
+
 export default function Dashboard() {
   const { data, loading, error, reload } = useTeacherQuery<TeacherDashboard>("dashboard");
 
@@ -39,15 +88,35 @@ function DashboardBody({ data }: { data: TeacherDashboard }) {
         </div>
       </div>
 
+      {data.unmarkedSessions.length > 0 && (
+        <Card>
+          <h3 className="t-card-title">Buổi đã dạy chưa điểm danh ({data.unmarkedSessions.length})</h3>
+          <p className="t-muted t-small" style={{ margin: "0 0 8px" }}>Điểm danh tự khóa sau 48 giờ kể từ khi buổi kết thúc.</p>
+          <ul className="t-list">
+            {data.unmarkedSessions.map(u => (
+              <li key={u.sessionId}>
+                <span>{u.className} · Buổi {u.sessionNo} · {fmtDate(u.date)} {fmtTime(u.startTime)}–{fmtTime(u.endTime)}
+                  <span className="t-muted t-small"> · khóa lúc {fmtDateTime(u.lockAt)}</span></span>
+                <Link className="t-link t-small" to={`/teacher/attendance?session=${u.sessionId}`}>Điểm danh ngay</Link>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
+
       <div className="t-grid--stats">
         <div className="t-stat"><span className="t-stat__value">{stats.ongoingClasses}</span><span className="t-stat__label">Lớp đang dạy</span></div>
         <div className="t-stat"><span className="t-stat__value">{stats.activeStudents}</span><span className="t-stat__label">Học viên đang học</span></div>
         <div className="t-stat"><span className="t-stat__value">{stats.sessionsToday}</span><span className="t-stat__label">Buổi dạy hôm nay</span></div>
         <div className={`t-stat ${grading.overdue > 0 ? "t-stat--warn" : ""}`}>
           <span className="t-stat__value">{stats.pendingGrading}</span>
-          <span className="t-stat__label">Bài chờ chấm{grading.overdue > 0 ? ` · ${grading.overdue} trễ 24h` : ""}</span>
+          <span className="t-stat__label">
+            <Link className="t-link" to="/teacher/grading">Bài chờ chấm</Link> (W {grading.writing} · S {grading.speaking}){grading.overdue > 0 ? ` · ${grading.overdue} trễ 24h` : ""}
+          </span>
         </div>
       </div>
+
+      <MyClasses data={data} />
 
       <div className="t-grid--2">
         <Card>
@@ -78,14 +147,7 @@ function DashboardBody({ data }: { data: TeacherDashboard }) {
           )}
         </Card>
 
-        <Card>
-          <h3 className="t-card-title">Bài chờ chấm <Link className="t-link t-small" to="/teacher/grading">Mở trang chấm bài</Link></h3>
-          <div className="t-grid--stats">
-            <div className="t-stat"><span className="t-stat__value">{grading.writing}</span><span className="t-stat__label">Writing</span></div>
-            <div className="t-stat"><span className="t-stat__value">{grading.speaking}</span><span className="t-stat__label">Speaking</span></div>
-            <div className={`t-stat ${grading.overdue ? "t-stat--warn" : ""}`}><span className="t-stat__value">{grading.overdue}</span><span className="t-stat__label">Trễ hạn chấm 24h</span></div>
-          </div>
-        </Card>
+        <Deadlines data={data} />
       </div>
 
       <div className="t-grid--2">

@@ -11,16 +11,17 @@ Ngày giờ: dùng **giờ địa phương**, không có `Z` ở cuối. Ví d�
 
 ## Cài đặt lần đầu (bắt buộc)
 
-Code có thêm nhiều bảng mới nên phải tạo migration:
+Migration đã có sẵn trong repo (`TeacherFeatures`, `StudentFeedbackAndSubmissionFile`). **Không** chạy `migrations add` nữa,
+chỉ áp vào DB (PowerShell, thư mục `app\backend\EnglishCenter.Api\EnglishCenter.Api`):
 
 ```powershell
-cd EnglishCenter.Api\EnglishCenter.Api
-dotnet ef migrations add TeacherFeatures
 dotnet ef database update
-dotnet run
+dotnet run --launch-profile http -- --Database:InitializeOnStartup=true   # seed demo, thấy "Now listening on" thì Ctrl+C
 ```
 
-Khi chạy ở Development, hệ thống tự tạo dữ liệu demo cho `teacher@demo.com`: syllabus 12 bài, 1 bài Writing
+Máy chưa có DB: từ gốc repo chạy `powershell -ExecutionPolicy Bypass -File tools\db\teacher-features.ps1 -SeedDemo`.
+
+Seed tạo dữ liệu demo cho `teacher@demo.com`: syllabus 12 bài, 1 bài Writing
 học viên đã nộp (chờ chấm), 1 bài Quiz, 1 yêu cầu đặt lịch 1 kèm 1 và ngân hàng nhận xét mẫu.
 
 ## Khái niệm chính
@@ -40,16 +41,13 @@ học viên đã nộp (chờ chấm), 1 bài Quiz, 1 yêu cầu đặt lịch 1
 
 | Method | URL | Mô tả |
 |---|---|---|
-| GET | `/api/teacher/dashboard` | 4 thẻ số liệu (`stats`), lịch dạy hôm nay (`todaySchedule`), bài chờ chấm + trễ 24h (`grading`), học viên cần chú ý (`attentionStudents`: vắng ≥ 2 buổi liên tiếp, chưa nộp ≥ 2 bài, band gần nhất giảm), yêu cầu chờ xử lý, chuông thông báo, lối tắt (`shortcuts.attendanceSessionId`, `shortcuts.nextSubmissionId`) |
+| GET | `/api/teacher/dashboard` | 4 thẻ số liệu (`stats`), lịch dạy hôm nay (`todaySchedule`), bài chờ chấm + trễ 24h (`grading`), học viên cần chú ý (`attentionStudents`: vắng ≥ 2 buổi liên tiếp, chưa nộp ≥ 2 bài, band gần nhất giảm), yêu cầu chờ xử lý, chuông thông báo, lối tắt (`shortcuts.attendanceSessionId`, `shortcuts.nextSubmissionId`), `myClasses` (lớp đang dạy: sĩ số, tiến độ, buổi tới, số HV cần chú ý), `upcomingDeadlines` (bài hết hạn trong 7 ngày + số đã nộp), `unmarkedSessions` (buổi đã dạy chưa điểm danh, kèm `lockAt`) |
 
 ## 2. Lịch dạy
 
 | Method | URL | Mô tả |
 |---|---|---|
 | GET | `/api/teacher/schedule?view=week&date=2026-11-04` | Lịch tuần (Thứ 2 → CN). `view=month` = lịch tháng. Hoặc `from=&to=`. Thêm `includeAvailability=true` để lấy cả lịch rảnh. Trả `events` (mỗi buổi: `kind` = Class / Makeup / OneOnOne, giờ, lớp, phòng, sĩ số, `status`), `days` (nhóm theo ngày, dùng cho giao diện điện thoại), `previous` / `next` để chuyển tuần / tháng |
-| GET | `/api/teacher/schedule/leave-requests?status=` | Đơn xin nghỉ / đổi buổi đã gửi + trạng thái |
-| POST | `/api/teacher/schedule/leave-requests` | Gửi đơn: `{ "type": "Leave" \| "Reschedule", "sessionId", "reason", "proposedDate", "proposedStartTime", "proposedEndTime" }` |
-| DELETE | `/api/teacher/schedule/leave-requests/{id}` | Hủy đơn đang chờ |
 | GET | `/api/teacher/schedule/availability?from=&to=` | Lịch rảnh đã khai báo |
 | POST | `/api/teacher/schedule/availability` | Khai báo khung giờ rảnh: `{ "date", "startTime", "endTime", "note", "repeatWeeks": 1-12 }` |
 | DELETE | `/api/teacher/schedule/availability/{id}` | Xóa khung giờ (chưa có ai đặt) |
@@ -81,7 +79,7 @@ Gửi thông báo cho cả lớp: xem mục 9 (`POST /api/teacher/announcements`
 | GET | `/api/teacher/classes/{classId}/attendance/default` | Buổi mặc định cần điểm danh (buổi gần nhất) |
 | GET | `/api/teacher/sessions/{id}/attendance` | Bảng điểm danh: học viên, trạng thái, gợi ý `Excused` nếu đơn xin nghỉ đã duyệt, `locked`, `lockAt`, `summary` |
 | PUT | `/api/teacher/sessions/{id}/attendance` | Lưu: `{ "items": [ { "studentId", "status", "note" } ] }`. Phải đủ mọi học viên đang học. Nút "Tất cả có mặt" = gửi tất cả `Present`. Trả về `warnings` (học viên vừa vượt 20% vắng) |
-| POST | `/api/teacher/sessions/{id}/attendance/unlock-request` | Xin Admin mở lại khi đã khóa: `{ "reason" }` |
+| POST | `/api/teacher/sessions/{id}/attendance/unlock-request` | Xin Admin mở lại khi đã khóa: `{ "reason" }`. **Lưu ý:** Admin hiện chưa có API duyệt (đã gỡ 31/10) → yêu cầu sẽ nằm ở "Chờ duyệt" |
 | GET | `/api/teacher/classes/{classId}/attendance` | Bảng tổng hợp chuyên cần cả lớp (cột tỉ lệ %, cảnh báo > 20%) |
 
 ## 5. Bài tập
@@ -117,7 +115,7 @@ hoặc `{ "questionType": "FillBlank", "content": "...", "correctAnswer": "colou
 |---|---|---|
 | GET | `/api/teacher/grading/submissions?status=pending\|overdue\|graded\|returned&classId=&skill=` | Danh sách bài nộp (lần nộp mới nhất), nộp sớm nhất lên đầu, có `gradingOverdue` |
 | GET | `/api/teacher/grading/summary` | Số bài chờ chấm, trễ 24h |
-| GET | `/api/teacher/grading/submissions/{id}` | Trang chấm: đề, bài viết, `wordCount`, `minWordsWarning`, audio, tiêu chí, highlight, lịch sử các lần nộp, `nextSubmissionId` |
+| GET | `/api/teacher/grading/submissions/{id}` | Trang chấm: đề, bài viết, `wordCount`, `minWordsWarning`, audio, `attachmentUrl` (file học viên đính kèm), tiêu chí, highlight, lịch sử các lần nộp, `nextSubmissionId` |
 | PUT | `/api/teacher/grading/submissions/{id}` | Lưu nháp: `{ "tr", "cc", "lr", "gra" }` (Writing) hoặc `{ "fc", "lr", "gra", "p" }` (Speaking), thang 0-9 bước 0.5, `feedback`, `feedbackAudioUrl`, `annotations: [{ "startOffset", "endOffset", "selectedText", "errorType": "Grammar\|Vocabulary\|Coherence", "suggestion", "comment" }]`. Band tổng tự tính |
 | POST | `/api/teacher/grading/submissions/{id}/publish` | Công bố (học viên mới thấy điểm) |
 | POST | `/api/teacher/grading/submissions/{id}/return` | Trả bài cho sửa: `{ "message" }` → học viên nộp lần 2, 3... |
@@ -177,12 +175,14 @@ Phần thi online: tạo bài tập ở mục 5 với `examId` = id bài kiểm 
 | GET | `/api/teacher/profile` | Họ tên, email, SĐT, chuyên môn, bằng cấp, ngày vào làm, ảnh |
 | POST | `/api/teacher/profile/avatar` | Đổi ảnh (multipart, field `file`, jpg/png/webp ≤ 5 MB) |
 | GET | `/api/teacher/profile/classes` | Lịch sử lớp đã / đang dạy |
-| GET | `/api/teacher/profile/ratings` | Đánh giá từ học viên: điểm TB, phân bố sao, nhận xét |
+| GET | `/api/teacher/profile/ratings` | Đánh giá từ học viên: điểm TB, phân bố sao, nhận xét (`TeacherRatings`) + `feedbacks`: 30 phản hồi mới nhất học viên gửi ở trang Feedback (`StudentFeedbacks`) |
 | GET | `/api/teacher/profile/timesheet?month=2026-11` | Bảng công: số buổi, số giờ (tính từ buổi đã điểm danh + 1 kèm 1) |
 | POST | `/api/teacher/profile/change-password` | `{ "currentPassword", "newPassword", "confirmPassword" }` (≥ 8 ký tự). Trả `token` mới |
 | POST | `/api/teacher/profile/logout` | Đăng xuất (token hiện tại hết hiệu lực) |
 
-## Admin duyệt đơn của giáo viên
+## Admin duyệt đơn của giáo viên — ĐÃ GỠ
+
+> 08/11/2026: Admin đã gỡ API duyệt đơn (commit `c145cd9`, xem `ADMIN_API.md`). Teacher cũng đã **bỏ chức năng gửi đơn xin nghỉ / đổi buổi** theo yêu cầu nhóm. Bảng `TeacherRequests` vẫn giữ (dùng cho yêu cầu mở lại điểm danh). Bảng dưới chỉ để tham khảo nếu sau này khôi phục.
 
 | Method | URL | Mô tả |
 |---|---|---|
@@ -194,7 +194,8 @@ Phần thi online: tạo bài tập ở mục 5 với `examId` = id bài kiểm 
 
 Các bảng sau do bên Student ghi dữ liệu, Teacher đọc / xử lý:
 
-- **Nộp bài**: gọi `SubmissionService.SubmitAsync(studentId, assignmentId, content, audioUrl, answers)`. Hàm đã xử lý hạn nộp / nộp trễ, lần nộp, đếm từ, tự chấm Quiz và báo giáo viên.
+- **Nộp bài**: gọi `SubmissionService.SubmitAsync(studentId, assignmentId, content, audioUrl, answers, attachmentUrl)`. Hàm đã xử lý hạn nộp / nộp trễ, lần nộp, đếm từ, tự chấm Quiz và báo giáo viên (link chuông → `/teacher/grading/{submissionId}`). `attachmentUrl` (tùy chọn) = file Word/PDF/ảnh bài làm, lưu ở cột `Submissions.AttachmentUrl`; bài Writing được nộp nếu có nội dung **hoặc** file. Upload file trước rồi gửi url `/uploads/...` (Student cần endpoint upload riêng, dùng lại `FileStorageService`).
+- **Tài liệu buổi học** (`SessionMaterials`): giáo viên đăng theo từng buổi để **học viên** xem/tải; bên Student đọc theo `SessionId` của các buổi thuộc lớp mình đang học.
 - **Yêu cầu** (`StudentRequests`): `Type` = `Leave` / `Reschedule` (kèm `SessionId`), `OneOnOneBooking` (kèm `AvailabilityId`, hoặc `Date` + `StartTime` + `EndTime`), `OneOnOneCancel` (kèm `OneOnOneSessionId`). `TeacherId` = giáo viên của lớp.
 - **Lịch rảnh giáo viên** để đặt 1 kèm 1: `TeacherAvailabilities` với `IsBooked = false`.
 - **Đánh giá giáo viên** (`TeacherRatings`): `Score` 1-5, `Comment`.

@@ -30,6 +30,21 @@ export interface TeacherDashboard {
   pendingRequests: { count: number; items: { id: number; type: string; createdAt: string; date?: string | null; reason?: string | null; studentName: string; className?: string | null }[] };
   notifications: { unreadCount: number; latest: NotificationItem[] };
   shortcuts: { attendanceSessionId?: number | null; attendanceClassId?: number | null; nextSubmissionId?: number | null };
+  myClasses: DashboardClass[];
+  upcomingDeadlines: DashboardDeadline[];
+  unmarkedSessions: DashboardUnmarked[];
+}
+export interface DashboardClass {
+  id: number; name: string; courseName: string; enrolledCount: number; maxStudents: number; totalSessions: number;
+  doneSessions: number; progressPercent: number; attentionCount: number;
+  nextSession?: { sessionId: number; sessionNo: number; date: string; startTime: string; endTime: string } | null;
+}
+export interface DashboardDeadline {
+  id: number; title: string; skill: Skill; type: AssignmentType; dueAt: string; classId: number; className: string;
+  assignedCount: number; submittedCount: number;
+}
+export interface DashboardUnmarked {
+  sessionId: number; classId: number; className: string; sessionNo: number; date: string; startTime: string; endTime: string; lockAt: string;
 }
 
 // ---------- §2 Lịch dạy ----------
@@ -46,13 +61,6 @@ export interface ScheduleResponse {
   days: { date: string; dayOfWeek: number; isToday: boolean; events: ScheduleEvent[] }[];
   availability?: AvailabilitySlot[] | null;
 }
-export interface LeaveRequestItem {
-  id: number; type: "Leave" | "Reschedule"; status: string; reason: string; adminNote?: string | null;
-  createdAt: string; processedAt?: string | null;
-  proposedDate?: string | null; proposedStartTime?: string | null; proposedEndTime?: string | null;
-  session: { id: number; classId: number; className: string; sessionNo: number; date: string; startTime: string; endTime: string };
-}
-
 // ---------- §3 Lớp ----------
 export interface ClassScheduleSlot { id?: number; dayOfWeek: number; startTime: string; endTime: string; roomName: string }
 export interface TeacherClass {
@@ -164,6 +172,7 @@ export interface GradingDetail {
     minWords?: number | null; dueAt: string; classId: number; className: string };
   content?: string | null; wordCount?: number | null; minWordsWarning: boolean; minWordsMessage?: string | null;
   audioUrl?: string | null;
+  attachmentUrl?: string | null;   // file học viên đính kèm khi nộp
   quiz?: { questionId: number; content: string; answer?: string | null; correctAnswer: string; isCorrect: boolean; points: number }[] | null;
   criteria: Criterion[]; scores: Scores; overallBand?: number | null; autoScore?: number | null; autoMaxScore?: number | null;
   feedback?: string | null; feedbackAudioUrl?: string | null; returnNote?: string | null;
@@ -255,6 +264,7 @@ export interface TeacherProfile {
 export interface TeacherRatings {
   totalRatings: number; averageScore?: number | null; distribution: { score: number; count: number }[];
   comments: { id: number; score: number; comment?: string | null; createdAt: string; className?: string | null; studentName: string }[];
+  feedbacks?: { id: number; content: string; createdAt: string; classId: number; className: string; studentName: string }[];
 }
 export interface Timesheet {
   month: string; classSessions: number; classHours: number; makeupSessions: number; oneOnOneSessions: number;

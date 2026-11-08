@@ -5,15 +5,13 @@ import Card from "../../../components/ui/Card";
 import Button from "../../../components/ui/Button";
 import Tag from "../../../components/ui/Tag";
 import { errorMessage, query, useTeacherApi, useTeacherQuery } from "../../../services/teacher/teacherApi";
-import type { LeaveRequestItem, ScheduleEvent, ScheduleResponse } from "../../../types/teacherApi";
+import type { ScheduleEvent, ScheduleResponse } from "../../../types/teacherApi";
 import { Empty, Notice, QueryState, StatusTag } from "../Components/Common/Feedback";
 import {
-  addDays, dayNames, dayNo, eventKindLabel, fmtDate, fmtDateTime, fmtTime, fromInputTime, requestStatusLabel,
-  requestTypeLabel, sessionStatusLabel, todayStr,
+  addDays, dayNames, dayNo, eventKindLabel, fmtDate, fmtTime, fromInputTime, sessionStatusLabel, todayStr,
 } from "../Components/Common/format";
-import { LeaveRequestModal } from "./LeaveRequestModal";
 
-type Tab = "calendar" | "availability" | "leave";
+type Tab = "calendar" | "availability";
 
 export default function Schedule() {
   const [tab, setTab] = useState<Tab>("calendar");
@@ -21,25 +19,23 @@ export default function Schedule() {
   return (
     <div className="t-page">
       <div className="t-tabs">
-        {([["calendar", "Lịch dạy"], ["availability", "Lịch rảnh (1 kèm 1)"], ["leave", "Đơn nghỉ / đổi buổi"]] as [Tab, string][]).map(([k, l]) => (
+        {([["calendar", "Lịch dạy"], ["availability", "Lịch rảnh (1 kèm 1)"]] as [Tab, string][]).map(([k, l]) => (
           <button key={k} type="button" className={`t-tab ${tab === k ? "active" : ""}`} onClick={() => setTab(k)}>{l}</button>
         ))}
       </div>
       <Notice message={notice.text} tone={notice.tone} onClose={() => setNotice({ text: "", tone: "ok" })} />
-      {tab === "calendar" && <CalendarTab onNotice={setNotice} />}
+      {tab === "calendar" && <CalendarTab />}
       {tab === "availability" && <AvailabilityTab onNotice={setNotice} />}
-      {tab === "leave" && <LeaveTab onNotice={setNotice} />}
     </div>
   );
 }
 
 type NoticeFn = (n: { text: string; tone: "ok" | "error" }) => void;
 
-function CalendarTab({ onNotice }: { onNotice: NoticeFn }) {
+function CalendarTab() {
   const [view, setView] = useState<"week" | "month">("week");
   const [date, setDate] = useState(todayStr());
   const { data, loading, error, reload } = useTeacherQuery<ScheduleResponse>(`schedule${query({ view, date, includeAvailability: true })}`);
-  const [leaveFor, setLeaveFor] = useState<{ id: number; label: string } | null>(null);
 
   return (
     <>
@@ -62,7 +58,7 @@ function CalendarTab({ onNotice }: { onNotice: NoticeFn }) {
               <div key={d.date} className={`t-day ${d.isToday ? "t-day--today" : ""}`}>
                 <div className="t-day__head"><span>{dayNames[d.dayOfWeek]}</span><span className="t-muted">{fmtDate(d.date).slice(0, 5)}</span></div>
                 {d.events.length === 0 && <span className="t-muted t-small">Trống</span>}
-                {d.events.map(e => <EventBox key={`${e.kind}-${e.id}`} e={e} onLeave={setLeaveFor} />)}
+                {d.events.map(e => <EventBox key={`${e.kind}-${e.id}`} e={e} />)}
                 {data.availability?.filter(a => a.date === d.date).map(a => (
                   <div key={`slot-${a.id}`} className="t-event t-event--slot">
                     <strong>{fmtTime(a.startTime)}–{fmtTime(a.endTime)} · Rảnh</strong>
@@ -75,13 +71,11 @@ function CalendarTab({ onNotice }: { onNotice: NoticeFn }) {
         ) : <MonthGrid data={data} />)}
         {data && data.events.length === 0 && <Empty>Không có buổi dạy trong khoảng này.</Empty>}
       </QueryState>
-      <LeaveRequestModal open={leaveFor !== null} session={leaveFor} onClose={() => setLeaveFor(null)}
-        onDone={msg => { setLeaveFor(null); onNotice({ text: msg, tone: "ok" }); }} />
     </>
   );
 }
 
-function EventBox({ e, onLeave }: { e: ScheduleEvent; onLeave?: (s: { id: number; label: string }) => void }) {
+function EventBox({ e }: { e: ScheduleEvent }) {
   const cls = `t-event t-event--${e.kind} ${e.status === "Cancelled" ? "t-event--Cancelled" : ""}`;
   const body = (
     <>
@@ -95,12 +89,6 @@ function EventBox({ e, onLeave }: { e: ScheduleEvent; onLeave?: (s: { id: number
   return (
     <div className={cls}>
       <Link to={`/teacher/sessions/${e.id}`} style={{ color: "inherit", textDecoration: "none", display: "flex", flexDirection: "column", gap: 2 }}>{body}</Link>
-      {e.status === "Upcoming" && onLeave && (
-        <button type="button" className="teacher-action-link t-small" style={{ textAlign: "left" }}
-          onClick={() => onLeave({ id: e.id, label: `Buổi ${e.sessionNo} · ${e.title} · ${fmtDate(e.date)} ${fmtTime(e.startTime)}` })}>
-          Xin nghỉ / đổi
-        </button>
-      )}
     </div>
   );
 }
@@ -193,39 +181,5 @@ function AvailabilityTab({ onNotice }: { onNotice: NoticeFn }) {
         </QueryState>
       </Card>
     </div>
-  );
-}
-
-function LeaveTab({ onNotice }: { onNotice: NoticeFn }) {
-  const api = useTeacherApi();
-  const { data, loading, error, reload } = useTeacherQuery<LeaveRequestItem[]>("schedule/leave-requests");
-  async function cancel(id: number) {
-    if (!confirm("Hủy đơn này?")) return;
-    try { await api.send("DELETE", `schedule/leave-requests/${id}`); onNotice({ text: "Đã hủy đơn", tone: "ok" }); reload(); }
-    catch (e) { onNotice({ text: errorMessage(e), tone: "error" }); }
-  }
-  return (
-    <QueryState loading={loading} error={error} onRetry={reload}>
-      {data && (data.length === 0 ? <Empty>Chưa gửi đơn nào. Gửi đơn từ ô buổi học sắp tới ở tab Lịch dạy.</Empty> : (
-        <Card padded={false} className="t-table-wrap">
-          <table className="teacher-table">
-            <thead><tr><th>Loại</th><th>Buổi</th><th>Lý do</th><th>Buổi bù đề xuất</th><th>Gửi lúc</th><th>Trạng thái</th><th /></tr></thead>
-            <tbody>
-              {data.map(r => (
-                <tr key={r.id}>
-                  <td>{requestTypeLabel[r.type]}</td>
-                  <td>{r.session.className} · B{r.session.sessionNo} · {fmtDate(r.session.date)} {fmtTime(r.session.startTime)}</td>
-                  <td className="t-wrap">{r.reason}{r.adminNote && <div className="t-muted">Admin: {r.adminNote}</div>}</td>
-                  <td>{r.proposedDate ? `${fmtDate(r.proposedDate)} ${fmtTime(r.proposedStartTime)}–${fmtTime(r.proposedEndTime)}` : "—"}</td>
-                  <td>{fmtDateTime(r.createdAt)}</td>
-                  <td><StatusTag status={r.status} labels={requestStatusLabel} /></td>
-                  <td>{r.status === "Pending" && <button type="button" className="teacher-action-link teacher-action-danger" onClick={() => cancel(r.id)}>Hủy</button>}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </Card>
-      ))}
-    </QueryState>
   );
 }

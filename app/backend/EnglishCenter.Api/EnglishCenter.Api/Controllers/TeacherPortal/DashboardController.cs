@@ -99,6 +99,7 @@ public class DashboardController : TeacherControllerBase
         var bands = await _stats.LatestBandsAsync(roster.Select(r => r.StudentId));
 
         var attention = new List<object>();
+        var attentionClassIds = new List<int>();
         foreach (var r in roster)
         {
             var reasons = new List<string>();
@@ -110,7 +111,10 @@ public class DashboardController : TeacherControllerBase
                 reasons.Add($"Band giảm từ {b.Previous:0.0} xuống {b.Latest:0.0}");
 
             if (reasons.Count > 0)
+            {
                 attention.Add(new { r.StudentId, r.Code, r.FullName, r.ClassId, r.ClassName, reasons });
+                attentionClassIds.Add(r.ClassId);
+            }
         }
 
         // ---------- Yêu cầu chờ xử lý ----------
@@ -123,6 +127,80 @@ public class DashboardController : TeacherControllerBase
                 StudentName = r.Student.FullName, ClassName = r.Class != null ? r.Class.Name : null
             })
             .ToListAsync();
+
+        // ---------- Lớp đang dạy: sĩ số, tiến độ, buổi tới ----------
+        var nowTime = TimeOnly.FromDateTime(now);
+        var classRows = await MyClasses
+            .Where(c => ongoingClassIds.Contains(c.Id))
+            .OrderBy(c => c.Name)
+            .Select(c => new
+            {
+                c.Id, c.Name, CourseName = c.Course.Name, c.MaxStudents, c.Course.TotalSessions,
+                EnrolledCount = c.Enrollments.Count(e => e.Status == "Active")
+            })
+            .ToListAsync();
+
+        var classSessions = await Db.ClassSessions
+            .Where(x => ongoingClassIds.Contains(x.ClassId) && x.Status == "Scheduled")
+            .Select(x => new { x.Id, x.ClassId, x.SessionNo, x.Date, x.StartTime, x.EndTime })
+            .ToListAsync();
+
+        var myClasses = classRows.Select(c =>
+        {
+            var sessions = classSessions.Where(x => x.ClassId == c.Id).ToList();
+            var done = sessions.Count(x => AppTime.At(x.Date, x.EndTime) <= now);
+            var next = sessions.Where(x => AppTime.At(x.Date, x.EndTime) > now)
+                .OrderBy(x => x.Date).ThenBy(x => x.StartTime)
+                .Select(x => new { sessionId = x.Id, x.SessionNo, x.Date, x.StartTime, x.EndTime })
+                .FirstOrDefault();
+            return new
+            {
+                c.Id, c.Name, c.CourseName, c.EnrolledCount, c.MaxStudents, c.TotalSessions,
+                doneSessions = done,
+                progressPercent = c.TotalSessions == 0 ? 0 : Math.Min(100, Math.Round(done * 100m / c.TotalSessions, 0)),
+                nextSession = next,
+                attentionCount = attentionClassIds.Count(id => id == c.Id)
+            };
+        }).ToList();
+
+        // ---------- Hạn nộp bài trong 7 ngày tới ----------
+        var deadlineTo = now.AddDays(7);
+        var deadlineRows = await Db.Assignments
+            .Where(a => a.Class.TeacherId == TeacherId && a.ExamId == null && a.DueAt >= now && a.DueAt <= deadlineTo)
+            .OrderBy(a => a.DueAt)
+            .Select(a => new
+            {
+                a.Id, a.Title, a.Skill, a.Type, a.DueAt, a.ClassId, ClassName = a.Class.Name, a.AssignToAll,
+                ActiveCount = a.Class.Enrollments.Count(e => e.Status == "Active"),
+                TargetCount = a.Targets.Count(t => a.Class.Enrollments.Any(e => e.StudentId == t.StudentId && e.Status == "Active")),
+                SubmittedCount = a.Submissions.Select(x => x.StudentId).Distinct().Count()
+            })
+            .Take(10)
+            .ToListAsync();
+        var upcomingDeadlines = deadlineRows.Select(a => new
+        {
+            a.Id, a.Title, a.Skill, a.Type, a.DueAt, a.ClassId, a.ClassName,
+            assignedCount = a.AssignToAll ? a.ActiveCount : a.TargetCount,
+            a.SubmittedCount
+        });
+
+        // ---------- Buổi đã dạy nhưng chưa điểm danh (sẽ bị khóa sau 48 giờ) ----------
+        var lockFrom = today.AddDays(-(SessionService.AttendanceLockHours / 24 + 1));
+        var unmarkedRows = await Db.ClassSessions
+            .Where(x => x.Class.TeacherId == TeacherId && x.Status == "Scheduled" && x.AttendanceTakenAt == null
+                && x.Date >= lockFrom && (x.Date < today || (x.Date == today && x.EndTime <= nowTime)))
+            .OrderBy(x => x.Date).ThenBy(x => x.StartTime)
+            .Select(x => new { x.Id, x.ClassId, ClassName = x.Class.Name, x.SessionNo, x.Date, x.StartTime, x.EndTime })
+            .ToListAsync();
+        var unmarkedSessions = unmarkedRows
+            .Select(x => new { x, lockAt = AppTime.At(x.Date, x.EndTime).AddHours(SessionService.AttendanceLockHours) })
+            .Where(x => x.lockAt > now)
+            .Select(x => new
+            {
+                sessionId = x.x.Id, x.x.ClassId, x.x.ClassName, x.x.SessionNo, x.x.Date, x.x.StartTime, x.x.EndTime,
+                x.lockAt
+            })
+            .ToList();
 
         // ---------- Chuông thông báo ----------
         var unread = await Db.Notifications.CountAsync(n => n.RecipientUserId == UserId && !n.IsRead);
@@ -155,6 +233,9 @@ public class DashboardController : TeacherControllerBase
             todaySchedule = schedule,
             grading,
             attentionStudents = attention,
+            myClasses,
+            upcomingDeadlines,
+            unmarkedSessions,
             pendingRequests = new { count = pendingRequests.Count, items = pendingRequests.Take(10) },
             notifications = new { unreadCount = unread, latest = latestNotifications },
             shortcuts = new
