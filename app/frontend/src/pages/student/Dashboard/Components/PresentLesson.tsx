@@ -1,6 +1,6 @@
-import { mockCourses } from "../../../../data/StudentData/MainData";
 import bannerImage from "../../../../assets/images/Banner-dashboard.png";
 import bannerArrowImage from "../../../../assets/images/Banner-arrow-dashboard.png";
+import defaultCourseImage from "../../../../assets/images/next-lesson-mock.jpg";
 import "./PresentLesson.css";
 
 interface PresentLessonProps {
@@ -11,26 +11,23 @@ interface PresentLessonProps {
         description?: string;
         totalSessions?: number;
         imageUrl?: string;
+        nextDate?: string;   // "YYYY-MM-DD"
+        startTime?: string;  // "HH:mm:ss"
+        endTime?: string;
     };
 }
 
 export default function PresentLessonFE({ lesson }: PresentLessonProps) {
-    const defaultCourse = mockCourses[0];
-    const displayCourse = lesson ? {
-        name: lesson.courseName,
-        bandFrom: lesson.bandFrom,
-        bandTo: lesson.bandTo,
-        description: lesson.description || `${lesson.totalSessions ?? 0} Sessions`,
-        imageUrl: lesson.imageUrl
-    } : defaultCourse ? {
-        name: defaultCourse.name,
-        bandFrom: defaultCourse.bandFrom,
-        bandTo: defaultCourse.bandTo,
-        description: defaultCourse.description || `${defaultCourse.totalSessions} Sessions`,
-        imageUrl: defaultCourse.imageUrl
-    } : null;
+    // Chỉ hiển thị khi có dữ liệu thật từ BE (không còn fallback dữ liệu mẫu)
+    if (!lesson) return null;
 
-    if (!displayCourse) return null;
+    const timeLabel = lesson.startTime && lesson.endTime
+        ? `${lesson.startTime.slice(0, 5)} - ${lesson.endTime.slice(0, 5)}`
+        : null;
+
+    const dateLabel = lesson.nextDate
+        ? lesson.nextDate.split("-").reverse().join("/")
+        : null;
 
     return (
         <section className="next-lesson-section">
@@ -38,8 +35,8 @@ export default function PresentLessonFE({ lesson }: PresentLessonProps) {
 
             <div className="left-column">
                 <span className="badge">
-                    Continue Learning
-                </span>
+                    Next Lesson
+                </span> 
 
                 <h2 className="title">
                     Your next lesson is ready!
@@ -48,27 +45,27 @@ export default function PresentLessonFE({ lesson }: PresentLessonProps) {
                 <p className="description">
                     Continue where you left off and make progress towards your goals.
                 </p>
-
-                <button className="continue-btn" type="button">
-                    <svg className="icon-play" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z" />
-                    </svg>
-                    <span>Continue Lesson</span>
-                </button>
             </div>
 
             <div className="middle-column card">
                 <img
-                    src={displayCourse.imageUrl || "/api/placeholder/400/200"}
-                    alt={displayCourse.name}
+                    src={lesson.imageUrl || defaultCourseImage}
+                    alt={lesson.courseName}
                     className="card-image"
                 />
                 <h3 className="card-title">
-                    Band {displayCourse.bandFrom} - {displayCourse.bandTo}: {displayCourse.name}
+                    Band {lesson.bandFrom} - {lesson.bandTo}: {lesson.courseName}
                 </h3>
                 <p className="card-subtitle">
-                    {displayCourse.description}
+                    {lesson.description || `${lesson.totalSessions ?? 0} Sessions`}
                 </p>
+                {(timeLabel || dateLabel) && (
+                    <p className="card-schedule">
+                        {dateLabel && `Ngày học: ${dateLabel}`}
+                        {dateLabel && timeLabel && " · "}
+                        {timeLabel && `Giờ học: ${timeLabel}`}
+                    </p>
+                )}
             </div>
 
             <div className="right-column">
@@ -82,7 +79,7 @@ export default function PresentLessonFE({ lesson }: PresentLessonProps) {
                 />
                 <img
                     src={bannerImage}
-                    alt={displayCourse.name}
+                    alt={lesson.courseName}
                     className="illustration-image"
                 />
             </div>

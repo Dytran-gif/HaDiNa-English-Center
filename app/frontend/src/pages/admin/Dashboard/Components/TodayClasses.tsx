@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import type { ClassResponse, PagedResponse } from "../../../../types/adminApi";
 import { useAdminQuery } from "../../../../services/admin/useAdminApi";
 import Button from "../../Components/Ui/Button";
@@ -24,7 +25,8 @@ export default function TodayClasses() {
   const firstTime = (item: ClassResponse) => item.schedules.filter(schedule => schedule.dayOfWeek === weekday).map(schedule => schedule.startTime).sort()[0] ?? "";
   scheduled.sort((a, b) => firstTime(a).localeCompare(firstTime(b)) || a.name.localeCompare(b.name, "vi"));
 
-  return <SectionCard title="Lớp học hôm nay" action={<Button to="/admin/classes" variant="ghost">Xem tất cả lớp</Button>}>
+  const title = !date ? "Lớp học theo ngày" : date === todayInVietnam() ? "Lớp học hôm nay" : `Lớp học ngày ${day}/${month}/${year}`;
+  return <SectionCard title={title} action={<Button to="/admin/classes" variant="ghost">Xem tất cả lớp</Button>}>
     <div className="admin-today-controls">
       <InputField label="Ngày học" type="date" required value={date} onChange={event => setDate(event.target.value)}/>
       <Button type="button" onClick={() => setDate(todayInVietnam())}>Hôm nay</Button>
@@ -33,7 +35,7 @@ export default function TodayClasses() {
     {error ? <Notice tone="error" title="Không tải được lớp học" action={<Button onClick={reload}>Thử lại</Button>}>{error}</Notice> : !date ? <EmptyState title="Chọn ngày học" description="Chọn ngày để xem các lớp có lịch học tại trung tâm."/> : !loading && scheduled.length === 0 ? <EmptyState title="Không có lớp học trong ngày này" description="Không có lớp nào có lịch học vào ngày đã chọn. Bạn có thể chọn ngày khác để xem." icon="classes"/> :
       <div className="admin-api-table"><table className="admin-table" aria-label="Danh sách lớp theo ngày" aria-busy={loading}>
         <thead><tr><th scope="col">Tên lớp</th><th scope="col">Giáo viên dạy</th><th scope="col">Số học viên</th></tr></thead>
-        <tbody>{loading ? <TableSkeleton columns={3} rows={3}/> : scheduled.map(item => <tr key={item.id}><td>{item.name}</td><td>{item.teacherName || "Chưa phân công"}</td><td>{item.enrolledCount.toLocaleString("vi-VN")} học viên</td></tr>)}</tbody>
+        <tbody>{loading ? <TableSkeleton columns={3} rows={3}/> : scheduled.map(item => <tr key={item.id}><td><Link className="admin-management-name" to={`/admin/classes/${item.id}`}>{item.name}</Link></td><td>{item.teacherName || "Chưa phân công"}</td><td>{item.enrolledCount.toLocaleString("vi-VN")} học viên</td></tr>)}</tbody>
       </table></div>}
   </SectionCard>;
 }

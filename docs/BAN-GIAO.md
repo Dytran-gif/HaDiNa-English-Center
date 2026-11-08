@@ -1,4 +1,34 @@
 # Nhật ký bàn giao
+## [2026-11-06] Codex — Rút gọn Khóa học/Phòng học/Báo cáo
+
+**Đã xong**
+- Khóa học và Phòng học bỏ Chi tiết, đưa Xóa cạnh Sửa; giữ xác nhận có tên đối tượng. Học viên/Giáo viên vẫn có nhóm thao tác tài khoản.
+- Báo cáo cố định12tháng, bỏ bộ chọn kỳ và bảng số liệu; giữ biểu đồ/CSV.
+- Sửa lỗi build do AdminManagement.css không còn nhưng5file vẫn import: dùng các style desktop cần thiết trong AdminApi.css, không thêm media query mobile.
+- BuildPASS; lint0errors/1warning AuthContext cũ;28Admin checksPASS. Không BE/DB mutation.
+
+**Đang dở / tiếp theo**
+- Mobile vẫn hoãn theo yêu cầu; to-do trong FE-ADMIN.md.
+
+## [2026-11-06] Codex — Admin desktop UX (plan28), mobile deferred
+
+**Đã xong**
+- Student/Teacher/Class profiles, grouped actions/named confirmations, course cards, compact Payments/all-result filters, Dashboard links/date heading, Reports period/data table.
+- Admin Dialog adapter; shared Public/Teacher/Student Modal untouched. Existing API/auth/schema kept.
+- Build/typecheck PASS; lint0error/1oldwarning;89checks PASS (28Admin+28UI+16Blog+17desktop browser). ReviewPASS desktop. No real DB mutations in tests.
+
+**Đang dở**
+- User asked to defer mobile UI/UX. To-do checklist in docs/admin/FE-ADMIN.md. Shared fixes already made remain; no mobile acceptance claimed.
+- Physical receipt print QA pending; Blog remains existing demo.
+
+**Việc tiếp theo**
+- Review desktop on FE5173. Do mobile only in a later requested pass; browser tests default desktop.
+
+**Bẫy cần biết**
+- Payments date/method filters fetch all API search pages before filtering; can take longer for large histories.
+- Browser script uses fixture interception and blocks writes. Dedicated headless profile used only for UI QA; not a DB integration test.
+- Details routes remain within Admin protection. No reintroduction of debt/detail export/teacher-request Admin features.
+
 ## [2026-11-02] Duy (Claude) — DB backup + FE Teacher nối API
 
 **Đã xong**

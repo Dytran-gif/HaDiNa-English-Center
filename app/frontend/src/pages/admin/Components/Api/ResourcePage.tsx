@@ -1,140 +1,128 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { useSearchParams } from "react-router-dom";
-import Button from "../Ui/Button";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import Card from "../../../../components/ui/Card";
-import Modal from "../../../../components/ui/Modal";
-import { InputField, SelectField, TextareaField } from "../Ui/FormField";
 import { useAdminApi, useAdminQuery } from "../../../../services/admin/useAdminApi";
 import { ApiError } from "../../../../services/apiClient";
-import type { AdminRecord, PagedResponse, PaymentResponse, StudentResponse } from "../../../../types/adminApi";
-import { Feedback, Pager } from "./AdminUi";
+import type { AdminRecord, PagedResponse } from "../../../../types/adminApi";
+import Button from "../Ui/Button";
+import Modal from "../Ui/Modal";
+import ActionMenu from "../Ui/ActionMenu";
+import Badge from "../Ui/Badge";
+import ConfirmDialog from "../Ui/ConfirmDialog";
+import EmptyState from "../Ui/EmptyState";
+import Notice from "../Ui/Notice";
+import TableSkeleton from "../Ui/TableSkeleton";
+import { InputField, SelectField, TextareaField } from "../Ui/FormField";
+import useToast from "../Ui/useToast";
+import { Pager } from "./AdminUi";
 import { display, money } from "./adminFormat";
 import SearchField from "./SearchField";
 import "../../admin-shared.css";
 import "./AdminApi.css";
 
 type Field = { key: string; label: string; type?: string; required?: boolean; min?: number; max?: number; step?: number; options?: string[]; createOnly?: boolean; maxLength?: number };
-export interface ResourceConfig {
-  path: string; title: string; singular: string; paged: boolean; pageSize?: number; search?: boolean; status?: string[]; fields: Field[];
-  columns: { key: string; label: string; currency?: boolean }[];
-}
-function ErrorText(reason: unknown) { return reason instanceof Error ? reason.message : "Không thực hiện được thao tác."; }
-function ResourceDetail({ config, id, close }: { config: ResourceConfig; id: number; close: () => void }) {
-  const { data, loading, error } = useAdminQuery<AdminRecord>(`${config.path}/${id}`);
-  const items = (data?.classes ?? data?.enrollments ?? []) as AdminRecord[];
-  return <Modal open title={`Chi tiết ${config.singular}`} onClose={close}>
-    {loading && <p role="status">Đang tải chi tiết…</p>}<Feedback error={error} />
-    {data && <><dl className="admin-api-detail">{config.fields.filter(f => f.type !== "password").map(f => <div key={f.key}><dt>{f.label}</dt><dd>{display(data[f.key])}</dd></div>)}</dl>
-      {items.length > 0 && <><h3>{config.path === "teachers" ? "Lớp phụ trách" : "Lịch sử ghi danh"}</h3><div className="admin-api-table"><table className="admin-table"><thead><tr><th>Lớp</th><th>Khóa</th><th>Trạng thái</th></tr></thead><tbody>{items.map(row => <tr key={row.id}><td>{display(row.name ?? row.className)}</td><td>{display(row.courseName)}</td><td>{display(row.classStatus ?? row.status)}</td></tr>)}</tbody></table></div></>}
-      {config.path === "students" && <StudentHistory id={id} />}
-    </>}
-  </Modal>;
-}
-function StudentHistory({ id }: { id: number }) {
-  const { data, error, loading } = useAdminQuery<{ items: PaymentResponse[]; totalPaid: number }>(`students/${id}/payments`);
-  const student = useAdminQuery<StudentResponse>(`students/${id}`);
-  const classes = useAdminQuery<AdminRecord[]>("classes/available");
-  const api = useAdminApi();
-  const [classId, setClassId] = useState(""); const [busy, setBusy] = useState(false); const [actionError, setActionError] = useState("");
-  async function enroll() {
-    if (!classId) return; setBusy(true); setActionError("");
-    try { await api.send("POST", `students/${id}/enrollments`, { classId: Number(classId) }); student.reload(); classes.reload(); setClassId(""); }
-    catch (e) { setActionError(ErrorText(e)); } finally { setBusy(false); }
-  }
-  async function withdraw(enrollmentId: number) {
-    if (!window.confirm("Rút học viên khỏi lớp này?")) return; setBusy(true); setActionError("");
-    try { await api.send("DELETE", `students/${id}/enrollments/${enrollmentId}`); student.reload(); classes.reload(); }
-    catch (e) { setActionError(ErrorText(e)); } finally { setBusy(false); }
-  }
-  return <><h3>Ghi danh</h3><Feedback error={actionError || student.error || classes.error} />
-    <SelectField label="Lớp còn chỗ" value={classId} onChange={e => setClassId(e.target.value)} options={[{value:"",label:"Chọn lớp"}, ...(classes.data ?? []).filter(c => !(student.data?.enrollments ?? []).some(e => e.classId === c.id)).map(c => ({value:String(c.id),label:`${c.name} (${c.enrolled}/${c.capacity}) · ${money(c.finalTuition)}`}))]} />
-    <Button type="button" disabled={busy || !classId} onClick={enroll}>Ghi danh</Button>
-    {(student.data?.enrollments ?? []).map(e => <p key={e.id}>{e.className} · {display(e.status)} · {money(e.finalTuitionFee)} {e.status !== "Dropped" && <Button type="button" disabled={busy} onClick={() => withdraw(e.id)}>Rút khỏi lớp</Button>}</p>)}
-    <h3>Lịch sử học phí</h3>{loading && <p>Đang tải học phí…</p>}<Feedback error={error} />
-    {data && <><p>Tổng đã đóng: <strong>{money(data.totalPaid)}</strong></p>{data.items.length === 0 ? <p>Chưa có phiếu thu.</p> : data.items.map(p => <p key={p.id}>{p.className} · {money(p.amount)} · {display(p.paidDate)} · {display(p.method)}</p>)}</>}
-  </>;
+export interface ResourceConfig { path: string; title: string; singular: string; paged: boolean; pageSize?: number; search?: boolean; status?: string[]; fields: Field[]; columns: { key: string; label: string; currency?: boolean }[] }
+function errorText(reason: unknown) { return reason instanceof Error ? reason.message : "Không thực hiện được thao tác."; }
+function TeacherSpecialtyFilter({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  const query = useAdminQuery<PagedResponse<AdminRecord>>("teachers?pageSize=100", true);
+  const values = Array.from(new Set([...(query.data?.items ?? []).map(item => String(item.specialty ?? "")), value].filter(Boolean))).sort((a,b) => a.localeCompare(b,"vi"));
+  return <><SelectField label="Chuyên môn" value={value} disabled={query.loading || Boolean(query.error)} onChange={event => onChange(event.target.value)} options={[{value:"",label:query.loading ? "Đang tải chuyên môn…" : "Tất cả chuyên môn"},...values.map(item => ({value:item,label:item}))]}/>{query.error && <Button onClick={query.reload}>Thử lại chuyên môn</Button>}</>;
 }
 export default function ResourcePage({ config }: { config: ResourceConfig }) {
-  const [params, setParams] = useSearchParams();
-  const page = Math.max(1, Number(params.get("page")) || 1);
-
-  const query = new URLSearchParams({ page: String(page), pageSize: String(config.pageSize ?? 10) });
-  if (params.get("search")) query.set("search", params.get("search")!);
-  if (params.get("status")) query.set("status", params.get("status")!);
-  if (params.get("specialty")) query.set("specialty", params.get("specialty")!);
-  const { data, loading, error, reload } = useAdminQuery<PagedResponse<AdminRecord> | AdminRecord[]>(config.path + (config.paged ? `?${query}` : ""));
-  const api = useAdminApi();
-  const [form, setForm] = useState<Record<string, string>>(() => Object.fromEntries(config.fields.map(f => [f.key, f.options?.[0] ?? (f.type === "number" ? "0" : "")]))); const [editing, setEditing] = useState<number | null>(null);
-  const [open, setOpen] = useState(params.get("action") === "create"); const [detail, setDetail] = useState<number | null>(null);
-  const [resetId, setResetId] = useState<number | null>(null); const [password, setPassword] = useState("");
-  const [busy, setBusy] = useState(false); const [actionError, setActionError] = useState(""); const [message, setMessage] = useState("");
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const fieldError = (key: string) => fieldErrors[key.toLowerCase()];
-  function updateField(key: string, value: string) {
-    setForm(previous => ({ ...previous, [key]: value }));
-    setFieldErrors(previous => { const next = { ...previous }; delete next[key.toLowerCase()]; return next; });
-  }
-  const rows = Array.isArray(data) ? data : data?.items ?? [];
-  const total = Array.isArray(data) ? data.length : data?.totalItems ?? 0;
+  const [params, setParams] = useSearchParams(); const location = useLocation(); const api = useAdminApi(); const { notify } = useToast();
+  const rawPage = Number(params.get("page")); const page = Number.isSafeInteger(rawPage) && rawPage > 0 ? rawPage : 1;
+  const pageSize = config.pageSize ?? 10; const accounts = ["teachers","students"].includes(config.path); const isCourse = config.path === "courses";
+  const query = new URLSearchParams({page:String(page),pageSize:String(pageSize)});
+  for (const key of ["search","status","specialty"]) if (params.get(key)) query.set(key,params.get(key)!);
+  const list = useAdminQuery<PagedResponse<AdminRecord> | AdminRecord[]>(config.path + (config.paged ? `?${query}` : ""));
+  const rows = Array.isArray(list.data) ? list.data : list.data?.items ?? [];
+  const total = Array.isArray(list.data) ? list.data.length : list.data?.totalItems ?? 0;
+  const makeForm = (row?: AdminRecord) => Object.fromEntries(config.fields.map(field => [field.key, row ? String(row[field.key] ?? "") : field.options?.[0] ?? (field.key === "discountPercent" ? "0" : "")]));
+  const [form,setForm] = useState<Record<string,string>>(() => makeForm()); const [editing,setEditing] = useState<number|null>(null);
+  const [open,setOpen] = useState(params.get("action") === "create");
+  const [busy,setBusy] = useState(false); const [editorLoading,setEditorLoading] = useState(false); const [actionError,setActionError] = useState("");
+  const [fieldErrors,setFieldErrors] = useState<Record<string,string>>({}); const [resetRow,setResetRow] = useState<AdminRecord|null>(null); const [password,setPassword] = useState("");
+  const [confirmation,setConfirmation] = useState<{row:AdminRecord; action:"delete"|"lock"}|null>(null);
+  const editId = params.get("edit");
   useEffect(() => {
-    if (!config.paged || loading || error || !data) return;
-    const lastPage = Math.max(1, Math.ceil(total / (config.pageSize ?? 10)));
-    if (page > lastPage) setParams(previous => { const next = new URLSearchParams(previous); next.set("page", String(lastPage)); return next; }, { replace: true });
-  }, [config.paged, config.pageSize, data, error, loading, page, setParams, total]);
-  const accounts = config.path === "teachers" || config.path === "students";
-  function changeParam(key: string, value: string) { setParams(p => { const next = new URLSearchParams(p); if(value) next.set(key,value); else next.delete(key); if(key !== "page") next.set("page","1"); return next; }); }
-  function edit(row?: AdminRecord) {
-    setEditing(row?.id ?? null); setActionError(""); setFieldErrors({});
-    setForm(Object.fromEntries(config.fields.map(f => [f.key, row ? String(row[f.key] ?? "") : f.options?.[0] ?? (f.type === "number" ? "0" : "")]))); setOpen(true);
+    if (!editId || !Number.isSafeInteger(Number(editId)) || Number(editId) < 1) return;
+    const controller = new AbortController(); setEditorLoading(true); setActionError(""); setOpen(true); setFieldErrors({});
+    api.get<AdminRecord>(`${config.path}/${editId}`,controller.signal).then(row => {
+      if (!controller.signal.aborted) { setEditing(row.id); setForm(Object.fromEntries(config.fields.map(field => [field.key,String(row[field.key] ?? "")]))); }
+    }).catch(reason => { if (!controller.signal.aborted) { setActionError(errorText(reason)); setOpen(false); } }).finally(() => { if (!controller.signal.aborted) setEditorLoading(false); });
+    return () => controller.abort();
+  },[editId,api,config.path,config.fields]);
+  useEffect(() => {
+    if (!config.paged || list.loading || list.error || !list.data) return;
+    const last = Math.max(1,Math.ceil(total/pageSize));
+    if (page > last) setParams(previous => { const next = new URLSearchParams(previous); next.set("page",String(last)); return next; },{replace:true});
+  },[config.paged,list.loading,list.error,list.data,total,pageSize,page,setParams]);
+  function changeParam(key:string,value:string) { setParams(previous => { const next = new URLSearchParams(previous); if(value)next.set(key,value);else next.delete(key); if(key!=="page")next.set("page","1"); return next; }); }
+  function closeEditor() { if(busy)return; setOpen(false); setEditorLoading(false); setParams(previous => { const next = new URLSearchParams(previous); next.delete("edit"); next.delete("action"); return next; },{replace:true}); }
+  function edit(row?:AdminRecord) { setEditorLoading(false); setParams(previous => { const next = new URLSearchParams(previous); next.delete("edit"); next.delete("action"); return next; },{replace:true}); setEditing(row?.id ?? null); setForm(makeForm(row)); setFieldErrors({}); setActionError(""); setOpen(true); }
+  function updateField(key:string,value:string) { setForm(previous => ({...previous,[key]:value})); setFieldErrors(previous => {const next={...previous};delete next[key.toLowerCase()];return next;}); }
+  async function mutate(action:()=>Promise<unknown>,success:string,deleted=false,rethrow=false) {
+    if(busy)return false;setBusy(true);setActionError("");setFieldErrors({});
+    try {await action();list.reload();notify({title:success});if(deleted&&rows.length===1&&page>1)changeParam("page",String(page-1));return true;}
+    catch(reason){setActionError(errorText(reason));if(reason instanceof ApiError)setFieldErrors(Object.fromEntries(Object.entries(reason.fieldErrors).map(([key,errors])=>[key.split(".").at(-1)!.toLowerCase(),errors.join(" ")])));if(rethrow)throw reason;return false;}
+    finally{setBusy(false);}
   }
-  async function mutate(action: () => Promise<unknown>, success: string, deleted = false) {
-    if (busy) return false;
-    setBusy(true); setActionError(""); setMessage(""); setFieldErrors({});
-    try { await action(); setMessage(success); reload(); if(deleted && rows.length === 1 && page > 1) changeParam("page",String(page-1)); return true; }
-    catch(e) {
-      setActionError(ErrorText(e));
-      if (e instanceof ApiError) setFieldErrors(Object.fromEntries(Object.entries(e.fieldErrors).map(([key, errors]) => [key.split(".").at(-1)!.toLowerCase(), errors.join(" ")])));
-      return false;
-    } finally { setBusy(false); }
+  async function save(event:FormEvent) {
+    event.preventDefault();if(busy||editorLoading)return;
+    if(isCourse){const errors:Record<string,string>={};if(Number(form.bandFrom)>Number(form.bandTo))errors.bandfrom="Band từ phải nhỏ hơn hoặc bằng band đến.";if(Number(form.sessionsPerWeek)>Number(form.totalSessions))errors.sessionsperweek="Số buổi mỗi tuần không được lớn hơn tổng số buổi.";if(Object.keys(errors).length){setFieldErrors(errors);return;}}
+    const body=Object.fromEntries(config.fields.filter(field=>editing===null||!field.createOnly).map(field=>[field.key,field.type==="number"?Number(form[field.key]):form[field.key]||null]));
+    if(await mutate(()=>api.send(editing===null?"POST":"PUT",config.path+(editing===null?"":`/${editing}`),body),"Đã lưu thay đổi.")) {setOpen(false);setParams(previous=>{const next=new URLSearchParams(previous);next.delete("edit");next.delete("action");return next;},{replace:true});}
   }
-  async function save(e: FormEvent) {
-    e.preventDefault();
-    if (busy) return;
-    if (config.path === "courses") {
-      const errors: Record<string, string> = {};
-      if (Number(form.bandFrom) > Number(form.bandTo)) errors.bandfrom = "Band từ phải nhỏ hơn hoặc bằng band đến.";
-      if (Number(form.sessionsPerWeek) > Number(form.totalSessions)) errors.sessionsperweek = "Số buổi mỗi tuần không được lớn hơn tổng số buổi.";
-      if (Object.keys(errors).length) { setFieldErrors(errors); return; }
-    }
-    const body = Object.fromEntries(config.fields.filter(f => editing === null || !f.createOnly).map(f => [f.key, f.type === "number" ? Number(form[f.key]) : (form[f.key] || null)]));
-    if (await mutate(() => api.send(editing === null ? "POST" : "PUT", config.path + (editing === null ? "" : `/${editing}`), body), "Đã lưu thay đổi.")) setOpen(false);
+  const nameOf=(row:AdminRecord)=>String(row.fullName ?? row.name ?? config.singular);
+  function actions(row:AdminRecord){
+    const deleteButton=<Button variant="danger" onClick={()=>setConfirmation({row,action:"delete"})} disabled={busy}>Xóa {config.singular}</Button>;
+    return <div className="admin-row-actions"><Button onClick={()=>edit(row)} disabled={busy} icon="edit">Sửa</Button>{accounts?<ActionMenu label={nameOf(row)}>
+      <Button onClick={()=>{setResetRow(row);setPassword("");setActionError("");setFieldErrors({});}} disabled={busy}>Đặt lại mật khẩu</Button>
+      <Button onClick={()=>setConfirmation({row,action:"lock"})} disabled={busy}>{row.isLocked?"Mở khóa tài khoản":"Khóa tài khoản"}</Button>
+      {deleteButton}
+    </ActionMenu>:deleteButton}</div>;
   }
+  const filtered=Boolean(params.get("search")||params.get("status")||params.get("specialty"));
   return <div className="admin-api-stack">
-    <div className="admin-api-toolbar"><span>{total} {config.title.toLowerCase()}</span><Button variant="primary" onClick={() => edit()}>+ Thêm {config.singular}</Button></div>
-    <form className="admin-api-filters" onSubmit={e => e.preventDefault()}>
-      {config.search && <SearchField label="Tìm kiếm" value={params.get("search") ?? ""} onSearch={value => changeParam("search", value)} />}
-      {config.status && <SelectField label="Trạng thái" value={params.get("status") ?? ""} onChange={e => changeParam("status", e.target.value)} options={[{value:"",label:"Tất cả"},...config.status.map(s => ({value:s,label:display(s)}))]} />}
-      {config.path === "teachers" && <SearchField label="Chuyên môn" value={params.get("specialty") ?? ""} onSearch={value => changeParam("specialty", value)} />}
-      <Button type="button" onClick={reload} disabled={loading}>Tải lại</Button>
-    </form>
-    <Feedback error={error || (!open && resetId === null ? actionError : "")} message={message} />
-    <Card><div className="admin-api-table"><table className="admin-table"><thead><tr>{config.columns.map(c => <th key={c.key}>{c.label}</th>)}<th>Thao tác</th></tr></thead><tbody>
-      {loading ? <tr><td colSpan={config.columns.length+1} role="status">Đang tải…</td></tr> : error ? <tr><td colSpan={config.columns.length+1}>Chưa tải được danh sách.</td></tr> : rows.length === 0 ? <tr><td colSpan={config.columns.length+1}>Chưa có dữ liệu phù hợp.</td></tr> : rows.map(row => <tr key={row.id}>{config.columns.map(c => <td key={c.key}>{c.currency ? money(row[c.key]) : display(row[c.key])}</td>)}<td><div className="admin-row-actions">
-        <Button type="button" onClick={() => setDetail(row.id)}>Chi tiết</Button><Button type="button" disabled={busy} onClick={() => edit(row)}>Sửa</Button>
-        {accounts && <><Button type="button" disabled={busy} onClick={() => {setResetId(row.id);setPassword("");setActionError("");}}>Đặt mật khẩu</Button><Button type="button" disabled={busy} onClick={() => {if(window.confirm(`${row.isLocked ? "Mở" : "Khóa"} tài khoản này?`)) void mutate(() => api.send("POST",`${config.path}/${row.id}/${row.isLocked ? "unlock" : "lock"}`),"Đã cập nhật tài khoản.");}}>{row.isLocked ? "Mở khóa" : "Khóa"}</Button></>}
-        <Button type="button" disabled={busy} onClick={() => {if(window.confirm(`Xóa ${config.singular} này?`)) void mutate(() => api.send("DELETE",`${config.path}/${row.id}`),"Đã xóa.",true);}}>Xóa</Button>
-      </div></td></tr>)}
-    </tbody></table></div></Card>
-    {config.paged && total > (config.pageSize ?? 10) && <Pager page={page} pageSize={config.pageSize ?? 10} total={total} onChange={p => { changeParam("page",String(p)); document.getElementById("admin-main-content")?.scrollIntoView({ block: "start" }); }} />}
-    <Modal open={open} title={`${editing === null ? "Thêm" : "Sửa"} ${config.singular}`} onClose={() => {if(!busy)setOpen(false);}}>
-      <form className="admin-api-stack" onSubmit={save}><Feedback error={actionError} />
-        {config.fields.filter(f => editing === null || !f.createOnly).map(f => f.options ? <SelectField key={f.key} label={f.label} required={f.required} disabled={busy} error={fieldError(f.key)} value={form[f.key] ?? ""} onChange={e => updateField(f.key,e.target.value)} options={f.options.map(s => ({value:s,label:display(s)}))} /> : f.type === "textarea" ? <TextareaField key={f.key} label={f.label} maxLength={f.maxLength} disabled={busy} error={fieldError(f.key)} value={form[f.key] ?? ""} onChange={e => updateField(f.key,e.target.value)} /> : <InputField key={f.key} label={f.label} type={f.type ?? "text"} required={f.required} disabled={busy} error={fieldError(f.key)} min={f.min} max={f.max} step={f.step} maxLength={f.maxLength} minLength={f.type === "password" ? 8 : undefined} value={form[f.key] ?? ""} onChange={e => updateField(f.key,e.target.value)} />)}
-        {config.path === "courses" && <><p className="admin-api-muted">Học phí sau giảm: <strong>{money(Number(form.tuition || 0) * (1 - Number(form.discountPercent || 0) / 100))}</strong></p>{editing !== null && <p className="admin-api-muted">Thay đổi học phí và giảm giá chỉ áp dụng cho học viên ghi danh từ bây giờ.</p>}</>}
-        {editing !== null && accounts && <p className="admin-api-muted">Email đăng nhập được giữ nguyên khi sửa hồ sơ.</p>}
-        <Button type="submit" variant="primary" disabled={busy}>{busy ? "Đang lưu…" : "Lưu"}</Button>
+    <div className="admin-api-toolbar"><span role="status">{list.loading?"Đang tải danh sách…":list.error?"Chưa tải được danh sách":`${total} ${config.title.toLowerCase()}`}</span><Button variant="primary" icon="plus" onClick={()=>edit()}>Thêm {config.singular}</Button></div>
+    <div className="admin-api-filters">
+      {config.search&&<SearchField label={`Tìm ${config.singular}`} placeholder={`Nhập ${accounts?"tên hoặc thông tin cần tìm":"tên "+config.singular}…`} value={params.get("search")??""} onSearch={value=>changeParam("search",value)}/>}
+      {config.status&&<SelectField label="Trạng thái" value={params.get("status")??""} onChange={event=>changeParam("status",event.target.value)} options={[{value:"",label:"Tất cả trạng thái"},...config.status.map(value=>({value,label:display(value)}))]}/>}
+      {config.path==="teachers"&&<TeacherSpecialtyFilter value={params.get("specialty")??""} onChange={value=>changeParam("specialty",value)}/>}
+      {filtered&&<Button variant="ghost" onClick={()=>setParams({})}>Xóa bộ lọc</Button>}<Button icon="refresh" loading={list.loading} onClick={list.reload}>Tải lại</Button>
+    </div>
+    {list.error&&<Notice tone="error" title="Không tải được danh sách" action={<Button onClick={list.reload}>Thử lại</Button>}>{list.error}</Notice>}
+    {actionError&&!open&&!resetRow&&!confirmation&&<Notice tone="error">{actionError}</Notice>}
+    {!list.error&&(isCourse?<div className="admin-course-grid" aria-busy={list.loading}>
+      {list.loading?Array.from({length:4},(_,index)=><Card key={index} className="admin-course-card"><span className="admin-skeleton-line"/><span className="admin-skeleton-line"/>{index===0&&<span role="status" className="admin-sr-only">Đang tải khóa học…</span>}</Card>):rows.map(row=><Card className="admin-course-card" key={row.id}>
+        <div className="admin-management-toolbar"><Badge tone="info">Band {display(row.bandFrom)} – {display(row.bandTo)}</Badge>{Number(row.discountPercent)>0&&<Badge tone="success">Giảm {row.discountPercent as number}%</Badge>}</div>
+        <h3>{String(row.name)}</h3><p>{display(row.totalSessions)} buổi · {display(row.sessionsPerWeek)} buổi/tuần</p><p>{display(row.activeStudents)} học viên đang học</p>
+        <div><strong className="admin-course-price">{money(row.finalPrice)}</strong>{Number(row.discountPercent)>0&&<span className="admin-management-subtitle"><s>{money(row.tuition)}</s></span>}</div>
+        <footer>{actions(row)}</footer>
+      </Card>)}
+    </div>:<Card><div className="admin-api-table" role="region" aria-label={`Danh sách ${config.title.toLowerCase()}`} tabIndex={0}><table className="admin-table" aria-busy={list.loading}><thead><tr>{config.columns.map(column=><th scope="col" key={column.key}>{column.label}</th>)}<th scope="col">Thao tác</th></tr></thead><tbody>
+      {list.loading?<TableSkeleton columns={config.columns.length+1}/>:rows.map(row=><tr key={row.id}>{config.columns.map(column=><td key={column.key}>{column.key==="fullName"&&accounts?<Link className="admin-management-name" to={`/admin/${config.path}/${row.id}`} state={{returnTo:location.pathname+location.search}}>{display(row[column.key])}</Link>:column.key==="status"?<Badge status={String(row.status)}/>:column.key==="isLocked"?<Badge tone={row.isLocked?"warning":"success"}>{display(row.isLocked)}</Badge>:column.currency?money(row[column.key]):display(row[column.key])}</td>)}<td>{actions(row)}</td></tr>)}
+    </tbody></table></div></Card>)}
+    {!list.loading&&!list.error&&!rows.length&&<EmptyState title={filtered?`Không tìm thấy ${config.singular} phù hợp`:`Chưa có ${config.singular}`} description={filtered?"Thử từ khóa khác hoặc xóa bộ lọc để xem lại danh sách.":`Thêm ${config.singular} đầu tiên để bắt đầu quản lý.`} action={filtered?<Button onClick={()=>setParams({})}>Xóa bộ lọc</Button>:<Button variant="primary" onClick={()=>edit()}>Thêm {config.singular}</Button>}/>}
+    {config.paged&&total>pageSize&&<Pager page={page} pageSize={pageSize} total={total} loading={list.loading} onChange={value=>{changeParam("page",String(value));document.getElementById("admin-main-content")?.scrollIntoView({block:"start"});}}/>}
+    <Modal open={open} title={`${editing===null?"Thêm":"Sửa"} ${config.singular}`} busy={busy} onClose={closeEditor}>
+      {editorLoading?<p role="status">Đang tải hồ sơ để chỉnh sửa…</p>:<form className="admin-api-stack" onSubmit={save}>
+        {actionError&&<Notice tone="error">{actionError}</Notice>}
+        {config.fields.filter(field=>editing===null||!field.createOnly).map(field=>field.options?<SelectField key={field.key} label={field.label} required={field.required} disabled={busy} error={fieldErrors[field.key.toLowerCase()]} value={form[field.key]??""} onChange={event=>updateField(field.key,event.target.value)} options={field.options.map(value=>({value,label:display(value)}))}/>:field.type==="textarea"?<TextareaField key={field.key} label={field.label} disabled={busy} error={fieldErrors[field.key.toLowerCase()]} maxLength={field.maxLength} value={form[field.key]??""} onChange={event=>updateField(field.key,event.target.value)}/>:<InputField key={field.key} label={field.label} placeholder={`Nhập ${field.label.toLowerCase()}`} type={field.type??"text"} required={field.required} disabled={busy} error={fieldErrors[field.key.toLowerCase()]} min={field.min} max={field.max} step={field.step} maxLength={field.maxLength} minLength={field.type==="password"?8:undefined} value={form[field.key]??""} onChange={event=>updateField(field.key,event.target.value)}/>)}
+        {isCourse&&<><p>Học phí sau giảm: <strong>{money(Number(form.tuition||0)*(1-Number(form.discountPercent||0)/100))}</strong></p>{editing!==null&&<Notice tone="info">Thay đổi học phí và giảm giá chỉ áp dụng cho học viên ghi danh từ bây giờ.</Notice>}</>}
+        {editing!==null&&accounts&&<p className="admin-api-muted">Email đăng nhập được giữ nguyên khi sửa hồ sơ.</p>}
+        <div className="admin-row-actions"><Button disabled={busy} onClick={closeEditor}>Hủy</Button><Button type="submit" variant="primary" loading={busy}>Lưu {config.singular}</Button></div>
+      </form>}
+    </Modal>
+    <Modal open={Boolean(resetRow)} title={`Đặt lại mật khẩu: ${resetRow?nameOf(resetRow):""}`} busy={busy} onClose={()=>{if(!busy)setResetRow(null);}}>
+      <form className="admin-api-stack" onSubmit={async event=>{event.preventDefault();if(!resetRow)return;if(await mutate(()=>api.send("POST",`${config.path}/${resetRow.id}/reset-password`,{newPassword:password}),"Đã đặt lại mật khẩu và kết thúc các phiên đăng nhập cũ.")){setResetRow(null);setPassword("");}}}>
+        <Notice tone="info">Mật khẩu mới sẽ thay mật khẩu hiện tại và kết thúc các phiên đăng nhập cũ của tài khoản này.</Notice>{actionError&&<Notice tone="error">{actionError}</Notice>}
+        <InputField label="Mật khẩu mới" type="password" autoComplete="new-password" required minLength={8} help="Tối thiểu 8 ký tự. Chia sẻ mật khẩu mới cho chủ tài khoản qua kênh riêng." disabled={busy} error={fieldErrors.newpassword} value={password} onChange={event=>setPassword(event.target.value)}/><Button type="submit" variant="primary" loading={busy}>Đặt lại mật khẩu</Button>
       </form>
     </Modal>
-    <Modal open={resetId !== null} title="Đặt lại mật khẩu" onClose={() => {if(!busy)setResetId(null);}}><form onSubmit={async e => {e.preventDefault();if(await mutate(() => api.send("POST",`${config.path}/${resetId}/reset-password`,{newPassword:password}),"Đã đặt lại mật khẩu và thu hồi phiên cũ.")){setResetId(null);setPassword("");}}}><Feedback error={actionError}/><InputField label="Mật khẩu mới" type="password" required minLength={8} value={password} onChange={e=>setPassword(e.target.value)} autoComplete="new-password"/><Button type="submit" disabled={busy}>Xác nhận</Button></form></Modal>
-    {detail !== null && <ResourceDetail config={config} id={detail} close={() => setDetail(null)} />}
+    <ConfirmDialog open={Boolean(confirmation)} title={confirmation?.action==="delete"?`Xóa ${config.singular}`:confirmation?.row.isLocked?"Mở khóa tài khoản":"Khóa tài khoản"} confirmLabel={confirmation?.action==="delete"?"Xác nhận xóa":confirmation?.row.isLocked?"Mở khóa":"Khóa tài khoản"} danger={confirmation?.action==="delete"||!confirmation?.row.isLocked} onClose={()=>setConfirmation(null)} onConfirm={async()=>{
+      if(!confirmation)return;const {row,action}=confirmation;
+      await mutate(()=>api.send(action==="delete"?"DELETE":"POST",`${config.path}/${row.id}${action==="delete"?"":`/${row.isLocked?"unlock":"lock"}`}`),action==="delete"?`Đã xóa ${nameOf(row)}.`:"Đã cập nhật trạng thái tài khoản.",action==="delete",true);
+    }}><p>{confirmation?.action==="delete"?"Bạn muốn xóa":"Thay đổi quyền đăng nhập của"} <strong>{confirmation?nameOf(confirmation.row):""}</strong>?</p>{confirmation?.action==="delete"&&<p>Dữ liệu đang được sử dụng sẽ được máy chủ kiểm tra trước khi xóa.</p>}</ConfirmDialog>
   </div>;
 }

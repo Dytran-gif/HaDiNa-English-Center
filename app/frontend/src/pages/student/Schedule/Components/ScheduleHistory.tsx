@@ -1,52 +1,17 @@
 import { useState, useMemo } from 'react';
-import { 
-    mockEnrollments, 
-    mockClasses, 
-    mockCourses, 
-    mockTeachers 
-} from "../../../../data/StudentData/MainData";
-import type { 
-    Enrollment, 
-    ClassItem, 
-    Course, 
-    Teacher 
-} from "../../../../types/StudentTypes/MainTypes";
+import type { StudentScheduleHistoryItem } from "../../../../services/student/useStudentApi";
 import './ScheduleHistory.css';
 
 const ITEMS_PER_PAGE = 3; // Số khóa học tối đa hiển thị trên 1 trang
 
-export default function ScheduleHistoryFE() {
+interface ScheduleHistoryProps {
+    items: StudentScheduleHistoryItem[]; // Các khóa đã qua (từ BE)
+}
+
+export default function ScheduleHistoryFE({ items }: ScheduleHistoryProps) {
     const [currentPage, setCurrentPage] = useState(1);
 
-    // 1. TRUY VẤN VÀ JOIN DỮ LIỆU CÁC KHÓA ĐÃ HOÀN THÀNH / HỦY
-    const historyList = useMemo(() => {
-        const studentId = "std-01"; // ID Sinh viên đang đăng nhập
-
-        // Lọc các đợt đăng ký có trạng thái 'Completed' hoặc 'Cancelled' (hoặc 'Dropped')
-        const pastEnrollments = mockEnrollments.filter(
-            (e: Enrollment) => e.studentId === studentId && (e.status === 'Completed' || e.status === 'Cancelled')
-        );
-
-        return pastEnrollments.map((enrollment) => {
-            const cls = mockClasses.find((c: ClassItem) => c.id === enrollment.classId);
-            const course = cls ? mockCourses.find((co: Course) => co.id === cls.courseId) : undefined;
-            const teacher = cls && cls.teacherId ? mockTeachers.find((t: Teacher) => t.id === cls.teacherId) : undefined;
-
-            return {
-                enrollmentId: enrollment.id,
-                status: enrollment.status,
-                registeredAt: enrollment.createdAt,
-                classId: enrollment.classId,
-                className: cls ? cls.name : enrollment.classId,
-                startDate: cls ? cls.startDate : 'N/A',
-                endDate: cls ? cls.endDate : 'N/A',
-                courseName: course ? course.name : 'Unknown Course',
-                band: course ? `Band ${course.bandFrom} - ${course.bandTo}` : '',
-                totalSessions: course ? course.totalSessions : 0,
-                teacherName: teacher ? teacher.fullName : 'Not assigned'
-            };
-        });
-    }, []);
+    const historyList = items;
 
     // 2. LOGIC PHÂN TRANG
     const totalPages = Math.ceil(historyList.length / ITEMS_PER_PAGE) || 1;
@@ -108,7 +73,7 @@ export default function ScheduleHistoryFE() {
                 )}
             </div>
 
-            {/* BỘ PHÂN TRANG (PAGINATION) - Chỉ hiện khi có trên 5 mục hoặc tổng trang > 1 */}
+            {/* BỘ PHÂN TRANG (PAGINATION) */}
             {totalPages > 1 && (
                 <div className="th-pagination">
                     <button 

@@ -224,5 +224,8 @@ public partial class AppDbContext : DbContext
 
         // ---------- Các bảng cho chức năng Teacher (xem AppDbContext.Teacher.cs) ----------
         ConfigureTeacherFeatures(b);
+
+        // ---------- Các bảng cho chức năng Student (xem AppDbContext.Student.cs) ----------
+        ConfigureStudentFeatures(b);
     }
 }

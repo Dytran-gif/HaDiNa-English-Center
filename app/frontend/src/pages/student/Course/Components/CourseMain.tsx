@@ -1,23 +1,26 @@
 import { useState, useMemo } from 'react';
-import { mockCourses } from "../../../../data/StudentData/MainData";
 import type { Course } from "../../../../types/StudentTypes/MainTypes";
+import defaultCourseImage from "../../../../assets/images/next-lesson-mock.jpg";
 import './CourseMain.css';
 
-// Component nhận vào hàm onSelectCourse để truyền dữ liệu xuống Khu vực 2 (Bottom)
+// Component nhận vào hàm onRegisterCourse để đăng ký khóa học (lưu thẳng xuống DB)
 interface CourseMainProps {
-    onSelectCourse: (course: Course) => void;
+    courses: Course[];
+    onRegisterCourse: (course: Course) => void;
 }
 
-export default function CourseMainFE({ onSelectCourse }: CourseMainProps) {
+export default function CourseMainFE({ courses, onRegisterCourse }: CourseMainProps) {
     // STATES CHO BỘ LỌC
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedLevel, setSelectedLevel] = useState('All Levels');
-    const [selectedSkill, setSelectedSkill] = useState('All Skills');
-    const [selectedType, setSelectedType] = useState('All Types');
+    // Bộ lọc Skill/Type đang tắt (JSX "Hàng 2" bên dưới đang bị comment).
+    // Bỏ comment hàng 2 thì bỏ comment luôn các dòng này + 2 khối lọc + 2 mảng tùy chọn.
+    // const [selectedSkill, setSelectedSkill] = useState('All Skills');
+    // const [selectedType, setSelectedType] = useState('All Types');
 
     // LOGIC LỌC KHÓA HỌC (Kết hợp nhiều điều kiện dựa trên thuộc tính DB)
     const filteredCourses = useMemo(() => {
-        return mockCourses.filter((course: Course) => {
+        return courses.filter((course: Course) => {
             // 1. Lọc theo Search (Tên khóa học)
             const matchSearch = course.name.toLowerCase().includes(searchQuery.toLowerCase());
 
@@ -31,31 +34,31 @@ export default function CourseMainFE({ onSelectCourse }: CourseMainProps) {
             }
 
             // 3. Lọc theo Skill (Kiểm tra từ khóa trong Tên hoặc Mô tả)
-            let matchSkill = true;
-            if (selectedSkill !== 'All Skills') {
-                const content = `${course.name} ${course.description}`.toLowerCase();
-                matchSkill = content.includes(selectedSkill.toLowerCase());
-            }
+            // let matchSkill = true;
+            // if (selectedSkill !== 'All Skills') {
+            //     const content = `${course.name} ${course.description}`.toLowerCase();
+            //     matchSkill = content.includes(selectedSkill.toLowerCase());
+            // }
 
             // 4. Lọc theo Type (Kiểm tra từ khóa trong Tên khóa học)
-            let matchType = true;
-            if (selectedType !== 'All Types') {
-                const name = course.name.toLowerCase();
-                if (selectedType === 'General') matchType = name.includes('general') || name.includes('daily');
-                if (selectedType === 'Academic') matchType = name.includes('academic') || name.includes('ielts');
-                if (selectedType === 'Business') matchType = name.includes('business') || name.includes('practical');
-            }
+            // let matchType = true;
+            // if (selectedType !== 'All Types') {
+            //     const name = course.name.toLowerCase();
+            //     if (selectedType === 'General') matchType = name.includes('general') || name.includes('daily');
+            //     if (selectedType === 'Academic') matchType = name.includes('academic') || name.includes('ielts');
+            //     if (selectedType === 'Business') matchType = name.includes('business') || name.includes('practical');
+            // }
 
-            return matchSearch && matchLevel && matchSkill && matchType;
+            return matchSearch && matchLevel;
         });
-    }, [searchQuery, selectedLevel, selectedSkill, selectedType]);
+    }, [courses, searchQuery, selectedLevel]);
 
     // Các mốc Level để render nút
     const levels = ['All Levels', 'Beginner', 'Intermediate', 'Advanced'];
 
     // Các tùy chọn cho Dropdown
-    const skills = ['All Skills', 'Speaking', 'Listening', 'Reading', 'Writing', 'Grammar', 'Vocabulary', 'Pronunciation'];
-    const courseTypes = ['All Types', 'General', 'Academic', 'Business'];
+    // const skills = ['All Skills', 'Speaking', 'Listening', 'Reading', 'Writing', 'Grammar', 'Vocabulary', 'Pronunciation'];
+    // const courseTypes = ['All Types', 'General', 'Academic', 'Business'];
 
     return (
         <div className="course-main-section">
@@ -94,7 +97,7 @@ export default function CourseMainFE({ onSelectCourse }: CourseMainProps) {
                 </div>
 
                 {/* Hàng 2: Dropdowns */}
-                <div className="cm-filter-row-2">
+                {/* <div className="cm-filter-row-2">
                     <div className="cm-dropdown">
                         <select value={selectedSkill} onChange={(e) => setSelectedSkill(e.target.value)}>
                             {skills.map(skill => <option key={skill} value={skill}>{skill === 'All Skills' ? 'Skill' : skill}</option>)}
@@ -105,7 +108,7 @@ export default function CourseMainFE({ onSelectCourse }: CourseMainProps) {
                             {courseTypes.map(type => <option key={type} value={type}>{type === 'All Types' ? 'Course Type' : type}</option>)}
                         </select>
                     </div>
-                </div>
+                </div> */}
             </div>
 
             {/* DANH SÁCH KHÓA HỌC */}
@@ -116,7 +119,7 @@ export default function CourseMainFE({ onSelectCourse }: CourseMainProps) {
                             <div key={course.id} className="cm-course-card">
                                 {/* Ảnh và Level Badge */}
                                 <div className="cm-card-image">
-                                    <img src={course.imageUrl || "/api/placeholder/400/200"} alt={course.name} />
+                                    <img src={course.imageUrl || defaultCourseImage} alt={course.name} />
                                     <span className="cm-badge badge-beginner">
                                         Band {course.bandFrom} - {course.bandTo}
                                     </span>
@@ -131,6 +134,9 @@ export default function CourseMainFE({ onSelectCourse }: CourseMainProps) {
                                     <div className="cm-card-meta">
                                         <span><i className="fa-regular fa-clock"></i> {course.totalSessions} sessions</span>
                                         <span><i className="fa-solid fa-calendar-days"></i> {course.sessionsPerWeek} sessions/wk</span>
+                                        {course.teacherName && (
+                                            <span><i className="fa-solid fa-chalkboard-user"></i> {course.teacherName}</span>
+                                        )}
                                     </div>
 
                                     {/* Tags Thông tin bổ sung */}
@@ -152,19 +158,11 @@ export default function CourseMainFE({ onSelectCourse }: CourseMainProps) {
                                     <div className="cm-card-actions">
                                         <button
                                             className="cm-register-btn"
-                                            onClick={() => onSelectCourse(course)}
+                                            onClick={() => onRegisterCourse(course)}
                                         >
                                             Register
                                         </button>
-
-                                        <button
-                                            className="cm-view-btn"
-                                            onClick={() => {
-                                                console.log("Sẽ mở popup cho khóa học:", course.name);
-                                            }}
-                                        >
-                                            View details <i className="fa-solid fa-arrow-right"></i>
-                                        </button>
+                       
                                     </div>
                                 </div>
                             </div>

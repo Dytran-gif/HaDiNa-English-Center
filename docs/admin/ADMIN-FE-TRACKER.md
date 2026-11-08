@@ -170,3 +170,24 @@ Các mã F2/F3/BLOG phía trên ghi tiến độ đợt UI, không phải chứn
 | Kiểm chứng | ✅ | FE build/typecheck, lint0error/1warning cũ;28Admin+28UI+16Blog; reviewPASS. Không QA tương tác browser. |
 
 Các bảng audit2026-10-30 bên trên phản ánh lịch sử. Không khôi phục các chức năng người dùng đã bỏ. Xem plan27 và báo cáo để biết phần chưa hoàn tất theo toàn spec.
+
+## [2026-11-06] Plan28 — desktop Admin UI/UX
+
+| Scope | Status | Notes |
+|---|---|---|
+| Shared Admin dialogs/actions | ✅ desktop | Native Dialog adapter, named confirmations, grouped security actions, busy protection, skeleton/empty/retry/toast. |
+| Students/Teachers | ✅ desktop | Dedicated profile routes/sections and edit deep links; specialty dropdown from available API data. |
+| Classes | ✅ desktop | Dedicated detail/roster, add/withdraw in place, compact schedules and badges. |
+| Courses/Rooms | ✅ desktop | Course cards; Rooms receives shared CRUD improvements. |
+| Payments | ✅ desktop | Compact table, all-result date/method filtering, safe busy dialog; actual print QA still pending. |
+| Dashboard/Reports | ✅ desktop | Date-aware heading/detail links;6/12/24months and data table. |
+| Mobile | ⏸ user deferred | To-do in FE-ADMIN.md, not accepted as complete. |
+
+89 automated checks PASS; build/typecheck PASS; lint0error/1oldwarning. ReviewPASS desktop. No BE/schema/dependency changes or real DB mutation tests.
+
+## [2026-11-06] Simplify Courses, Rooms and Reports
+
+- Courses/Rooms: no detail dialog; Edit/Delete visible directly. Named delete confirmation retained.
+- Reports fixed12months, no period selector/monthly table. Chart and CSV retained.
+- Required desktop styles moved to AdminApi.css after missing AdminManagement.css caused unresolved imports. No mobile additions.
+- BuildPASS, lint0errors/1oldwarning,28Admin checksPASS. No BE/DB changes.

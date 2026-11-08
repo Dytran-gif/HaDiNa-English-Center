@@ -15,12 +15,14 @@ export function assetUrl(path?: string | null) {
 }
 
 export async function request<T>(path: string, token?: string | null, init: RequestInit = {}): Promise<T> {
+  // FormData: để trình tự đặt Content-Type (kèm boundary), không được gán application/json.
+  const isFormData = init.body instanceof FormData;
   let response: Response;
   try {
     response = await fetch(baseUrl + path, {
       ...init,
       headers: {
-        ...(init.body ? { "Content-Type": "application/json" } : {}),
+        ...(init.body && !isFormData ? { "Content-Type": "application/json" } : {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...init.headers,
       },

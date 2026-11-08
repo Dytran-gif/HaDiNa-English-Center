@@ -1,21 +1,11 @@
-import { useRef, useState, type MouseEvent } from 'react';
-import { mockCourses } from "../../../../data/StudentData/MainData";
+import { useRef, useState, useMemo, type MouseEvent } from 'react';
+import { mockCourses, mockEnrollments, mockClasses } from "../../../../data/StudentData/MainData";
+import type { Course, ClassItem, Enrollment } from "../../../../types/StudentTypes/MainTypes";
+import defaultCourseImage from "../../../../assets/images/next-lesson-mock.jpg";
 import "./Course.css";
 
-export interface DashboardCourseItem {
-    id: number | string;
-    name: string;
-    bandFrom: number | string;
-    bandTo: number | string;
-    totalSessions: number;
-    sessionsPerWeek: number;
-    tuition: number;
-    discountPercent: number;
-    imageUrl?: string;
-}
-
 interface CourseProps {
-    courses?: DashboardCourseItem[];
+    courses?: Course[];
 }
 
 export default function CourseFE({ courses }: CourseProps) {
@@ -43,7 +33,25 @@ export default function CourseFE({ courses }: CourseProps) {
         scrollRef.current.scrollLeft = scrollLeft - walk;
     };
 
-    const list = courses && courses.length > 0 ? courses : mockCourses.slice(0, 10);
+    // ID học viên đang đăng nhập (khớp với dữ liệu mẫu hệ thống)
+    const currentStudentId = "std-01";
+
+    // Có dữ liệu từ API thì dùng dữ liệu API (kể cả rỗng); chưa tải được thì dùng dữ liệu mẫu
+    const studentEnrolledCourses = useMemo(() => {
+        const list = courses ?? mockEnrollments
+            .filter((enr: Enrollment) => enr.studentId === currentStudentId)
+            .map((enr: Enrollment) => {
+                const classItem = mockClasses.find((c: ClassItem) => c.id === enr.classId);
+                const course = classItem ? mockCourses.find((co: Course) => co.id === classItem.courseId) : null;
+                return course;
+            })
+            .filter((course): course is Course => course !== null);
+
+        // Một khóa có thể lặp lại khi học viên học nhiều lớp cùng khóa -> bỏ trùng để key React là duy nhất
+        return list.filter((course, i) => list.findIndex(c => c.id === course.id) === i);
+    }, [courses, currentStudentId]);
+
+    const list = studentEnrolledCourses;
 
     return (
         <section className="continue-learning-section">
@@ -57,7 +65,7 @@ export default function CourseFE({ courses }: CourseProps) {
                         <p className="section-subtitle">Pick up where you left off</p>
                     </div>
                 </div>
-                <a href="#courses" className="view-all-link">
+                <a href="/student/courses" className="view-all-link">
                     View all courses <span>→</span>
                 </a>
             </header>
@@ -75,7 +83,7 @@ export default function CourseFE({ courses }: CourseProps) {
                         key={course.id}
                         className="course-card scroll-item"
                         style={{
-                            backgroundImage: course.imageUrl ? `url("${course.imageUrl}")` : undefined
+                            backgroundImage: `url("${course.imageUrl || defaultCourseImage}")`
                         }}
                     >
                         <div className="course-content">
@@ -100,6 +108,11 @@ export default function CourseFE({ courses }: CourseProps) {
                         </div>
                     </div>
                 ))}
+                {list.length === 0 && (
+                    <div className="no-courses" style={{ padding: '20px', color: '#64748b' }}>
+                        Bạn chưa đăng ký khóa học nào.
+                    </div>
+                )}
             </div>
         </section>
     );

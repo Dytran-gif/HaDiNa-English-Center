@@ -18,8 +18,6 @@ export type { TeachingMaterial } from "./material";
 
 //Đường dẫn của StudentTypes
 export type {
-    NotificationData,
-
     StudentUser,
 } from "./StudentTypes/HeaderTypes";
 export type { SidebarMenuItem } from "./StudentTypes/SidebarTypes";

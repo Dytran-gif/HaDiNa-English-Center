@@ -17,6 +17,8 @@ import StudentLayout from "./pages/student/Layout/StudentLayout";
 import StudentDashboard from "./pages/student/Dashboard/Dashboard";
 import StudentCourse from "./pages/student/Course/Course";
 import StudentSchedule from "./pages/student/Schedule/Schedule";
+import StudentTuition from "./pages/student/Tuition/Tuition";
+import StudentFeedback from "./pages/student/Feedback/Feedback";
 
 import AdminLayout from "./pages/admin/Layout/AdminLayout";
 import AdminDashboard from "./pages/admin/Dashboard/Dashboard";
@@ -28,7 +30,9 @@ import RoomsManagement from "./pages/admin/Rooms/RoomsManagement";
 import TeachersManagement from "./pages/admin/Teachers/TeachersManagement";
 import StudentsManagement from "./pages/admin/Students/StudentsManagement";
 import ClassesManagement from "./pages/admin/Classes/ClassesManagement";
+import ClassProfile from "./pages/admin/Classes/ClassProfile";
 import Settings from "./pages/admin/Settings/Settings";
+import AccountProfile from "./pages/admin/Components/Api/AccountProfile";
 import TeacherLayout from "./pages/teacher/Layout/TeacherLayout";
 import TeacherDashboard from "./pages/teacher/Dashboard/Dashboard";
 import TeacherClasses from "./pages/teacher/Classes/Classes";
@@ -71,17 +75,11 @@ export default function AppRoutes() {
             >
                 <Route index element={<Navigate to="/student/dashboard" replace />} />
                 <Route path="dashboard" element={<StudentDashboard />} />
-
-                {/* Sau này thêm các page */}
-
-
                 <Route path="courses" element={<StudentCourse />} />
                 <Route path="schedule" element={<StudentSchedule />} />
-                {/* 
-  
-    
-    <Route path="feedback" element={<StudentFeedback />} />
-    <Route path="tuition" element={<StudentTuition />} /> */}
+                <Route path="tuition" element={<StudentTuition />} />
+                <Route path="feedback" element={<StudentFeedback />} />
+
 
             </Route>
             <Route
@@ -101,8 +99,11 @@ export default function AppRoutes() {
                 <Route path="reports" element={<Reports />} />
                 <Route path="rooms" element={<RoomsManagement />} />
                 <Route path="teachers" element={<TeachersManagement />} />
+                <Route path="teachers/:id" element={<AccountProfile kind="teachers" />} />
                 <Route path="students" element={<StudentsManagement />} />
+                <Route path="students/:id" element={<AccountProfile kind="students" />} />
                 <Route path="classes" element={<ClassesManagement />} />
+                <Route path="classes/:id" element={<ClassProfile />} />
                 <Route path="settings" element={<Settings />} />
             </Route>
             <Route

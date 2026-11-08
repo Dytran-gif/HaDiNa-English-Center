@@ -1,4 +1,4 @@
-﻿import "../admin-shared.css";
+import "../admin-shared.css";
 import "../Dashboard/Dashboard.css";
 import "./Reports.css";
 import Card from "../../../components/ui/Card";
@@ -33,6 +33,7 @@ export default function Reports() {
     </div>
     <Card className="admin-recent-card">
       <div className="admin-recent-header"><h2>Doanh thu 12 tháng gần nhất</h2><Button onClick={() => downloadRevenue(items)} disabled={revenue.loading || Boolean(revenue.error) || items.length === 0}>Xuất CSV</Button></div>
+      <p className="admin-api-muted">Biểu đồ và CSV hiển thị 12 tháng gần nhất, tính theo ngày thu. Tổng doanh thu ở trên là toàn bộ phiếu thu.</p>
       {revenue.error ? <Notice tone="error" title="Không tải được doanh thu" action={<Button onClick={revenue.reload}>Thử lại</Button>}>{revenue.error}</Notice> : revenue.loading ? <p role="status">Đang tải doanh thu…</p> : items.length === 0 ? <p>Chưa có dữ liệu doanh thu.</p> :
         <div className="admin-revenue-scroll" role="region" aria-label="Biểu đồ doanh thu 12 tháng, có thể cuộn ngang" tabIndex={0}><div className="admin-bar-chart" aria-label="Doanh thu theo tháng">{items.map(item => <div className="admin-bar-chart__col" key={item.month}>
           <span className="admin-bar-chart__value">{money(item.revenue)}</span>

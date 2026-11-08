@@ -38,6 +38,7 @@ try {
   const store = new Map();
   globalThis.localStorage = { getItem:key=>store.get(key)??null, setItem:(key,value)=>store.set(key,value), removeItem:key=>store.delete(key) };
   const { AuthProvider } = await vite.ssrLoadModule("/src/context/AuthContext.tsx");
+  const { default: ToastProvider } = await vite.ssrLoadModule("/src/pages/admin/Components/Ui/ToastProvider.tsx");
   const cases = [
     ["Dashboard/Dashboard.tsx","/admin/dashboard","Lớp học hôm nay"],
     ["Reports/Reports.tsx","/admin/reports","Doanh thu 12 tháng gần nhất"],
@@ -54,7 +55,7 @@ try {
   ];
   for (const [file,url,expected] of cases) {
     const {default:Page} = await vite.ssrLoadModule(`/src/pages/admin/${file}`);
-    const html = renderToStaticMarkup(React.createElement(MemoryRouter,{initialEntries:[url]},React.createElement(AuthProvider,null,React.createElement(Page))));
+    const html = renderToStaticMarkup(React.createElement(MemoryRouter,{initialEntries:[url]},React.createElement(AuthProvider,null,React.createElement(ToastProvider,null,React.createElement(Page)))));
     check(html.includes(expected), `render ${url}`);
   }
   const {default:ProtectedRoute} = await vite.ssrLoadModule("/src/components/ProtectedRoute.tsx");

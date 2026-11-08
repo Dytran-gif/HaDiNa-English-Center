@@ -1,9 +1,19 @@
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import "./Sidebar.css";
 
 import { sidebarMenuItems } from "../../../../data/StudentData/SidebarData";
+import { useAuth } from "../../../../context/AuthContext";
 
 function Sidebar() {
+    const { logout } = useAuth();
+    const navigate = useNavigate();
+
+    // Xóa phiên rồi về trang chủ công khai (replace để nút Back không quay lại trang student)
+    const handleLogout = () => {
+        logout();
+        navigate("/", { replace: true });
+    };
+
     return (
         <aside className="student-sidebar">
 
@@ -51,28 +61,10 @@ function Sidebar() {
                     MENU TÀI KHOẢN
                 ========================= */}
                 <div className="sidebar-bottom">
-
-                    <Link
-                        to="/student/account"
-                        className="sidebar-item"
-                    >
-                        <span className="sidebar-icon"><i className="fa-solid fa-user-tag"></i></span>
-                        <span>Account</span>
-                    </Link>
-
-
-                    <Link
-                        to="/student/settings"
-                        className="sidebar-item"
-                    >
-                        <span className="sidebar-icon"><i className="fa-solid fa-screwdriver-wrench"></i></span>
-                        <span>Settings</span>
-                    </Link>
-
-
                     <button
                         type="button"
                         className="sidebar-item logout-button"
+                        onClick={handleLogout}
                     >
                         <span className="sidebar-icon"><i className="fa-solid fa-arrow-right-from-bracket"></i></span>
                         <span>Log out</span>

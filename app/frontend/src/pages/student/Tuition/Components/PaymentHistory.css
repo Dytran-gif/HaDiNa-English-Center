@@ -1,0 +1,110 @@
+* {
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.header-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.icon-box {
+    width: 40px;
+    height: 40px;
+    background-color: #dbeafe;
+    color: #2563eb;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.header-text h1 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 2px 0;
+}
+
+.header-text p {
+    color: #64748b;
+    font-size: 13px;
+    margin: 0;
+}
+
+.table-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.card-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.custom-table th, .custom-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 13px; /* Thu nhỏ cỡ chữ bảng */
+}
+
+.custom-table th {
+    background-color: #f8fafc;
+    color: #475569;
+    font-weight: 600;
+    font-size: 12px; /* Thu nhỏ cỡ chữ tiêu đề cột */
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.custom-table tbody tr:hover {
+    background-color: #f8fafc;
+    transition: background-color 0.2s;
+}
+
+.font-medium { font-weight: 500; color: #1e293b; }
+.text-muted { color: #64748b; font-size: 13px; }
+.text-blue { color: #2563eb; }
+
+/* Badge phân loại phương thức thanh toán */
+.badge {
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.badge.banking {
+    background-color: #dbeafe;
+    color: #1d4ed8;
+}
+
+.badge.cash {
+    background-color: #dcfce7;
+    color: #15803d;
+}
+
+.badge.creditcard {
+    background-color: #f3e8ff;
+    color: #7e22ce;
+}
