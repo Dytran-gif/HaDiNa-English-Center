@@ -1,4 +1,18 @@
 # Nhật ký bàn giao
+## [2026-11-08] Duy (Claude) — Dữ liệu demo cổng Giáo viên
+
+**Đã xong**
+- `tools/db/demo/`: script tạo dữ liệu demo cho `teacher@demo.com` như đang dạy thật (ngày giờ tính từ hôm chạy): 4 lớp mới (đang dạy / sắp khai giảng / đã kết thúc), 16 học viên `HV2001`–`HV2016`, ~100 buổi học, giáo án, điểm danh, 15 tài liệu, 12 bài tập, 64 bài nộp (bài viết thật, ghi âm, quiz), lỗi highlight, bài kiểm tra + điểm, nhận xét, đề xuất lên lớp, đánh giá, yêu cầu, lịch rảnh, 1 kèm 1, thông báo.
+- File demo thật trong `tools/db/demo/files/` (ảnh biểu đồ Task 1, PDF tài liệu, mp3 Speaking/Listening); `.ps1` chép vào `wwwroot/uploads/demo` (thư mục bị gitignore).
+- Kiểm tra: tên cột và cột bắt buộc đối chiếu snapshot EF (0 lỗi); cú pháp T-SQL qua sqlfluff (0 lỗi). **Chưa chạy trên SQL Server thật** (máy làm việc không có).
+
+**Việc tiếp theo**
+- Gốc repo: `powershell -ExecutionPolicy Bypass -File tools\db\demo\teacher-demo-data.ps1`, rồi đăng nhập `teacher@demo.com` đi theo kịch bản trong `tools/db/demo/README.md`.
+
+**Bẫy cần biết**
+- Script chỉ chạy 1 lần (có `HV2001` thì bỏ qua). Muốn làm lại: restore DB rồi seed lại.
+- Sửa dữ liệu ở `tools/db/demo/generator/*.py` rồi sinh lại `.sql`, không sửa tay file `.sql`.
+
 ## [2026-11-08] Duy (Claude) — Teacher-Module: hoàn thiện cổng Giáo viên + migration mới
 
 **Đã xong**
