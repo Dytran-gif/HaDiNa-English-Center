@@ -9,6 +9,7 @@ import Testimonials from "../components/sections/Testimonials";
 import NewsBlog from "../components/sections/NewsBlog";
 import RegisterCta from "../components/sections/RegisterCta";
 import Reveal from "../components/sections/Reveal";
+import HomeFaq from "../components/sections/HomeFaq";
 
 export default function Home() {
   return (
@@ -18,7 +19,7 @@ export default function Home() {
         <TrustStats />
       </Reveal>
       <Reveal>
-        <CourseSurvey />
+        <div id="course-survey"><CourseSurvey /></div>
       </Reveal>
       <Reveal>
         <WhyDifferent />
@@ -34,6 +35,9 @@ export default function Home() {
       </Reveal>
       <Reveal>
         <NewsBlog />
+      </Reveal>
+      <Reveal>
+        <HomeFaq />
       </Reveal>
       <Reveal>
         <RegisterCta />

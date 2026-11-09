@@ -22,7 +22,7 @@ export default function Reveal({ children, delay = 0 }: RevealProps) {
     const prefersReduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
-    if (prefersReduced) {
+    if (prefersReduced || !("IntersectionObserver" in window)) {
       setVisible(true);
       return;
     }
