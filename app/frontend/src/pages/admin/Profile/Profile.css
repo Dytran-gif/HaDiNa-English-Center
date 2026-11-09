@@ -1,0 +1,9 @@
+.admin-layout .admin-personal-profile { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--admin-space-6); align-items: stretch; }
+.admin-layout .admin-personal-profile > * { min-width: 0; }
+.admin-layout .admin-personal-profile .admin-section-card { border-radius: var(--admin-space-6); }
+.admin-layout .admin-personal-identity { display: flex; align-items: center; gap: var(--admin-space-4); margin-block-end: var(--admin-space-6); }
+.admin-layout .admin-personal-identity > div { min-width: 0; }
+.admin-layout .admin-personal-identity h2 { margin: 0 0 var(--admin-space-2); color: var(--admin-primary-ink); font-size: var(--admin-font-xl); overflow-wrap: anywhere; }
+.admin-layout .admin-personal-avatar { display: grid; place-items: center; flex-shrink: 0; width: 96px; height: 96px; border-radius: 50%; background: var(--admin-primary-soft); color: var(--admin-primary-ink); font-size: 32px; font-weight: 700; }
+.admin-layout .admin-personal-hint { margin-block: var(--admin-space-4) 0; color: var(--admin-muted); font-size: var(--admin-font-sm); }
+.admin-layout .admin-personal-profile .admin-panel-submit { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: var(--admin-space-3); }

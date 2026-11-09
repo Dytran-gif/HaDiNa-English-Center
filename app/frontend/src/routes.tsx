@@ -31,6 +31,7 @@ import TeachersManagement from "./pages/admin/Teachers/TeachersManagement";
 import StudentsManagement from "./pages/admin/Students/StudentsManagement";
 import ClassesManagement from "./pages/admin/Classes/ClassesManagement";
 import ClassProfile from "./pages/admin/Classes/ClassProfile";
+import AdminProfile from "./pages/admin/Profile/Profile";
 import Settings from "./pages/admin/Settings/Settings";
 import AccountProfile from "./pages/admin/Components/Api/AccountProfile";
 import TeacherLayout from "./pages/teacher/Layout/TeacherLayout";
@@ -105,6 +106,7 @@ export default function AppRoutes() {
                 <Route path="classes" element={<ClassesManagement />} />
                 <Route path="classes/:id" element={<ClassProfile />} />
                 <Route path="settings" element={<Settings />} />
+                <Route path="profile" element={<AdminProfile />} />
             </Route>
             <Route
                 path="/teacher"

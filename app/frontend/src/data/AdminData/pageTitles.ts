@@ -1,6 +1,7 @@
 import type { PageTitle } from "../../types";
 
 export const adminPageTitles: Record<string, PageTitle> = {
+    "/admin/profile": { title: "Hồ sơ cá nhân", subtitle: "Thông tin quản trị viên và bảo mật tài khoản." },
     "/admin/teachers": { title: "Quản lý giáo viên", subtitle: "Hồ sơ, lớp phụ trách và tài khoản giáo viên." },
     "/admin/students": { title: "Quản lý học viên", subtitle: "Hồ sơ, ghi danh và lịch sử học phí." },
     "/admin/classes": { title: "Quản lý lớp học", subtitle: "Lịch học, giáo viên, phòng và sĩ số từng lớp." },

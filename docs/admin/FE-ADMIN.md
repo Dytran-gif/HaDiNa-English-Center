@@ -140,3 +140,11 @@ To run desktop browser checks, launch a separate Chrome headless profile on debu
 - Reports: fixed12months; remove period selector and monthly data table. Revenue chart, KPI summary and CSV for12months remain.
 - AdminManagement.css is absent from the workspace. Removed dangling imports and placed required desktop component styles in Components/Api/AdminApi.css; no mobile media queries added. Mobile remains deferred.
 - Validation: buildPASS, lint0errors/1existingwarning,28Admin checksPASS.
+
+## Admin profile - 2026-11-09
+- Header account opens /admin/profile within the protected Admin layout.
+- Two desktop cards: session account information and password change, matching the supplied reference layout.
+- PasswordCard shared with Settings; retains API validation, busy states and replacement token.
+- No fabricated photo upload, teacher payroll or qualifications: Admin has no corresponding endpoints.
+- Build/typecheck passed; lint has only the existing AuthContext warning. Live password changes and visual browser QA not performed.
+
