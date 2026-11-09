@@ -153,6 +153,7 @@ public class GradingController : TeacherControllerBase
             minWordsWarning,
             minWordsMessage = minWordsWarning ? $"Bài viết có {s.WordCount} từ, ít hơn yêu cầu {a.MinWords} từ" : null,
             audioUrl = s.AudioUrl,
+            attachmentUrl = s.AttachmentUrl,
             quiz,
             criteria = a.Type == "Quiz" ? Array.Empty<string>() : IeltsBands.CriteriaOf(a.Skill),
             scores = new { s.Tr, s.Cc, s.Fc, s.Lr, s.Gra, s.P },

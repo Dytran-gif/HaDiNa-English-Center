@@ -99,6 +99,12 @@ public class ProfileController : TeacherControllerBase
             })
             .ToListAsync();
 
+        // Phản hồi học viên gửi ở trang Feedback bên Student (bảng StudentFeedbacks, không có số sao)
+        var feedbacks = await Db.StudentFeedbacks.Where(f => f.TeacherId == TeacherId)
+            .OrderByDescending(f => f.CreatedAt).Take(30)
+            .Select(f => new { f.Id, f.Content, f.CreatedAt, f.ClassId, ClassName = f.Class.Name, StudentName = f.Student.FullName })
+            .ToListAsync();
+
         return Ok(new
         {
             totalRatings = total,
@@ -110,7 +116,8 @@ public class ProfileController : TeacherControllerBase
             }),
             page,
             pageSize,
-            comments
+            comments,
+            feedbacks
         });
     }
 

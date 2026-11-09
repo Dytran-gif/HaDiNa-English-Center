@@ -1,202 +1,105 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import "../teacher-shared.css";
 import Card from "../../../components/ui/Card";
 import Button from "../../../components/ui/Button";
-import Tag from "../../../components/ui/Tag";
 import Modal from "../../../components/ui/Modal";
-import { InputField, SelectField, TextareaField } from "../../../components/ui/FormField";
-import { courses } from "../../../data/courses";
-import { adminMockUsers } from "../../../data/AdminData/mockUsers";
-import { CURRENT_TEACHER_ID } from "../../../data/TeacherData/currentTeacher";
-import { teacherAssignmentsSeed, teacherSubmissionsSeed } from "../../../data/TeacherData/assignments";
-import { useLocalCollection, nextId } from "../../../hooks/useLocalCollection";
-import type { Assignment, Submission, SubmissionStatus } from "../../../types";
-
-const statusLabel: Record<SubmissionStatus, string> = {
-    submitted: "Đã nộp",
-    not_submitted: "Chưa nộp",
-    graded: "Đã chấm",
-};
-
-const statusTone: Record<SubmissionStatus, "yellow" | "red" | "green"> = {
-    submitted: "yellow",
-    not_submitted: "red",
-    graded: "green",
-};
-
-type FormState = { course_id: string; title: string; description: string; due_date: string };
-
-function emptyForm(defaultCourseId: number): FormState {
-    return {
-        course_id: String(defaultCourseId),
-        title: "",
-        description: "",
-        due_date: new Date().toISOString().slice(0, 10),
-    };
-}
+import Tag from "../../../components/ui/Tag";
+import { errorMessage, query, useTeacherApi, useTeacherQuery } from "../../../services/teacher/teacherApi";
+import type { AssignmentListItem, MissingResponse, TeacherClass } from "../../../types/teacherApi";
+import { Empty, Notice, QueryState } from "../Components/Common/Feedback";
+import { fmtDateTime } from "../Components/Common/format";
+import { AssignmentForm } from "./AssignmentForm";
 
 export default function Assignments() {
-    const myCourses = courses.filter((c) => c.teacher_id === CURRENT_TEACHER_ID);
+  const api = useTeacherApi();
+  const [filter, setFilter] = useState({ classId: "", skill: "", state: "" });
+  const { data: classes } = useTeacherQuery<TeacherClass[]>("classes");
+  const { data, loading, error, reload } = useTeacherQuery<AssignmentListItem[]>(`assignments${query(filter)}`);
+  const [notice, setNotice] = useState<{ text: string; tone: "ok" | "error" }>({ text: "", tone: "ok" });
+  const [form, setForm] = useState<{ open: boolean; id: number | null }>({ open: false, id: null });
+  const [missing, setMissing] = useState<{ a: AssignmentListItem; data?: MissingResponse } | null>(null);
 
-    const { items: assignments, add } = useLocalCollection<Assignment>(
-        "teacher_assignments",
-        teacherAssignmentsSeed
-    );
-    const { items: submissions, update: updateSubmission } = useLocalCollection<Submission>(
-        "teacher_submissions",
-        teacherSubmissionsSeed
-    );
+  async function remove(a: AssignmentListItem) {
+    if (!confirm(`Xóa bài "${a.title}"?`)) return;
+    try { await api.send("DELETE", `assignments/${a.id}`); setNotice({ text: "Đã xóa bài tập", tone: "ok" }); reload(); }
+    catch (e) { setNotice({ text: errorMessage(e), tone: "error" }); }
+  }
+  async function openMissing(a: AssignmentListItem) {
+    setMissing({ a });
+    try { setMissing({ a, data: await api.get<MissingResponse>(`assignments/${a.id}/missing`) }); }
+    catch (e) { setMissing(null); setNotice({ text: errorMessage(e), tone: "error" }); }
+  }
+  async function remind(id: number) {
+    try { const r = await api.send<{ message: string }>("POST", `assignments/${id}/remind`); setMissing(null); setNotice({ text: r.message, tone: "ok" }); }
+    catch (e) { setNotice({ text: errorMessage(e), tone: "error" }); }
+  }
 
-    const myAssignments = assignments.filter((a) => myCourses.some((c) => c.course_id === a.course_id));
-
-    const [modalOpen, setModalOpen] = useState(false);
-    const [form, setForm] = useState<FormState>(emptyForm(myCourses[0]?.course_id ?? 0));
-    const [expandedId, setExpandedId] = useState<number | null>(null);
-
-    function handleSubmit() {
-        if (!form.title.trim()) {
-            window.alert("Vui lòng nhập tiêu đề bài tập.");
-            return;
-        }
-        add({
-            assignment_id: nextId(assignments, (a) => a.assignment_id),
-            course_id: Number(form.course_id),
-            title: form.title,
-            description: form.description,
-            due_date: form.due_date,
-            created_at: new Date().toISOString().slice(0, 10),
-        });
-        setModalOpen(false);
-        setForm(emptyForm(myCourses[0]?.course_id ?? 0));
-    }
-
-    function gradeSubmission(submissionId: number) {
-        const scoreStr = window.prompt("Nhập điểm (0-10):");
-        if (scoreStr === null) return;
-        const score = Number(scoreStr);
-        if (Number.isNaN(score)) return;
-        const feedback = window.prompt("Nhận xét (tùy chọn):") ?? undefined;
-        updateSubmission(
-            (s) => s.submission_id === submissionId,
-            (s) => ({ ...s, status: "graded", score, feedback })
-        );
-    }
-
-    return (
-        <div className="teacher-table-page">
-            <div className="teacher-table-toolbar">
-                <p className="teacher-table-count">{myAssignments.length} bài tập</p>
-                <Button variant="primary" onClick={() => setModalOpen(true)}>
-                    + Giao bài tập mới
-                </Button>
-            </div>
-
-            {myAssignments.map((a) => {
-                const course = courses.find((c) => c.course_id === a.course_id);
-                const relatedSubmissions = submissions.filter((s) => s.assignment_id === a.assignment_id);
-                const isExpanded = expandedId === a.assignment_id;
-                return (
-                    <Card key={a.assignment_id} style={{ marginBottom: 16 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
-                            <div>
-                                <h3 style={{ margin: 0 }}>{a.title}</h3>
-                                <p style={{ color: "var(--muted)", margin: "6px 0" }}>{a.description}</p>
-                                <p style={{ fontSize: 13, color: "var(--ink)", margin: 0 }}>
-                                    {course?.course_name} · Hạn nộp: {a.due_date}
-                                </p>
-                            </div>
-                            <button
-                                type="button"
-                                className="teacher-action-link"
-                                onClick={() => setExpandedId(isExpanded ? null : a.assignment_id)}
-                            >
-                                {isExpanded ? "Ẩn bài nộp" : "Xem bài nộp"}
-                            </button>
-                        </div>
-
-                        {isExpanded && (
-                            <table className="teacher-table" style={{ marginTop: 16 }}>
-                                <thead>
-                                    <tr>
-                                        <th>Học viên</th>
-                                        <th>Trạng thái</th>
-                                        <th>Điểm</th>
-                                        <th>Thao tác</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {relatedSubmissions.map((s) => {
-                                        const student = adminMockUsers.find((u) => u.user_id === s.user_id);
-                                        return (
-                                            <tr key={s.submission_id}>
-                                                <td>{student?.full_name ?? `#${s.user_id}`}</td>
-                                                <td>
-                                                    <Tag tone={statusTone[s.status]}>{statusLabel[s.status]}</Tag>
-                                                </td>
-                                                <td>{s.score ?? "—"}</td>
-                                                <td>
-                                                    {s.status !== "not_submitted" && (
-                                                        <button
-                                                            type="button"
-                                                            className="teacher-action-link"
-                                                            onClick={() => gradeSubmission(s.submission_id)}
-                                                        >
-                                                            Chấm điểm
-                                                        </button>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                    {relatedSubmissions.length === 0 && (
-                                        <tr>
-                                            <td colSpan={4} className="teacher-table-empty">
-                                                Chưa có bài nộp nào.
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        )}
-                    </Card>
-                );
-            })}
-
-            <Modal
-                title="Giao bài tập mới"
-                open={modalOpen}
-                onClose={() => setModalOpen(false)}
-                footer={
-                    <>
-                        <Button variant="ghost" onClick={() => setModalOpen(false)}>
-                            Hủy
-                        </Button>
-                        <Button variant="primary" onClick={handleSubmit}>
-                            Giao bài tập
-                        </Button>
-                    </>
-                }
-            >
-                <SelectField
-                    label="Lớp học"
-                    value={form.course_id}
-                    onChange={(e) => setForm({ ...form, course_id: e.target.value })}
-                    options={myCourses.map((c) => ({ value: String(c.course_id), label: c.course_name }))}
-                />
-                <InputField label="Tiêu đề" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
-                <TextareaField
-                    label="Mô tả bài tập"
-                    value={form.description}
-                    onChange={(e) => setForm({ ...form, description: e.target.value })}
-                    rows={3}
-                />
-                <InputField
-                    label="Hạn nộp"
-                    type="date"
-                    value={form.due_date}
-                    onChange={(e) => setForm({ ...form, due_date: e.target.value })}
-                />
-            </Modal>
+  return (
+    <div className="t-page">
+      <Card>
+        <div className="t-row t-row--between">
+          <div className="t-row">
+            <select className="t-input" value={filter.classId} onChange={e => setFilter({ ...filter, classId: e.target.value })} aria-label="Lớp">
+              <option value="">Tất cả lớp</option>
+              {classes?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+            <select className="t-input" value={filter.skill} onChange={e => setFilter({ ...filter, skill: e.target.value })} aria-label="Kỹ năng">
+              <option value="">Mọi kỹ năng</option>
+              {["Writing", "Speaking", "Reading", "Listening"].map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <select className="t-input" value={filter.state} onChange={e => setFilter({ ...filter, state: e.target.value })} aria-label="Hạn nộp">
+              <option value="">Mọi hạn nộp</option><option value="open">Còn hạn</option><option value="closed">Hết hạn</option>
+            </select>
+          </div>
+          <Button disabled={!classes?.length} onClick={() => setForm({ open: true, id: null })}>+ Giao bài tập</Button>
         </div>
-    );
+      </Card>
+      <Notice message={notice.text} tone={notice.tone} onClose={() => setNotice({ text: "", tone: "ok" })} />
+      <QueryState loading={loading} error={error} onRetry={reload}>
+        {data && (data.length === 0 ? <Empty>Chưa có bài tập nào.</Empty> : (
+          <Card padded={false} className="t-table-wrap">
+            <table className="teacher-table">
+              <thead><tr><th>Bài</th><th>Lớp</th><th>Kỹ năng</th><th>Hạn nộp</th><th>Đã nộp</th><th>Chờ chấm</th><th /></tr></thead>
+              <tbody>
+                {data.map(a => (
+                  <tr key={a.id}>
+                    <td className="t-wrap"><span className="t-strong">{a.title}</span> {a.type === "Quiz" && <Tag>Tự chấm</Tag>}</td>
+                    <td>{a.className}</td>
+                    <td>{a.skill}</td>
+                    <td>{fmtDateTime(a.dueAt)} {a.isOpen ? <Tag tone="green">Còn hạn</Tag> : <Tag tone="red">Hết hạn</Tag>}</td>
+                    <td>{a.submittedCount}/{a.assignedCount}</td>
+                    <td>{a.pendingGrading > 0 ? <Link className="t-link" to={`/teacher/grading?assignmentId=${a.id}`}>{a.pendingGrading} bài</Link> : "—"}</td>
+                    <td>
+                      <div className="teacher-row-actions">
+                        <button type="button" className="teacher-action-link" onClick={() => openMissing(a)}>Chưa nộp</button>
+                        <button type="button" className="teacher-action-link" onClick={() => setForm({ open: true, id: a.id })}>Sửa</button>
+                        <button type="button" className="teacher-action-link teacher-action-danger" onClick={() => remove(a)}>Xóa</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Card>
+        ))}
+      </QueryState>
+
+      {classes && (
+        <AssignmentForm open={form.open} editId={form.id} classes={classes}
+          defaultClassId={filter.classId ? Number(filter.classId) : undefined}
+          onClose={() => setForm({ open: false, id: null })}
+          onSaved={msg => { setForm({ open: false, id: null }); setNotice({ text: msg, tone: "ok" }); reload(); }} />
+      )}
+
+      <Modal open={missing !== null} title={`Chưa nộp · ${missing?.a.title ?? ""}`} onClose={() => setMissing(null)}
+        footer={missing?.data && missing.data.count > 0 ? <Button onClick={() => remind(missing.a.id)}>Nhắc {missing.data.count} học viên</Button> : undefined}>
+        {!missing?.data ? <p className="t-muted">Đang tải...</p> : missing.data.count === 0 ? <p>Tất cả học viên đã nộp bài.</p> : (
+          <ul className="t-list">
+            {missing.data.students.map(s => <li key={s.id}><span>{s.fullName} <span className="t-muted">{s.code}</span></span><span className="t-muted">{s.phone ?? ""}</span></li>)}
+          </ul>
+        )}
+      </Modal>
+    </div>
+  );
 }

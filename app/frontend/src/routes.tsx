@@ -42,6 +42,13 @@ import TeacherAttendance from "./pages/teacher/Attendance/Attendance";
 import TeacherGrades from "./pages/teacher/Grades/Grades";
 import TeacherAssignments from "./pages/teacher/Assignments/Assignments";
 import TeacherMaterials from "./pages/teacher/Materials/Materials";
+import TeacherClassDetail from "./pages/teacher/Classes/ClassDetail";
+import TeacherSessionDetail from "./pages/teacher/Sessions/SessionDetail";
+import TeacherGrading from "./pages/teacher/Grading/Grading";
+import TeacherGradingDetail from "./pages/teacher/Grading/GradingDetail";
+import TeacherStudents from "./pages/teacher/Students/Students";
+import TeacherStudentDetail from "./pages/teacher/Students/StudentDetail";
+import TeacherRequests from "./pages/teacher/Requests/Requests";
 
 export default function AppRoutes() {
     return (
@@ -110,7 +117,14 @@ export default function AppRoutes() {
                 <Route index element={<Navigate to="/teacher/dashboard" replace />} />
                 <Route path="dashboard" element={<TeacherDashboard />} />
                 <Route path="classes" element={<TeacherClasses />} />
+                <Route path="classes/:id" element={<TeacherClassDetail />} />
+                <Route path="sessions/:id" element={<TeacherSessionDetail />} />
                 <Route path="attendance" element={<TeacherAttendance />} />
+                <Route path="grading" element={<TeacherGrading />} />
+                <Route path="grading/:id" element={<TeacherGradingDetail />} />
+                <Route path="students" element={<TeacherStudents />} />
+                <Route path="students/:id" element={<TeacherStudentDetail />} />
+                <Route path="requests" element={<TeacherRequests />} />
                 <Route path="grades" element={<TeacherGrades />} />
                 <Route path="assignments" element={<TeacherAssignments />} />
                 <Route path="materials" element={<TeacherMaterials />} />
