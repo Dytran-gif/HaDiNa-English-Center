@@ -54,24 +54,24 @@ export default function CourseFE({ courses }: CourseProps) {
     const list = studentEnrolledCourses;
 
     return (
-        <section className="continue-learning-section">
-            <header className="section-header">
-                <div className="header-left">
-                    <div className="header-icon">
+        <section className="cf-continue-learning-section">
+            <header className="cf-section-header">
+                <div className="cf-header-left">
+                    <div className="cf-header-icon">
                         <i className="fa-solid fa-book"></i>
                     </div>
-                    <div className="header-text">
-                        <h2 className="section-title">Present Lessons</h2>
-                        <p className="section-subtitle">Pick up where you left off</p>
+                    <div className="cf-header-text">
+                        <h2 className="cf-section-title">Present Lessons</h2>
+                        <p className="cf-section-subtitle">Pick up where you left off</p>
                     </div>
                 </div>
-                <a href="/student/courses" className="view-all-link">
+                <a href="/student/courses" className="cf-view-all-link">
                     View all courses <span>→</span>
                 </a>
             </header>
 
             <div
-                className={`cards-grid horizontal-scroll-wrapper ${isDragging ? 'active-drag' : ''}`}
+                className={`cf-cards-grid cf-horizontal-scroll-wrapper ${isDragging ? 'cf-active-drag' : ''}`}
                 ref={scrollRef}
                 onMouseDown={handleMouseDown}
                 onMouseLeave={handleMouseUpOrLeave}
@@ -81,27 +81,27 @@ export default function CourseFE({ courses }: CourseProps) {
                 {list.map((course) => (
                     <div
                         key={course.id}
-                        className="course-card scroll-item"
+                        className="cf-course-card cf-scroll-item"
                         style={{
                             backgroundImage: `url("${course.imageUrl || defaultCourseImage}")`
                         }}
                     >
-                        <div className="course-content">
-                            <h3 className="course-title">
+                        <div className="cf-course-content">
+                            <h3 className="cf-course-title">
                                 {course.name}
                             </h3>
-                            <div className="course-info">
-                                <div className="course-meta">
-                                    <span className="info-level">Band {course.bandFrom} - {course.bandTo}</span>
-                                    <span className="meta-divider">•</span>
-                                    <span className="info-time">{course.sessionsPerWeek} sessions/wk</span>
+                            <div className="cf-course-info">
+                                <div className="cf-course-meta">
+                                    <span className="cf-info-level">Band {course.bandFrom} - {course.bandTo}</span>
+                                    <span className="cf-meta-divider">•</span>
+                                    <span className="cf-info-time">{course.sessionsPerWeek} sessions/wk</span>
                                 </div>
 
-                                <div className="info-skills">
-                                    <span className="skill-tag">{course.totalSessions} Sessions</span>
-                                    <span className="skill-tag">{course.tuition.toLocaleString('vi-VN')} VND</span>
+                                <div className="cf-info-skills">
+                                    <span className="cf-skill-tag">{course.totalSessions} Sessions</span>
+                                    <span className="cf-skill-tag">{course.tuition.toLocaleString('vi-VN')} VND</span>
                                     {course.discountPercent > 0 && (
-                                        <span className="skill-tag discount-tag">-{course.discountPercent}%</span>
+                                        <span className="cf-skill-tag cf-discount-tag">-{course.discountPercent}%</span>
                                     )}
                                 </div>
                             </div>
@@ -109,7 +109,7 @@ export default function CourseFE({ courses }: CourseProps) {
                     </div>
                 ))}
                 {list.length === 0 && (
-                    <div className="no-courses" style={{ padding: '20px', color: '#64748b' }}>
+                    <div className="cf-no-courses" style={{ padding: '20px', color: '#64748b' }}>
                         Bạn chưa đăng ký khóa học nào.
                     </div>
                 )}
