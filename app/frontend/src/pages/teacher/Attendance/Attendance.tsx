@@ -1,142 +1,196 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import "../teacher-shared.css";
 import Card from "../../../components/ui/Card";
 import Button from "../../../components/ui/Button";
 import Tag from "../../../components/ui/Tag";
-import { InputField, SelectField } from "../../../components/ui/FormField";
-import { courses } from "../../../data/courses";
-import { adminMockUsers } from "../../../data/AdminData/mockUsers";
-import { CURRENT_TEACHER_ID } from "../../../data/TeacherData/currentTeacher";
-import { getStudentIdsByCourse } from "../../../data/TeacherData/classRoster";
-import { teacherAttendanceSeed } from "../../../data/TeacherData/attendance";
-import { useLocalCollection, nextId } from "../../../hooks/useLocalCollection";
-import type { AttendanceRecord, AttendanceStatus } from "../../../types";
+import { errorMessage, useTeacherApi, useTeacherQuery } from "../../../services/teacher/teacherApi";
+import type {
+  AttendanceMark, AttendanceSaveResponse, AttendanceSheet, ClassSessionsResponse, TeacherClass,
+} from "../../../types/teacherApi";
+import { Empty, Notice, QueryState, StatusTag } from "../Components/Common/Feedback";
+import { attendanceLabel, fmtDate, fmtDateTime, fmtNumber, fmtTime, sessionStatusLabel } from "../Components/Common/format";
 
-const statusLabel: Record<AttendanceStatus, string> = {
-    present: "Có mặt",
-    absent: "Vắng",
-    late: "Trễ",
-    excused: "Có phép",
-};
-
-const statusTone: Record<AttendanceStatus, "green" | "red" | "yellow" | "ink"> = {
-    present: "green",
-    absent: "red",
-    late: "yellow",
-    excused: "ink",
-};
+const marks: AttendanceMark[] = ["Present", "Late", "Absent", "Excused"];
+type Row = { status: AttendanceMark | null; note: string };
 
 export default function Attendance() {
-    const myCourses = courses.filter((c) => c.teacher_id === CURRENT_TEACHER_ID);
-    const [courseId, setCourseId] = useState(myCourses[0]?.course_id ?? 0);
-    const [sessionDate, setSessionDate] = useState(new Date().toISOString().slice(0, 10));
+  const api = useTeacherApi();
+  const [params, setParams] = useSearchParams();
+  const sessionId = params.get("session");
+  const classParam = params.get("class");
+  const { data: classes, loading: lc, error: ec, reload: rc } = useTeacherQuery<TeacherClass[]>("classes");
+  const { data: sheet, loading, error, reload, setData } = useTeacherQuery<AttendanceSheet>(sessionId ? `sessions/${sessionId}/attendance` : null);
+  const classId = sheet?.session.classId ?? (classParam ? Number(classParam) : undefined);
+  const { data: sessions } = useTeacherQuery<ClassSessionsResponse>(classId ? `classes/${classId}/sessions` : null);
+  const [rows, setRows] = useState<Record<number, Row>>({});
+  const [notice, setNotice] = useState<{ text: string; tone: "ok" | "error" | "warn" }>({ text: "", tone: "ok" });
+  const [saving, setSaving] = useState(false);
+  const [unlockReason, setUnlockReason] = useState("");
 
-    const { items: records, add, update } = useLocalCollection<AttendanceRecord>(
-        "teacher_attendance",
-        teacherAttendanceSeed
-    );
+  // Chọn lớp mà chưa chọn buổi -> lấy buổi mặc định (gần nhất)
+  useEffect(() => {
+    if (sessionId || !classParam) return;
+    let cancelled = false;
+    api.get<{ sessionId: number }>(`classes/${classParam}/attendance/default`)
+      .then(r => { if (!cancelled) setParams({ session: String(r.sessionId) }, { replace: true }); })
+      .catch(e => { if (!cancelled) setNotice({ text: errorMessage(e), tone: "error" }); });
+    return () => { cancelled = true; };
+  }, [api, sessionId, classParam, setParams]);
 
-    const studentIds = getStudentIdsByCourse(courseId);
-    const students = adminMockUsers.filter((u) => studentIds.includes(u.user_id));
+  // Khi chưa chọn gì: tự chọn lớp đang học đầu tiên
+  useEffect(() => {
+    if (sessionId || classParam || !classes?.length) return;
+    const first = classes.find(c => c.status === "Ongoing") ?? classes[0];
+    setParams({ class: String(first.id) }, { replace: true });
+  }, [classes, sessionId, classParam, setParams]);
 
-    const sessionRecords = useMemo(
-        () => records.filter((r) => r.course_id === courseId && r.session_date === sessionDate),
-        [records, courseId, sessionDate]
-    );
+  useEffect(() => {
+    if (!sheet) return;
+    setRows(Object.fromEntries(sheet.students.map(s => [s.studentId, { status: s.status, note: s.note ?? "" }])));
+  }, [sheet]);
 
-    function getStatus(userId: number): AttendanceStatus | null {
-        return sessionRecords.find((r) => r.user_id === userId)?.status ?? null;
-    }
+  const editable = !!sheet && sheet.canTakeYet && !sheet.locked && sheet.session.status !== "Cancelled";
 
-    function setStatus(userId: number, status: AttendanceStatus) {
-        const existing = records.find(
-            (r) => r.course_id === courseId && r.session_date === sessionDate && r.user_id === userId
-        );
-        if (existing) {
-            update(
-                (r) => r.attendance_id === existing.attendance_id,
-                (r) => ({ ...r, status })
-            );
-        } else {
-            add({
-                attendance_id: nextId(records, (r) => r.attendance_id),
-                course_id: courseId,
-                user_id: userId,
-                session_date: sessionDate,
-                status,
-            });
-        }
-    }
+  function setRow(id: number, patch: Partial<Row>) { setRows(r => ({ ...r, [id]: { ...r[id], ...patch } })); }
+  function allPresent() {
+    if (!sheet) return;
+    setRows(r => Object.fromEntries(sheet.students.map(s => [s.studentId, { ...r[s.studentId], status: s.hasApprovedLeave ? "Excused" : "Present" }])));
+  }
 
-    return (
-        <div className="teacher-table-page">
-            <Card style={{ marginBottom: 16 }}>
-                <div className="teacher-filter-row">
-                    <SelectField
-                        label="Lớp học"
-                        value={String(courseId)}
-                        onChange={(e) => setCourseId(Number(e.target.value))}
-                        options={myCourses.map((c) => ({ value: String(c.course_id), label: c.course_name }))}
-                    />
-                    <InputField
-                        label="Ngày học"
-                        type="date"
-                        value={sessionDate}
-                        onChange={(e) => setSessionDate(e.target.value)}
-                    />
-                </div>
-            </Card>
+  async function save() {
+    if (!sheet) return;
+    const required = sheet.students.filter(s => s.requiresAttendance || s.isMarked);
+    const missing = required.filter(s => s.requiresAttendance && !rows[s.studentId]?.status);
+    if (missing.length) { setNotice({ text: `Còn ${missing.length} học viên chưa chọn trạng thái: ${missing.map(m => m.fullName).join(", ")}`, tone: "error" }); return; }
+    setSaving(true);
+    try {
+      const items = required.filter(s => rows[s.studentId]?.status)
+        .map(s => ({ studentId: s.studentId, status: rows[s.studentId].status, note: rows[s.studentId].note || null }));
+      const r = await api.send<AttendanceSaveResponse>("PUT", `sessions/${sheet.session.id}/attendance`, { items });
+      setData(r.sheet);
+      const warn = r.warnings.length ? ` Cảnh báo vắng > 20%: ${r.warnings.map(w => `${w.fullName} (${fmtNumber(w.absenceRate)}%)`).join(", ")}` : "";
+      setNotice({ text: r.message + "." + warn, tone: warn ? "warn" : "ok" });
+    } catch (e) { setNotice({ text: errorMessage(e), tone: "error" }); }
+    finally { setSaving(false); }
+  }
 
+  async function requestUnlock() {
+    if (!sheet) return;
+    try {
+      const r = await api.send<{ message: string }>("POST", `sessions/${sheet.session.id}/attendance/unlock-request`, { reason: unlockReason });
+      setUnlockReason(""); setNotice({ text: r.message, tone: "ok" }); reload();
+    } catch (e) { setNotice({ text: errorMessage(e), tone: "error" }); }
+  }
+
+  return (
+    <div className="t-page">
+      <Card>
+        <QueryState loading={lc} error={ec} onRetry={rc}>
+          {classes && classes.length === 0 ? <Empty>Bạn chưa được phân công lớp nào.</Empty> : (
+            <div className="t-form-grid">
+              <label><span className="t-label">Lớp</span>
+                <select className="t-input" style={{ width: "100%" }} value={classId ?? ""} onChange={e => setParams({ class: e.target.value })}>
+                  {!classId && <option value="">— Chọn lớp —</option>}
+                  {classes?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </label>
+              <label><span className="t-label">Buổi học</span>
+                <select className="t-input" style={{ width: "100%" }} value={sessionId ?? ""} onChange={e => setParams({ session: e.target.value })}>
+                  {!sessionId && <option value="">— Chọn buổi —</option>}
+                  {sessions?.sessions.map(s => (
+                    <option key={s.id} value={s.id}>
+                      Buổi {s.sessionNo} · {fmtDate(s.date)} {fmtTime(s.startTime)}{s.attendanceTaken ? " ✓" : ""}{s.status === "Cancelled" ? " (đã hủy)" : ""}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          )}
+        </QueryState>
+      </Card>
+
+      <Notice message={notice.text} tone={notice.tone} onClose={() => setNotice({ text: "", tone: "ok" })} />
+
+      {sessionId && (
+        <QueryState loading={loading} error={error} onRetry={reload}>
+          {sheet && (
             <Card>
-                <table className="teacher-table">
-                    <thead>
-                        <tr>
-                            <th>Học viên</th>
-                            <th>Trạng thái hiện tại</th>
-                            <th>Điểm danh</th>
-                        </tr>
-                    </thead>
+              <div className="t-row t-row--between" style={{ marginBottom: 12 }}>
+                <div>
+                  <h3 style={{ margin: 0 }}>{sheet.session.className} · Buổi {sheet.session.sessionNo}</h3>
+                  <div className="t-muted">
+                    {fmtDate(sheet.session.date)} {fmtTime(sheet.session.startTime)}–{fmtTime(sheet.session.endTime)} ·{" "}
+                    {sheet.locked ? "Đã khóa" : `Khóa lúc ${fmtDateTime(sheet.lockAt)}`}
+                    {sheet.unlockedUntil && ` · Được mở sửa tới ${fmtDateTime(sheet.unlockedUntil)}`}
+                  </div>
+                </div>
+                <div className="t-row">
+                  <StatusTag status={sheet.session.status} labels={sessionStatusLabel} />
+                  {sheet.taken && <Tag tone="green">Đã điểm danh {sheet.takenAt ? fmtDateTime(sheet.takenAt) : ""}</Tag>}
+                  <Link className="t-link t-small" to={`/teacher/sessions/${sheet.session.id}`}>Chi tiết buổi</Link>
+                </div>
+              </div>
+
+              {!sheet.canTakeYet && <Notice tone="warn" message="Chưa đến giờ học nên chưa thể điểm danh." />}
+              {sheet.locked && (
+                <div className="t-notice t-notice--warn" style={{ flexWrap: "wrap" }}>
+                  <span>Điểm danh đã khóa sau 48 giờ.{sheet.pendingUnlockRequest ? " Đã gửi yêu cầu mở lại, đang chờ Admin duyệt." : ""}</span>
+                  {!sheet.pendingUnlockRequest && (
+                    <span className="t-row">
+                      <input className="t-input t-input--sm" style={{ minWidth: 260 }} placeholder="Lý do xin mở lại" value={unlockReason} onChange={e => setUnlockReason(e.target.value)} />
+                      <Button variant="outline" disabled={!unlockReason.trim()} onClick={requestUnlock}>Gửi yêu cầu</Button>
+                    </span>
+                  )}
+                </div>
+              )}
+
+              <div className="t-row t-muted" style={{ margin: "12px 0" }}>
+                <span>Tổng {sheet.summary.total}</span>·<span>Có mặt {sheet.summary.present}</span>·<span>Muộn {sheet.summary.late}</span>·
+                <span>Vắng {sheet.summary.absent}</span>·<span>Có phép {sheet.summary.excused}</span>·<span>Chưa điểm {sheet.summary.unmarked}</span>
+              </div>
+
+              {sheet.students.length === 0 ? <Empty>Lớp chưa có học viên cần điểm danh.</Empty> : (
+                <div className="t-table-wrap">
+                  <table className="teacher-table">
+                    <thead><tr><th>Học viên</th><th>Trạng thái</th><th>Ghi chú</th><th>Chuyên cần</th></tr></thead>
                     <tbody>
-                        {students.map((s) => {
-                            const status = getStatus(s.user_id);
-                            return (
-                                <tr key={s.user_id}>
-                                    <td>{s.full_name}</td>
-                                    <td>{status ? <Tag tone={statusTone[status]}>{statusLabel[status]}</Tag> : <Tag tone="ink">Chưa điểm danh</Tag>}</td>
-                                    <td>
-                                        <div className="teacher-attendance-actions">
-                                            {(Object.keys(statusLabel) as AttendanceStatus[]).map((st) => (
-                                                <button
-                                                    key={st}
-                                                    type="button"
-                                                    className={`teacher-attendance-btn ${status === st ? "active" : ""}`}
-                                                    onClick={() => setStatus(s.user_id, st)}
-                                                >
-                                                    {statusLabel[st]}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                        {students.length === 0 && (
-                            <tr>
-                                <td colSpan={3} className="teacher-table-empty">
-                                    Lớp này chưa có học viên trong dữ liệu demo.
-                                </td>
-                            </tr>
-                        )}
+                      {sheet.students.map(s => (
+                        <tr key={s.studentId} className={s.absenceWarning ? "t-row-warn" : ""}>
+                          <td>
+                            <div className="t-strong">{s.fullName}</div>
+                            <div className="t-muted t-small">{s.code}{!s.requiresAttendance && " · không còn học"}{s.hasApprovedLeave && " · có đơn nghỉ đã duyệt"}</div>
+                          </td>
+                          <td>
+                            <div className="teacher-attendance-actions">
+                              {marks.map(m => (
+                                <button key={m} type="button" disabled={!editable}
+                                  className={`teacher-attendance-btn ${rows[s.studentId]?.status === m ? "active" : ""}`}
+                                  onClick={() => setRow(s.studentId, { status: m })}>{attendanceLabel[m]}</button>
+                              ))}
+                            </div>
+                          </td>
+                          <td><input className="t-input t-input--sm" disabled={!editable} value={rows[s.studentId]?.note ?? ""} onChange={e => setRow(s.studentId, { note: e.target.value })} /></td>
+                          <td>{s.attendanceRate != null ? `${fmtNumber(s.attendanceRate)}%` : "—"} {s.absenceWarning && <Tag tone="red">&gt; 20% vắng</Tag>}</td>
+                        </tr>
+                      ))}
                     </tbody>
-                </table>
+                  </table>
+                </div>
+              )}
+              {sheet.notRequired.length > 0 && (
+                <p className="t-muted t-small">Không cần điểm danh (bảo lưu / đã nghỉ): {sheet.notRequired.map(n => n.fullName).join(", ")}</p>
+              )}
+              {editable && sheet.students.length > 0 && (
+                <div className="t-actions" style={{ marginTop: 16 }}>
+                  <Button variant="outline" onClick={allPresent}>Tất cả có mặt</Button>
+                  <Button disabled={saving} onClick={save}>{saving ? "Đang lưu..." : "Lưu điểm danh"}</Button>
+                </div>
+              )}
             </Card>
-            <Button
-                variant="ghost"
-                style={{ marginTop: 12 }}
-                onClick={() => window.alert("Đã lưu điểm danh (lưu tạm thời trên trình duyệt, chưa nối backend).")}
-            >
-                Xác nhận điểm danh
-            </Button>
-        </div>
-    );
+          )}
+        </QueryState>
+      )}
+    </div>
+  );
 }

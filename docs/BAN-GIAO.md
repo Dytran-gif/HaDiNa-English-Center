@@ -1,4 +1,39 @@
 # Nhật ký bàn giao
+## [2026-11-08] Duy (Claude) — Dữ liệu demo cổng Giáo viên
+
+**Đã xong**
+- `tools/db/demo/`: script tạo dữ liệu demo cho `teacher@demo.com` như đang dạy thật (ngày giờ tính từ hôm chạy): 4 lớp mới (đang dạy / sắp khai giảng / đã kết thúc), 16 học viên `HV2001`–`HV2016`, ~100 buổi học, giáo án, điểm danh, 15 tài liệu, 12 bài tập, 64 bài nộp (bài viết thật, ghi âm, quiz), lỗi highlight, bài kiểm tra + điểm, nhận xét, đề xuất lên lớp, đánh giá, yêu cầu, lịch rảnh, 1 kèm 1, thông báo.
+- File demo thật trong `tools/db/demo/files/` (ảnh biểu đồ Task 1, PDF tài liệu, mp3 Speaking/Listening); `.ps1` chép vào `wwwroot/uploads/demo` (thư mục bị gitignore).
+- Kiểm tra: tên cột và cột bắt buộc đối chiếu snapshot EF (0 lỗi); cú pháp T-SQL qua sqlfluff (0 lỗi). **Chưa chạy trên SQL Server thật** (máy làm việc không có).
+
+**Việc tiếp theo**
+- Gốc repo: `powershell -ExecutionPolicy Bypass -File tools\db\demo\teacher-demo-data.ps1`, rồi đăng nhập `teacher@demo.com` đi theo kịch bản trong `tools/db/demo/README.md`.
+
+**Bẫy cần biết**
+- Script chỉ chạy 1 lần (có `HV2001` thì bỏ qua). Muốn làm lại: restore DB rồi seed lại.
+- Sửa dữ liệu ở `tools/db/demo/generator/*.py` rồi sinh lại `.sql`, không sửa tay file `.sql`.
+
+## [2026-11-08] Duy (Claude) — Teacher-Module: hoàn thiện cổng Giáo viên + migration mới
+
+**Đã xong**
+- Merge `origin/main` (PR #3 Student, #4 Admin) vào nhánh Teacher: 4 file Student lấy bản của Nam (bỏ thay đổi `import React` cũ), gộp `BAN-GIAO.md` + `plans/README.md`.
+- DB: migration **`20261108140000_StudentFeedbackAndSubmissionFile`** (viết tay, máy làm không có NuGet): bảng `StudentFeedbacks` của Nam (trước chỉ có script SQL, thiếu migration → snapshot lệch) dùng `IF NOT EXISTS`; cột `Submissions.AttachmentUrl` cho học viên đính kèm file bài làm. Tài liệu mới `docs/DATABASE.md`.
+- Bỏ chức năng **GV gửi đơn xin nghỉ / đổi buổi** (BE endpoint + DTO, FE tab + modal); Admin cũng đã gỡ phần duyệt.
+- Chi tiết lớp: nút **Giao bài tập** cho lớp, tab **Bài tập** của lớp, cột **Nhận xét** từng học viên (form dùng chung `Students/ReviewFormModal.tsx`).
+- Dashboard: thêm *Lớp đang dạy* (sĩ số, tiến độ, buổi tới, HV cần chú ý), *Hạn nộp 7 ngày tới*, *Buổi chưa điểm danh* (sắp khóa 48h).
+- Chấm bài hiện file học viên đính kèm; Hồ sơ GV hiện phản hồi từ `StudentFeedbacks`.
+- Sửa lỗi: (1) chuông "học viên vừa nộp bài" trỏ `/teacher/grading/{assignmentId}` → đúng là `{submissionId}`; (2) `SessionService.SyncAsync` khi Admin đổi lịch tuần giữa khóa sinh thêm buổi "ma" ở quá khứ → nay chỉ sinh phần còn lại từ hôm nay; (3) buổi điểm danh mặc định bị quay vòng giờ qua nửa đêm.
+- FE: lint 0 lỗi (1 warning cũ AuthContext), typecheck + build xanh. BE: Roslyn soát cú pháp các file sửa — **chưa `dotnet build` được** (NuGet bị chặn trên máy làm).
+
+**Việc tiếp theo (trên máy Duy)**
+- `app\backend\EnglishCenter.Api`: `dotnet build` → `EnglishCenter.Api`: `dotnet ef migrations has-pending-model-changes` (phải *No changes*) → `dotnet ef database update`.
+- QA lại Teacher với BE thật (dashboard, giao bài từ lớp, nhận xét HV).
+- Nam: API Student nộp bài (gọi `SubmissionService.SubmitAsync(..., attachmentUrl)`) + xem tài liệu buổi học (`SessionMaterials`).
+
+**Bẫy cần biết**
+- Yêu cầu *mở lại điểm danh* vẫn gửi được nhưng Admin chưa có API duyệt → nhóm cần chốt.
+- Ai đã chạy `docs/admin/sql/2026-11-04-student-feedback-table.sql` vẫn `database update` bình thường (migration có kiểm tra tồn tại).
+
 ## [2026-11-06] Codex — Rút gọn Khóa học/Phòng học/Báo cáo
 
 **Đã xong**
@@ -28,6 +63,27 @@
 - Payments date/method filters fetch all API search pages before filtering; can take longer for large histories.
 - Browser script uses fixture interception and blocks writes. Dedicated headless profile used only for UI QA; not a DB integration test.
 - Details routes remain within Admin protection. No reintroduction of debt/detail export/teacher-request Admin features.
+
+## [2026-11-02] Duy (Claude) — DB backup + FE Teacher nối API
+
+**Đã xong**
+- Soát file backup DB của nhóm (`tools/db/EnglishCenterDb.bak`): 12 bảng `InitialCreate`, đã ghi `__EFMigrationsHistory`, schema khớp snapshot; thiếu đúng 22 bảng Teacher + `Students.TargetBand`.
+- Thêm `tools/db/restore-db.ps1` (restore backup vào SQL Server local, kiểm tra phiên bản, không ghi đè nếu không có `-Force`). `teacher-features.ps1` xử lý máy chưa có DB: hỏi restore, hoặc `-CreateFresh` để EF tạo mới.
+- FE Teacher §1–§10 nối API thật (plan 30). Bỏ mock `src/data/TeacherData/*` không còn dùng.
+- `Program.cs`: chỉ `UseHttpsRedirection` ngoài Development (proxy Vite không còn bị redirect). `.env.example`: `VITE_API_URL=` để trống.
+- FE lint (0 lỗi, 1 warning cũ) + typecheck + build xanh. Chạy thử 18 màn Teacher với server giả: không lỗi runtime.
+
+**Đang dở**
+- Chưa sinh migration `TeacherFeatures` (máy làm việc không có .NET/SQL Server). Chưa chạy `dotnet build` sau khi sửa `Program.cs` (đổi 1 dòng).
+
+**Việc tiếp theo**
+- Trên Windows, từ gốc repo: `powershell -ExecutionPolicy Bypass -File tools\db\restore-db.ps1` → `powershell -ExecutionPolicy Bypass -File tools\db\teacher-features.ps1 -SeedDemo` → commit `Migrations/`.
+- `dotnet run --launch-profile http` + `npm run dev`, đăng nhập `teacher@demo.com` / `123456`, đi lần lượt các trang Teacher.
+
+**Bẫy cần biết**
+- Backup tạo từ SQL Server 2025 (MSSQL17): máy dùng SQL Server 2022 trở xuống không restore được → dùng `-CreateFresh`.
+- Sửa file dùng chung: `routes.tsx` (chỉ khối `/teacher`), `Program.cs` (1 dòng), `.env.example`; 4 file Student bỏ `import React` thừa để `npm run build` không lỗi (báo Nam).
+- Admin chưa có API duyệt đơn của giáo viên (đã gỡ ở c145cd9): đơn nghỉ / đổi buổi / mở lại điểm danh sẽ nằm ở "Chờ xử lý".
 
 ## [2026-10-31] Codex — Chuyển Admin sang DB thật
 

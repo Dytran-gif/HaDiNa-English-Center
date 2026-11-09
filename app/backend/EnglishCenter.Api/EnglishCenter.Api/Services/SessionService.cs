@@ -68,20 +68,19 @@ public class SessionService
 
     private record Slot(DateOnly Date, TimeOnly Start, TimeOnly End, int RoomId);
 
-    // Danh sách buổi theo lịch tuần: từ ngày bắt đầu, đủ tổng số buổi của khóa hoặc đến ngày kết thúc
-    private static List<Slot> Generate(CourseClass cls)
+    // Danh sách buổi theo lịch tuần: bắt đầu từ ngày `from`, tối đa `limit` buổi, không quá ngày kết thúc lớp
+    private static List<Slot> Generate(CourseClass cls, DateOnly from, int limit)
     {
         var result = new List<Slot>();
-        if (cls.Schedules.Count == 0) return result;
+        if (cls.Schedules.Count == 0 || limit <= 0) return result;
 
-        var total = cls.Course.TotalSessions;
-        var date = cls.StartDate;
-        while (date <= cls.EndDate && result.Count < total)
+        var date = from < cls.StartDate ? cls.StartDate : from;
+        while (date <= cls.EndDate && result.Count < limit)
         {
             var dayNo = AppTime.DayNo(date);
             foreach (var s in cls.Schedules.Where(x => x.DayOfWeek == dayNo).OrderBy(x => x.StartTime))
             {
-                if (result.Count >= total) break;
+                if (result.Count >= limit) break;
                 result.Add(new Slot(date, s.StartTime, s.EndTime, s.RoomId));
             }
             date = date.AddDays(1);
@@ -102,8 +101,24 @@ public class SessionService
             .FirstOrDefaultAsync(c => c.Id == classId);
         if (cls == null) return;
 
-        var expected = Generate(cls);
         var sessions = await _db.ClassSessions.Where(s => s.ClassId == classId).ToListAsync();
+        var today = AppTime.Today;
+
+        // Lớp chưa có buổi nào: sinh đủ từ ngày khai giảng.
+        // Đã có buổi: buổi trong quá khứ giữ nguyên (đã dạy / đã điểm danh), chỉ sinh phần còn lại từ hôm nay
+        // theo lịch tuần hiện tại. Tránh lỗi Admin đổi lịch giữa khóa làm mọc thêm buổi "ma" ở quá khứ.
+        var total = cls.Course.TotalSessions;
+        List<Slot> expected;
+        if (sessions.Count == 0)
+        {
+            expected = Generate(cls, cls.StartDate, total);
+        }
+        else
+        {
+            var pastCount = sessions.Count(s => s.Date < today && s.Status != "Cancelled");
+            var futureMakeups = sessions.Count(s => s.Date >= today && s.Type == "Makeup" && s.Status != "Cancelled");
+            expected = Generate(cls, today, total - pastCount - futureMakeups);
+        }
 
         var usedIds = new HashSet<int>(await _db.Attendances
             .Where(a => a.Session.ClassId == classId).Select(a => a.SessionId).Distinct().ToListAsync());
@@ -114,7 +129,6 @@ public class SessionService
         usedIds.UnionWith(await _db.StudentRequests
             .Where(r => r.SessionId != null && r.ClassId == classId).Select(r => r.SessionId!.Value).Distinct().ToListAsync());
 
-        var today = AppTime.Today;
         var expectedByKey = expected.ToDictionary(x => (x.Date, x.Start));
         var changed = false;
 
@@ -202,13 +216,14 @@ public class SessionService
     // Buổi mặc định để điểm danh: buổi gần nhất đã bắt đầu, nếu chưa có thì buổi sắp tới gần nhất
     public async Task<ClassSession?> DefaultSessionAsync(int classId)
     {
-        var now = AppTime.Now;
-        var today = AppTime.Today;
-        var nowTime = TimeOnly.FromDateTime(now).AddMinutes(AttendanceOpenMinutesBefore);
+        // Mốc = bây giờ + số phút mở điểm danh sớm (tính bằng DateTime để không bị quay vòng qua nửa đêm)
+        var cutoff = AppTime.Now.AddMinutes(AttendanceOpenMinutesBefore);
+        var cutoffDate = DateOnly.FromDateTime(cutoff);
+        var cutoffTime = TimeOnly.FromDateTime(cutoff);
 
         var started = await _db.ClassSessions
             .Where(s => s.ClassId == classId && s.Status == "Scheduled"
-                && (s.Date < today || (s.Date == today && s.StartTime <= nowTime)))
+                && (s.Date < cutoffDate || (s.Date == cutoffDate && s.StartTime <= cutoffTime)))
             .OrderByDescending(s => s.Date).ThenByDescending(s => s.StartTime)
             .FirstOrDefaultAsync();
         if (started != null) return started;

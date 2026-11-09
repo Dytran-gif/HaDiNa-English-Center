@@ -9,7 +9,8 @@ public class Submission
     public int AttemptNo { get; set; } = 1;
     public string? Content { get; set; }               // bài viết Writing
     public string? AudioUrl { get; set; }              // bản thu âm Speaking
-    public string? AnswersJson { get; set; }           // đáp án bài Quiz: {"12":"B","13":"photosynthesis"}
+    public string? AnswersJson { get; set; }
+    public string? AttachmentUrl { get; set; }         // file học viên đính kèm (Word/PDF/ảnh bài làm)           // đáp án bài Quiz: {"12":"B","13":"photosynthesis"}
     public int WordCount { get; set; }
     public DateTime SubmittedAt { get; set; }
     public bool IsLate { get; set; }

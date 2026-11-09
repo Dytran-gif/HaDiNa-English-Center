@@ -117,8 +117,9 @@ public partial class SubmissionService
             .ToListAsync();
     }
 
+    // attachmentUrl: file học viên đính kèm (Word/PDF/ảnh bài làm), upload trước rồi gửi url /uploads/...
     public async Task<ServiceResult> SubmitAsync(int studentId, int assignmentId, string? content,
-        string? audioUrl, Dictionary<string, string>? answers)
+        string? audioUrl, Dictionary<string, string>? answers, string? attachmentUrl = null)
     {
         var a = await _db.Assignments.Include(x => x.Questions).FirstOrDefaultAsync(x => x.Id == assignmentId);
         if (a == null) return ServiceResult.Fail(404, "Không tìm thấy bài tập");
@@ -144,13 +145,15 @@ public partial class SubmissionService
             AttemptNo = (last?.AttemptNo ?? 0) + 1,
             SubmittedAt = now,
             IsLate = late,
-            Status = "Submitted"
+            Status = "Submitted",
+            AttachmentUrl = string.IsNullOrWhiteSpace(attachmentUrl) ? null : attachmentUrl.Trim()
         };
 
         switch (a.Type)
         {
             case "Writing":
-                if (string.IsNullOrWhiteSpace(content)) return ServiceResult.Fail(400, "Bài viết đang trống");
+                if (string.IsNullOrWhiteSpace(content) && sub.AttachmentUrl == null)
+                    return ServiceResult.Fail(400, "Bài viết đang trống (gõ bài hoặc đính kèm file)");
                 sub.Content = content;
                 sub.WordCount = CountWords(content);
                 break;
@@ -172,11 +175,6 @@ public partial class SubmissionService
 
         _db.Submissions.Add(sub);
 
-        var studentName = await _db.Students.Where(s => s.Id == studentId).Select(s => s.FullName).FirstAsync();
-        await _notify.AddToClassTeacherAsync(a.ClassId, "Submission",
-            $"{studentName} vừa nộp bài \"{a.Title}\"" + (sub.AttemptNo > 1 ? $" (lần {sub.AttemptNo})" : ""),
-            late ? "Nộp trễ hạn" : null, $"/teacher/grading/{a.Id}");
-
         try
         {
             await _db.SaveChangesAsync();
@@ -185,6 +183,14 @@ public partial class SubmissionService
         {
             return ServiceResult.Fail(409, "Bài đã được nộp");
         }
+
+        // Báo giáo viên sau khi lưu để có Id bài nộp (trang chấm /teacher/grading/{submissionId})
+        var studentName = await _db.Students.Where(s => s.Id == studentId).Select(s => s.FullName).FirstAsync();
+        await _notify.AddToClassTeacherAsync(a.ClassId, "Submission",
+            $"{studentName} vừa nộp bài \"{a.Title}\"" + (sub.AttemptNo > 1 ? $" (lần {sub.AttemptNo})" : ""),
+            late ? "Nộp trễ hạn" : null,
+            a.Type == "Quiz" ? "/teacher/assignments" : $"/teacher/grading/{sub.Id}");
+        await _db.SaveChangesAsync();
 
         if (a.ExamId != null && sub.Status == "Published")
             await SyncExamResultAsync(a.ExamId.Value, studentId);

@@ -26,6 +26,13 @@
 - Thứ tự gợi ý: Dashboard → Classes/Sessions → Attendance → Assignments → Grading → Grades → Students → Requests → Schedule → Profile.
 
 ## Tiêu chí hoàn thành
-- [ ] Mọi mục §1–§10 có giao diện dùng API thật
-- [ ] `src/data/TeacherData/` không còn được import ở trang đã nối
-- [ ] lint + typecheck xanh
+- [x] Mọi mục §1–§10 có giao diện dùng API thật
+- [x] `src/data/TeacherData/` không còn được import ở trang đã nối (chỉ còn `sidebarMenuItems`, `pageTitles` là cấu hình)
+- [x] lint + typecheck xanh
+
+## Kết quả (2026-11-02)
+- Service: `src/services/teacher/teacherApi.ts` (`useTeacherApi`, `useTeacherQuery`, upload / tải Excel / in phiếu). Kiểu dữ liệu: `src/types/teacherApi.ts`.
+- Trang mới: `Classes/ClassDetail`, `Sessions/SessionDetail`, `Grading/Grading` + `GradingDetail`, `Students/Students` + `StudentDetail`, `Requests/Requests`. Trang cũ viết lại theo API: Dashboard, Classes, Attendance, Assignments (+ `AssignmentForm`), Grades, Schedule (+ `LeaveRequestModal`), Materials, Profile. Header có chuông thông báo.
+- Route thêm trong `routes.tsx` (chỉ khối `/teacher`): `classes/:id`, `sessions/:id`, `grading`, `grading/:id`, `students`, `students/:id`, `requests`.
+- Đã chạy thử toàn bộ 18 màn bằng trình duyệt headless với server giả đúng shape controller: không lỗi runtime. **Chưa** chạy với BE + SQL Server thật.
+- Còn lại: Admin chưa có API duyệt đơn nghỉ / đổi buổi / mở lại điểm danh của giáo viên (`Admin/TeacherRequestsController` đã bị gỡ ở commit c145cd9) — nhóm cần chốt.
