@@ -9,7 +9,7 @@ import "./Header.css";
 export default function Header({ menuOpen, onOpenMenu }: { menuOpen: boolean; onOpenMenu: () => void }) {
   const { pathname } = useLocation(); const { user, logout } = useAuth();
   const [profileOpen, setProfileOpen] = useState(false);
-  const page = adminPageTitles[pathname] ?? { title: "Quản trị", subtitle: "Quản lý hoạt động trung tâm." };
+  const page = adminPageTitles[pathname] ?? adminPageTitles[pathname.replace(/\/\d+$/, "")] ?? { title: "Quản trị", subtitle: "Quản lý hoạt động trung tâm." };
   const name = user?.full_name || user?.email || "Quản trị viên";
   return <><header className="admin-header"><div className="admin-header-heading"><IconButton className="admin-menu-toggle" icon="menu" label="Mở menu quản trị" aria-expanded={menuOpen} aria-haspopup="dialog" onClick={onOpenMenu}/><div className="admin-header-title"><h1>{page.title}</h1><p>{page.subtitle}</p></div></div>
     <div className="admin-header-account">
