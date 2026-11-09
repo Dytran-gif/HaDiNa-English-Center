@@ -36,62 +36,64 @@ const StudentCoursesFeedback = () => {
     };
 
     return (
-        <div className="feedback-container">
-            {/* Tiêu đề trang */}
-            <div className="header-section">
-                <div className="icon-box">💬</div>
-                <div className="header-text">
-                    <h1>My Courses & Feedback</h1>
-                    <p>Click on a course to view detailed information and teacher feedback.</p>
+        <div className="Feedback-container">
+            {/* Unified Card: Tiêu đề trang + Danh sách khóa học */}
+            <div className="Feedback-main-card">
+                <div className="Feedback-header-section">
+                    <div className="Feedback-icon-box">💬</div>
+                    <div className="Feedback-header-text">
+                        <h1>My Courses & Feedback</h1>
+                        <p>Click on a course to view detailed information and teacher feedback.</p>
+                    </div>
                 </div>
-            </div>
 
-            {/* Danh sách khóa học đã đăng ký của học viên */}
-            <div className="courses-grid-section">
-                <h3 className="section-heading">Enrolled Courses</h3>
-                <div className="courses-grid">
-                    {enrolledClasses.map((item) => {
-                        return (
-                            <div
-                                key={item.classId}
-                                className="course-card"
-                                onClick={() => setSelectedItem(item)}
-                            >
-                                <div className="card-top">
-                                    <span className="badge-level">Band {item.bandFrom} - {item.bandTo}</span>
-                                    <span className="sessions-count">{item.totalSessions} Sessions</span>
+                {/* Danh sách khóa học đã đăng ký của học viên */}
+                <div className="Feedback-courses-grid-section">
+                    <h3 className="Feedback-section-heading">Enrolled Courses</h3>
+                    <div className="Feedback-courses-grid">
+                        {enrolledClasses.map((item) => {
+                            return (
+                                <div
+                                    key={item.classId}
+                                    className="Feedback-course-card"
+                                    onClick={() => setSelectedItem(item)}
+                                >
+                                    <div className="Feedback-card-top">
+                                        <span className="Feedback-badge-level">Band {item.bandFrom} - {item.bandTo}</span>
+                                        <span className="Feedback-sessions-count">{item.totalSessions} Sessions</span>
+                                    </div>
+                                    <h4 className="Feedback-course-name">{item.courseName}</h4>
+                                    <p className="Feedback-course-desc">{item.description}</p>
+                                    <div className="Feedback-card-footer">
+                                        <span className="Feedback-tuition-price">{formatCurrency(item.tuition)}</span>
+                                        <span className="Feedback-view-detail-link">View Details →</span>
+                                    </div>
                                 </div>
-                                <h4 className="course-name">{item.courseName}</h4>
-                                <p className="course-desc">{item.description}</p>
-                                <div className="card-footer">
-                                    <span className="tuition-price">{formatCurrency(item.tuition)}</span>
-                                    <span className="view-detail-link">View Details →</span>
-                                </div>
-                            </div>
-                        );
-                    })}
-                    {enrolledClasses.length === 0 && (
-                        <p className="no-courses">Bạn chưa đăng ký khóa học nào.</p>
-                    )}
+                            );
+                        })}
+                        {enrolledClasses.length === 0 && (
+                            <p className="Feedback-no-courses">Bạn chưa đăng ký khóa học nào.</p>
+                        )}
+                    </div>
                 </div>
             </div>
 
             {/* CỬA SỔ NỔI (MODAL) HIỂN THỊ CHI TIẾT, TÊN GIÁO VIÊN & FEEDBACK */}
             {selectedItem && (
-                <div className="modal-overlay" onClick={() => setSelectedItem(null)}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
+                <div className="Feedback-modal-overlay" onClick={() => setSelectedItem(null)}>
+                    <div className="Feedback-modal-content" onClick={(e) => e.stopPropagation()}>
+                        <div className="Feedback-modal-header">
                             <h2>{selectedItem.courseName}</h2>
-                            <button className="close-btn" onClick={() => setSelectedItem(null)}>×</button>
+                            <button className="Feedback-close-btn" onClick={() => setSelectedItem(null)}>×</button>
                         </div>
 
-                        <div className="modal-body">
+                        <div className="Feedback-modal-body">
                             {/* Cột thông tin chi tiết */}
-                            <div className="modal-column">
+                            <div className="Feedback-modal-column">
                                 <h3>Course Information</h3>
-                                <ul className="info-list">
-                                    <li><strong>Class Name:</strong> <span className="text-blue">{selectedItem.className}</span></li>
-                                    <li><strong>Instructor:</strong> <span className="teacher-name">{selectedItem.teacherName}</span></li>
+                                <ul className="Feedback-info-list">
+                                    <li><strong>Class Name:</strong> <span className="Feedback-text-blue">{selectedItem.className}</span></li>
+                                    <li><strong>Instructor:</strong> <span className="Feedback-teacher-name">{selectedItem.teacherName}</span></li>
                                     <li><strong>Description:</strong> {selectedItem.description}</li>
                                     <li><strong>Target Band:</strong> {selectedItem.bandFrom} - {selectedItem.bandTo}</li>
                                     <li><strong>Total Sessions:</strong> {selectedItem.totalSessions} sessions</li>
@@ -101,33 +103,33 @@ const StudentCoursesFeedback = () => {
                             </div>
 
                             {/* Cột feedback */}
-                            <div className="modal-column">
+                            <div className="Feedback-modal-column">
                                 <h3>Student & Teacher Feedback</h3>
 
-                                <div className="feedback-list">
+                                <div className="Feedback-feedback-list">
                                     {feedbacks.length > 0 ? (
                                         feedbacks.map((fb) => (
-                                            <div key={fb.id} className="feedback-item">
+                                            <div key={fb.id} className="Feedback-feedback-item">
                                                 <p>{fb.content}</p>
-                                                <span className="feedback-time">
+                                                <span className="Feedback-feedback-time">
                                                     {fb.studentName} · {fb.createdAt.slice(0, 10)}
                                                 </span>
                                             </div>
                                         ))
                                     ) : (
-                                        <p className="no-feedback">Chưa có phản hồi nào cho khóa học này.</p>
+                                        <p className="Feedback-no-feedback">Chưa có phản hồi nào cho khóa học này.</p>
                                     )}
                                 </div>
 
-                                <form onSubmit={handleSendFeedback} className="feedback-form">
+                                <form onSubmit={handleSendFeedback} className="Feedback-feedback-form">
                                     <textarea
                                         rows={3}
                                         placeholder="Write your feedback or review..."
                                         value={feedbackText}
                                         onChange={(e) => setFeedbackText(e.target.value)}
-                                        className="feedback-textarea"
+                                        className="Feedback-feedback-textarea"
                                     />
-                                    <button type="submit" className="btn-submit-feedback">
+                                    <button type="submit" className="Feedback-btn-submit-feedback">
                                         Submit Feedback
                                     </button>
                                 </form>

@@ -3,14 +3,26 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-.header-section {
+.Feedback-main-card {
+    width: 100%;
+    background-color: #fff;
+    border-radius: 14px;
+    padding: 24px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    margin-bottom: 24px;
+}
+
+.Feedback-header-section {
     display: flex;
     align-items: center;
     gap: 16px;
-    margin-bottom: 32px;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e2e8f0;
 }
 
-.icon-box {
+.Feedback-icon-box {
     width: 48px;
     height: 48px;
     background-color: #dbeafe;
@@ -20,35 +32,36 @@
     align-items: center;
     justify-content: center;
     font-size: 24px;
+    flex-shrink: 0;
 }
 
-.header-text h1 {
-    font-size: 24px;
+.Feedback-header-text h1 {
+    font-size: 14px; /* Yêu cầu: title 14px */
     font-weight: 700;
     color: #0f172a;
     margin: 0 0 4px 0;
 }
 
-.header-text p {
+.Feedback-header-text p {
     color: #64748b;
-    font-size: 16px;
+    font-size: 12px; /* Yêu cầu: p theo title 12px */
     margin: 0;
 }
 
-.section-heading {
-    font-size: 18px;
+.Feedback-section-heading {
+    font-size: 16px;
     font-weight: 700;
     margin-bottom: 16px;
     color: #1e293b;
 }
 
-.courses-grid {
+.Feedback-courses-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 20px;
 }
 
-.course-card {
+.Feedback-course-card {
     background-color: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 12px;
@@ -61,20 +74,20 @@
     justify-content: space-between;
 }
 
-.course-card:hover {
+.Feedback-course-card:hover {
     border-color: #3b82f6;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
 }
 
-.card-top {
+.Feedback-card-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 12px;
 }
 
-.badge-level {
+.Feedback-badge-level {
     background-color: #dbeafe;
     color: #1d4ed8;
     padding: 4px 10px;
@@ -83,19 +96,19 @@
     font-weight: 600;
 }
 
-.sessions-count {
+.Feedback-sessions-count {
     color: #64748b;
     font-size: 12px;
 }
 
-.course-name {
+.Feedback-course-name {
     font-size: 16px;
     font-weight: 700;
     color: #0f172a;
     margin: 0 0 8px 0;
 }
 
-.course-desc {
+.Feedback-course-desc {
     color: #64748b;
     font-size: 13px;
     margin: 0 0 16px 0;
@@ -106,7 +119,7 @@
     overflow: hidden;
 }
 
-.card-footer {
+.Feedback-card-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -114,22 +127,28 @@
     padding-top: 12px;
 }
 
-.tuition-price {
+.Feedback-tuition-price {
     font-weight: 700;
     color: #2563eb;
     font-size: 14px;
 }
 
-.view-detail-link {
+.Feedback-view-detail-link {
     font-size: 12px;
     color: #64748b;
     font-weight: 600;
 }
 
+.Feedback-no-courses {
+    color: #64748b;
+    font-size: 13px;
+    font-style: italic;
+}
+
 /* =====================================================
    MODAL CỬA SỔ NỔI (POPUP)
 ===================================================== */
-.modal-overlay {
+.Feedback-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -143,17 +162,17 @@
     padding: 16px;
 }
 
-.modal-content {
+.Feedback-modal-content {
     background-color: #ffffff;
     width: 100%;
     max-width: 800px;
     border-radius: 12px;
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     overflow: hidden;
-    animation: modalScale 0.2s ease-in-out;
+    animation: FeedbackModalScale 0.2s ease-in-out;
 }
 
-@keyframes modalScale {
+@keyframes FeedbackModalScale {
     from {
         transform: scale(0.95);
         opacity: 0;
@@ -164,7 +183,7 @@
     }
 }
 
-.modal-header {
+.Feedback-modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -172,14 +191,14 @@
     border-bottom: 1px solid #e2e8f0;
 }
 
-.modal-header h2 {
+.Feedback-modal-header h2 {
     font-size: 18px;
     font-weight: 700;
     color: #0f172a;
     margin: 0;
 }
 
-.close-btn {
+.Feedback-close-btn {
     background: none;
     border: none;
     font-size: 24px;
@@ -191,12 +210,12 @@
     transition: background-color 0.2s;
 }
 
-.close-btn:hover {
+.Feedback-close-btn:hover {
     background-color: #f1f5f9;
     color: #0f172a;
 }
 
-.modal-body {
+.Feedback-modal-body {
     padding: 24px;
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -206,41 +225,45 @@
 }
 
 @media (max-width: 768px) {
-    .modal-body {
+    .Feedback-modal-body {
         grid-template-columns: 1fr;
     }
 }
 
-.modal-column h3 {
+.Feedback-modal-column h3 {
     font-size: 15px;
     font-weight: 700;
     margin-bottom: 12px;
     color: #1e293b;
 }
 
-.info-list {
+.Feedback-info-list {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-.info-list li {
+.Feedback-info-list li {
     padding: 8px 0;
     border-bottom: 1px solid #f1f5f9;
     font-size: 13px;
     color: #475569;
 }
 
-.info-list li strong {
+.Feedback-info-list li strong {
     color: #1e293b;
 }
 
-.teacher-name {
+.Feedback-text-blue {
+    color: #2563eb;
+}
+
+.Feedback-teacher-name {
     color: #2563eb;
     font-weight: 600;
 }
 
-.feedback-list {
+.Feedback-feedback-list {
     max-height: 140px;
     overflow-y: auto;
     margin-bottom: 12px;
@@ -249,7 +272,7 @@
     gap: 8px;
 }
 
-.feedback-item {
+.Feedback-feedback-item {
     background-color: #f8fafc;
     border: 1px solid #e2e8f0;
     padding: 8px 12px;
@@ -257,29 +280,29 @@
     font-size: 13px;
 }
 
-.feedback-item p {
+.Feedback-feedback-item p {
     margin: 0 0 2px 0;
     color: #1e293b;
 }
 
-.feedback-time {
+.Feedback-feedback-time {
     font-size: 11px;
     color: #94a3b8;
 }
 
-.no-feedback {
+.Feedback-no-feedback {
     color: #94a3b8;
     font-size: 13px;
     font-style: italic;
 }
 
-.feedback-form {
+.Feedback-feedback-form {
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
 
-.feedback-textarea {
+.Feedback-feedback-textarea {
     width: 100%;
     padding: 10px;
     border: 1px solid #cbd5e1;
@@ -290,11 +313,11 @@
     transition: border-color 0.2s;
 }
 
-.feedback-textarea:focus {
+.Feedback-feedback-textarea:focus {
     border-color: #2563eb;
 }
 
-.btn-submit-feedback {
+.Feedback-btn-submit-feedback {
     background-color: #2563eb;
     color: #ffffff;
     border: none;
@@ -307,6 +330,6 @@
     transition: background-color 0.2s;
 }
 
-.btn-submit-feedback:hover {
+.Feedback-btn-submit-feedback:hover {
     background-color: #1d4ed8;
 }
