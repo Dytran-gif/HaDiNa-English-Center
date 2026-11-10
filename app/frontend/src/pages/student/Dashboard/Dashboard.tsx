@@ -3,7 +3,6 @@ import { useStudentDashboard } from "../../../services/student/useStudentApi";
 import PresentLessonFE from "./Components/PresentLesson";
 import CourseFE from "./Components/Course";
 import QuickActionFE from "./Components/QuickAction";
-import NotificationItemFE from "./Components/NotificationItem";
 
 export default function StudentDashboard() {
     const { data } = useStudentDashboard();

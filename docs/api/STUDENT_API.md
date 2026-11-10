@@ -19,8 +19,8 @@ Dữ liệu dùng chung với Teacher (bảng nào bên nào ghi): xem mục cu�
 
 | Method | URL | Mô tả |
 |---|---|---|
-| GET | `/api/student/profile` ✅ | `{ code, fullName, email, role, avatarUrl, phone, dateOfBirth, address, parentName, parentPhone, targetBand }` của học viên đang đăng nhập |
-| PUT | `/api/student/profile` | `{ phone, address, parentName, parentPhone }` (họ tên, email, mã do Admin quản lý) |
+| GET | `/api/student/profile` ✅ | `{ code, fullName, email, role, avatarUrl, phone, dateOfBirth, address, parentName, parentPhone, status, targetBand }` của học viên đang đăng nhập |
+| PUT | `/api/student/profile` ✅ | `{ dateOfBirth, phone, address, parentPhone }` — học viên tự cập nhật thông tin được phép (họ tên, email, mã, trạng thái do Admin quản lý). Trả `{ message }` |
 | POST | `/api/student/profile/avatar` ✅ | multipart `file` (jpg/jpeg/png/webp ≤ 5 MB). Ảnh lưu vào `wwwroot/uploads/avatars/`, đường dẫn `/uploads/avatars/{ten}` ghi vào `Users.AvatarUrl`; **file avatar cũ bị xóa khỏi đĩa** (chỉ xóa khi đường dẫn cũ bắt đầu bằng `/uploads/avatars/` nên ảnh của tài khoản khác hay link ngoài không bị đụng). Trả `{ avatarUrl, message }`; `400` khi sai định dạng/quá cỡ/chưa chọn file |
 | POST | `/api/student/profile/change-password` ✅ | `{ currentPassword, newPassword, confirmPassword }`. `400` sai mật khẩu cũ / mật khẩu mới < 8 ký tự / trùng mật khẩu cũ. Thành công: `TokenVersion++` (token cũ mất hiệu lực) và trả `{ message, token }` mới — FE dùng `replaceToken` giữ phiên |
 | POST | `/api/student/profile/logout` | Tăng `TokenVersion` |

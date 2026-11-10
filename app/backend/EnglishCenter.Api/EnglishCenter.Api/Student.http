@@ -86,6 +86,19 @@ Content-Type: application/json
 GET http://localhost:5220/api/student/profile
 Authorization: Bearer {{token}}
 
+### Cập nhật hồ sơ (học viên tự sửa: dateOfBirth, phone, address, parentPhone)
+# họ tên/email/mã/status do Admin quản lý
+PUT http://localhost:5220/api/student/profile
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "dateOfBirth": "2005-01-15",
+  "phone": "0900000002",
+  "address": "12 Nguyễn Huệ, Q.1, TP.HCM",
+  "parentPhone": "0912345678"
+}
+
 ### Đổi mật khẩu -> TokenVersion tăng, trả token mới (dùng token mới cho các request sau)
 # 400 nếu sai mật khẩu hiện tại / mật khẩu mới < 8 ký tự / trùng mật khẩu cũ
 POST http://localhost:5220/api/student/profile/change-password

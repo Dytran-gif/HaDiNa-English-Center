@@ -53,6 +53,7 @@ public class ProfileController : ControllerBase
                 s.Address,
                 s.ParentName,
                 s.ParentPhone,
+                s.Status,
                 // ⚠️ DB CHƯA CÓ cột Students.TargetBand (migration chưa chạy) -> tạm trả null.
                 // KHI THÊM CỘT: bỏ dòng này và chọn s.TargetBand.
                 TargetBand = (decimal?)null
@@ -74,8 +75,32 @@ public class ProfileController : ControllerBase
             Address = row.Address,
             ParentName = row.ParentName,
             ParentPhone = row.ParentPhone,
+            Status = row.Status,
             TargetBand = row.TargetBand
         });
+    }
+
+    // PUT api/student/profile - body { dateOfBirth, phone, address, parentPhone }
+    // Chỉ cập nhật các trường học viên được phép tự sửa; họ tên/email/mã/trạng thái do Admin quản lý.
+    // Dùng UPDATE thô (không nạp cả entity) vì DB CHƯA CÓ cột Students.TargetBand -> nạp entity sẽ lỗi.
+    [HttpPut]
+    public async Task<IActionResult> UpdateProfile(StudentUpdateProfileRequest req)
+    {
+        if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            return Unauthorized(new { message = "Token không hợp lệ" });
+
+        var exists = await _db.Students.AsNoTracking().AnyAsync(s => s.UserId == userId);
+        if (!exists)
+            return StatusCode(403, new { message = "Tài khoản chưa có hồ sơ học viên" });
+
+        var phone = (req.Phone ?? "").Trim();
+        var address = string.IsNullOrWhiteSpace(req.Address) ? null : req.Address.Trim();
+        var parentPhone = string.IsNullOrWhiteSpace(req.ParentPhone) ? null : req.ParentPhone.Trim();
+
+        await _db.Database.ExecuteSqlInterpolatedAsync(
+            $"UPDATE Students SET DateOfBirth = {req.DateOfBirth}, Phone = {phone}, Address = {address}, ParentPhone = {parentPhone} WHERE UserId = {userId}");
+
+        return Ok(new { message = "Cập nhật hồ sơ thành công" });
     }
 
     // POST api/student/profile/avatar  (multipart/form-data, field "file": ảnh jpg/jpeg/png/webp, tối đa 5 MB)

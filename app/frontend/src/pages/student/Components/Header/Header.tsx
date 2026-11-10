@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation } from "react-router-dom";
 import { useAuth } from "../../../../context/AuthContext";
 import { useStudentApi, useStudentProfile } from "../../../../services/student/useStudentApi";
@@ -9,13 +9,14 @@ function Header() {
     const location = useLocation();
 
     // Hồ sơ học viên đang đăng nhập (từ BE)
-    const { data: profile } = useStudentProfile();
+    const { data: profile, reload: reloadProfile } = useStudentProfile();
     const { replaceToken } = useAuth();
     const api = useStudentApi();
 
     const displayName = profile?.fullName ?? "";
     const displayEmail = profile?.email ?? "";
     const displayRole = profile?.role ? profile.role.charAt(0).toUpperCase() + profile.role.slice(1) : "";
+    const displayStatus = profile?.status ?? "Studying";
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'info' | 'password'>('info');
@@ -27,6 +28,38 @@ function Header() {
     const [uploadedAvatar, setUploadedAvatar] = useState('');
     const [avatarBusy, setAvatarBusy] = useState(false);
     const avatar = uploadedAvatar || assetUrl(profile?.avatarUrl) || '';
+
+    // Các trường học viên được phép tự sửa (đồng bộ lại mỗi khi hồ sơ tải xong)
+    const [dob, setDob] = useState('');
+    const [phone, setPhone] = useState('');
+    const [address, setAddress] = useState('');
+    const [parentPhone, setParentPhone] = useState('');
+    const [saving, setSaving] = useState(false);
+
+    useEffect(() => {
+        setDob(profile?.dateOfBirth ?? '');
+        setPhone(profile?.phone ?? '');
+        setAddress(profile?.address ?? '');
+        setParentPhone(profile?.parentPhone ?? '');
+    }, [profile]);
+
+    const handleSaveProfile = async () => {
+        setSaving(true);
+        try {
+            const res = await api.send<{ message?: string }>("PUT", "profile", {
+                dateOfBirth: dob || null,
+                phone,
+                address,
+                parentPhone
+            });
+            alert(res.message ?? "Cập nhật hồ sơ thành công!");
+            reloadProfile();
+        } catch (err) {
+            alert(err instanceof Error ? err.message : "Cập nhật hồ sơ thất bại.");
+        } finally {
+            setSaving(false);
+        }
+    };
 
     const handlePasswordChange = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -153,19 +186,52 @@ function Header() {
                                         />
                                     </div>
 
-                                    <div className="info-details">
-                                        <div className="info-row">
-                                            <span>Full Name:</span>
-                                            <strong>{displayName}</strong>
+                                    <div className="profile-fields">
+                                        <div className="pf-grid">
+                                            <div className="pf-item">
+                                                <span className="pf-label"><i className="fa-solid fa-user"></i> Full Name</span>
+                                                <span className="pf-value">{displayName || '—'}</span>
+                                            </div>
+                                            <div className="pf-item">
+                                                <span className="pf-label"><i className="fa-solid fa-user-gear"></i> Role</span>
+                                                <span className="pf-value">{displayRole || '—'}</span>
+                                            </div>
+                                            <div className="pf-item pf-span-2">
+                                                <span className="pf-label"><i className="fa-solid fa-envelope"></i> Email</span>
+                                                <span className="pf-value pf-ellipsis">{displayEmail || '—'}</span>
+                                            </div>
+                                            <div className="pf-item">
+                                                <span className="pf-label"><i className="fa-solid fa-circle-info"></i> Status</span>
+                                                <span className={`pf-badge status-${displayStatus.toLowerCase()}`}>{displayStatus}</span>
+                                            </div>
+                                            <div className="pf-item">
+                                                <span className="pf-label"><i className="fa-solid fa-user-group"></i> Parent Name</span>
+                                                <span className="pf-value">{profile?.parentName || '—'}</span>
+                                            </div>
                                         </div>
-                                        <div className="info-row">
-                                            <span>Email:</span>
-                                            <strong>{displayEmail}</strong>
+
+                                        <div className="pf-divider"><span>Thông tin chỉnh sửa</span></div>
+
+                                        <div className="form-group">
+                                            <label>Date of Birth</label>
+                                            <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} />
                                         </div>
-                                        <div className="info-row">
-                                            <span>Role:</span>
-                                            <strong>{displayRole}</strong>
+                                        <div className="form-group">
+                                            <label>Phone</label>
+                                            <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Số điện thoại" />
                                         </div>
+                                        <div className="form-group">
+                                            <label>Address</label>
+                                            <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Địa chỉ" />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Parent Phone</label>
+                                            <input type="tel" value={parentPhone} onChange={(e) => setParentPhone(e.target.value)} placeholder="SĐT phụ huynh" />
+                                        </div>
+
+                                        <button className="btn-save" onClick={handleSaveProfile} disabled={saving}>
+                                            {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
+                                        </button>
                                     </div>
                                 </div>
                             ) : (

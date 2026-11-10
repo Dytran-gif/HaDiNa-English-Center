@@ -486,6 +486,7 @@ export interface StudentProfile {
   address?: string;
   parentName?: string;
   parentPhone?: string;
+  status?: string;
   targetBand?: number;
 }
 
@@ -496,6 +497,7 @@ export function useStudentProfile() {
   const [data, setData] = useState<StudentProfile>();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     if (!token) {
@@ -520,7 +522,7 @@ export function useStudentProfile() {
       });
 
     return () => controller.abort();
-  }, [api, token]);
+  }, [api, token, reloadKey]);
 
-  return { data, error, loading };
+  return { data, error, loading, reload: () => setReloadKey(k => k + 1) };
 }
