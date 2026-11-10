@@ -36,26 +36,25 @@ const PaymentFE = ({ items, onPay }: PaymentProps) => {
 
     return (
         <div className="payment-container">
-            {/* Header */}
-            <div className="header-section">
-                <div className="icon-box"><i className="fa-solid fa-file-invoice-dollar"></i></div>
-                <div className="header-text">
-                    <h1>Tuition</h1>
-                    <p>Select courses to review and pay your tuition fees.</p>
+            {/* Unified Card: Tuition Title + My Courses Table */}
+            <div className="payment-table-card">
+                <div className="payment-header-section">
+                    <div className="payment-icon-box"><i className="fa-solid fa-file-invoice-dollar"></i></div>
+                    <div className="payment-header-text">
+                        <h1>Tuition</h1>
+                        <p>Select courses to review and pay your tuition fees.</p>
+                    </div>
                 </div>
-            </div>
 
-            {/* Table Card */}
-            <div className="table-card">
-                <div className="card-header">My Courses</div>
-                <div className="table-responsive">
-                    <table className="custom-table">
+                <div className="payment-card-header">My Courses</div>
+                <div className="payment-table-responsive">
+                    <table className="payment-custom-table">
                         <thead>
                             <tr>
-                                <th className="text-center">
+                                <th className="payment-text-center">
                                     <input
                                         type="checkbox"
-                                        className="custom-checkbox"
+                                        className="payment-custom-checkbox"
                                         checked={selectedEnrollmentIds.length === items.length && items.length > 0}
                                         onChange={handleSelectAll}
                                     />
@@ -70,24 +69,24 @@ const PaymentFE = ({ items, onPay }: PaymentProps) => {
                         <tbody>
                             {items.map((item) => (
                                 <tr key={item.enrollmentId}>
-                                    <td className="text-center">
+                                    <td className="payment-text-center">
                                         <input
                                             type="checkbox"
-                                            className="custom-checkbox"
+                                            className="payment-custom-checkbox"
                                             checked={selectedEnrollmentIds.includes(item.enrollmentId)}
                                             onChange={() => handleSelect(item.enrollmentId)}
                                         />
                                     </td>
-                                    <td className="font-medium">{item.courseName}</td>
-                                    <td className="text-muted">{item.className}</td>
-                                    <td className="text-muted">{item.bandFrom} - {item.bandTo}</td>
-                                    <td className="text-muted">{item.totalSessions} sessions</td>
-                                    <td className="font-medium">{formatCurrency(item.finalTuitionFee)}</td>
+                                    <td className="payment-font-medium">{item.courseName}</td>
+                                    <td className="payment-text-muted">{item.className}</td>
+                                    <td className="payment-text-muted">{item.bandFrom} - {item.bandTo}</td>
+                                    <td className="payment-text-muted">{item.totalSessions} sessions</td>
+                                    <td className="payment-font-medium">{formatCurrency(item.finalTuitionFee)}</td>
                                 </tr>
                             ))}
                             {items.length === 0 && (
                                 <tr>
-                                    <td colSpan={6} className="text-center p-8 text-muted">
+                                    <td colSpan={6} className="payment-text-center payment-text-muted" style={{ padding: '32px' }}>
                                         Không có khóa học nào cần thanh toán.
                                     </td>
                                 </tr>
@@ -98,27 +97,27 @@ const PaymentFE = ({ items, onPay }: PaymentProps) => {
             </div>
 
             {/* Summary Card */}
-            <div className="summary-card">
-                <div className="summary-left">
-                    <div className="icon-box-sm"><i className="fa-regular fa-rectangle-list"></i></div>
+            <div className="payment-summary-card">
+                <div className="payment-summary-left">
+                    <div className="payment-icon-box-sm"><i className="fa-regular fa-rectangle-list"></i></div>
                     <h2>Payment Summary</h2>
                 </div>
 
-                <div className="summary-right">
-                    <div className="summary-item">
-                        <span className="summary-label">Selected Courses</span>
-                        <span className="summary-value">
+                <div className="payment-summary-right">
+                    <div className="payment-summary-item">
+                        <span className="payment-summary-label">Selected Courses</span>
+                        <span className="payment-summary-value">
                             {selectedEnrollmentIds.length} course{selectedEnrollmentIds.length > 1 ? 's' : ''}
                         </span>
                     </div>
 
-                    <div className="summary-item">
-                        <span className="summary-label">Total Amount</span>
-                        <span className="summary-value text-blue">{formatCurrency(totalAmount)}</span>
+                    <div className="payment-summary-item">
+                        <span className="payment-summary-label">Total Amount</span>
+                        <span className="payment-summary-value payment-text-blue">{formatCurrency(totalAmount)}</span>
                     </div>
 
                     <button
-                        className="btn-primary"
+                        className="payment-btn-primary"
                         disabled={selectedEnrollmentIds.length === 0}
                         onClick={() => onPay(selectedEnrollmentIds)}
                     >

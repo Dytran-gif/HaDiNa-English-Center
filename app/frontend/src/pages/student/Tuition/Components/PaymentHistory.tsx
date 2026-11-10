@@ -12,21 +12,20 @@ const PaymentHistory = ({ items }: PaymentHistoryProps) => {
     };
 
     return (
-        <div className="history-container">
-            {/* Tiêu đề trang */}
-            <div className="header-section">
-                <div className="icon-box"><i className="fa-solid fa-clock-rotate-left"></i></div>
-                <div className="header-text">
-                    <h1>Payment History</h1>
-                    <p>Review your past tuition payments and transaction records.</p>
+        <div className="payment-history-container">
+            {/* Unified Card: Tiêu đề trang + Bảng lịch sử giao dịch */}
+            <div className="payment-table-card">
+                <div className="payment-header-section">
+                    <div className="payment-icon-box"><i className="fa-solid fa-clock-rotate-left"></i></div>
+                    <div className="payment-header-text">
+                        <h1>Payment History</h1>
+                        <p>Review your past tuition payments and transaction records.</p>
+                    </div>
                 </div>
-            </div>
 
-            {/* Bảng lịch sử giao dịch */}
-            <div className="table-card">
-                <div className="card-header">Transaction Records</div>
-                <div className="table-responsive">
-                    <table className="custom-table">
+                <div className="payment-card-header">Transaction Records</div>
+                <div className="payment-table-responsive">
+                    <table className="payment-custom-table">
                         <thead>
                             <tr>
                                 <th>Payment ID</th>
@@ -40,24 +39,24 @@ const PaymentHistory = ({ items }: PaymentHistoryProps) => {
                         <tbody>
                             {items.map((item) => (
                                 <tr key={item.paymentId}>
-                                    <td className="font-medium text-blue">{item.paymentId}</td>
+                                    <td className="payment-font-medium payment-text-blue">{item.paymentId}</td>
                                     <td>
-                                        <div className="font-medium">{item.courseName}</div>
-                                        <div className="text-muted" style={{ fontSize: '12px' }}>{item.className}</div>
+                                        <div className="payment-font-medium">{item.courseName}</div>
+                                        <div className="payment-text-muted" style={{ fontSize: '12px' }}>{item.className}</div>
                                     </td>
-                                    <td className="font-medium">{formatCurrency(item.paidAmount ?? 0)}</td>
+                                    <td className="payment-font-medium">{formatCurrency(item.paidAmount ?? 0)}</td>
                                     <td>
-                                        <span className={`badge ${(item.method ?? 'cash').toLowerCase()}`}>
+                                        <span className={`payment-badge payment-${(item.method ?? 'cash').toLowerCase()}`}>
                                             {item.method ?? 'N/A'}
                                         </span>
                                     </td>
-                                    <td className="text-muted">{item.paidDate ?? 'N/A'}</td>
-                                    <td className="text-muted">{item.note || 'N/A'}</td>
+                                    <td className="payment-text-muted">{item.paidDate ?? 'N/A'}</td>
+                                    <td className="payment-text-muted">{item.note || 'N/A'}</td>
                                 </tr>
                             ))}
                             {items.length === 0 && (
                                 <tr>
-                                    <td colSpan={6} className="text-center p-8 text-muted">
+                                    <td colSpan={6} className="payment-text-center payment-text-muted" style={{ padding: '32px' }}>
                                         Chưa có lịch sử giao dịch nào.
                                     </td>
                                 </tr>

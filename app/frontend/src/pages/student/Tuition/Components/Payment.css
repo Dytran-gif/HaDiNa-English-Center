@@ -3,14 +3,16 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-.header-section {
+.payment-header-section {
     display: flex;
     align-items: center;
     gap: 16px;
-    margin-bottom: 32px;
+    padding: 14px;
+    border-bottom: 1px solid #e2e8f0;
+    background-color: #fafbfc;
 }
 
-.icon-box {
+.payment-icon-box {
     width: 48px;
     height: 48px;
     background-color: #dbeafe;
@@ -22,20 +24,20 @@
     font-size: 24px;
 }
 
-.header-text h1 {
-    font-size: 24px;
+.payment-header-text h1 {
+    font-size: 16px;
     font-weight: 700;
     color: #0f172a;
     margin: 0 0 4px 0;
 }
 
-.header-text p {
+.payment-header-text p {
     color: #64748b;
-    font-size: 16px;
+    font-size: 12px;
     margin: 0;
 }
 
-.table-card {
+.payment-table-card {
     background-color: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 12px;
@@ -44,71 +46,72 @@
     overflow: hidden;
 }
 
-.card-header {
+.payment-card-header {
     padding: 20px;
     border-bottom: 1px solid #e2e8f0;
     font-weight: 700;
     font-size: 18px;
+    background-color: #ffffff;
 }
 
-.table-responsive {
+.payment-table-responsive {
     overflow-x: auto;
 }
 
-.custom-table {
+.payment-custom-table {
     width: 100%;
     border-collapse: collapse;
     text-align: left;
 }
 
-.custom-table th, .custom-table td {
+.payment-custom-table th, .payment-custom-table td {
     padding: 16px;
     border-bottom: 1px solid #f1f5f9;
 }
 
-.custom-table th {
+.payment-custom-table th {
     background-color: #f8fafc;
     color: #475569;
     font-weight: 600;
     font-size: 14px;
 }
 
-.custom-table tbody tr:hover {
+.payment-custom-table tbody tr:hover {
     background-color: #f8fafc;
     transition: background-color 0.2s;
 }
 
-.text-center { text-align: center; }
-.font-medium { font-weight: 500; color: #1e293b; }
-.text-muted { color: #475569; }
+.payment-text-center { text-align: center; }
+.payment-font-medium { font-weight: 500; color: #1e293b; }
+.payment-text-muted { color: #475569; }
 
-.custom-checkbox {
+.payment-custom-checkbox {
     width: 18px;
     height: 18px;
     cursor: pointer;
     accent-color: #2563eb;
 }
 
-.summary-card {
+.payment-summary-card {
     background-color: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 12px;
-    padding: 24px;
+    padding: 14px 14px 14px 18px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     flex-wrap: wrap;
-    gap: 24px;
+    gap: 16px;
 }
 
-.summary-left {
+.payment-summary-left {
     display: flex;
     align-items: center;
     gap: 12px;
 }
 
-.icon-box-sm {
+.payment-icon-box-sm {
     width: 40px;
     height: 40px;
     background-color: #dbeafe;
@@ -120,43 +123,43 @@
     font-size: 20px;
 }
 
-.summary-left h2 {
+.payment-summary-left h2 {
     font-size: 18px;
     font-weight: 700;
     margin: 0;
 }
 
-.summary-right {
+.payment-summary-right {
     display: flex;
     align-items: center;
     gap: 32px;
     flex-wrap: wrap;
 }
 
-.summary-item {
+.payment-summary-item {
     border-left: 2px solid #f1f5f9;
     padding-left: 24px;
     display: flex;
     flex-direction: column;
 }
 
-.summary-label {
+.payment-summary-label {
     color: #64748b;
     font-size: 14px;
     margin-bottom: 4px;
 }
 
-.summary-value {
+.payment-summary-value {
     font-size: 20px;
     font-weight: 700;
 }
 
-.text-blue {
+.payment-text-blue {
     color: #2563eb;
     font-size: 24px;
 }
 
-.btn-primary {
+.payment-btn-primary {
     padding: 12px 32px;
     border-radius: 8px;
     border: none;
@@ -169,34 +172,34 @@
     cursor: pointer;
 }
 
-.btn-primary:not(:disabled) {
+.payment-btn-primary:not(:disabled) {
     background-color: #2563eb;
     color: #ffffff;
     box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
 }
 
-.btn-primary:not(:disabled):hover {
+.payment-btn-primary:not(:disabled):hover {
     background-color: #1d4ed8;
 }
 
-.btn-primary:disabled {
+.payment-btn-primary:disabled {
     background-color: #e2e8f0;
     color: #94a3b8;
     cursor: not-allowed;
 }
 
 @media (max-width: 768px) {
-    .summary-card {
+    .payment-summary-card {
         flex-direction: column;
         align-items: flex-start;
     }
-    .summary-right {
+    .payment-summary-right {
         width: 100%;
         flex-direction: column;
         align-items: flex-start;
         gap: 16px;
     }
-    .summary-item {
+    .payment-summary-item {
         border-left: none;
         padding-left: 0;
     }

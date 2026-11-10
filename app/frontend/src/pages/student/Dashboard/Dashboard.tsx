@@ -1,6 +1,6 @@
 import "../General.css";
 import { useStudentDashboard } from "../../../services/student/useStudentApi";
-import PresentLessonFE from "./Components/PresentLesson"; 
+import PresentLessonFE from "./Components/PresentLesson";
 import CourseFE from "./Components/Course";
 import QuickActionFE from "./Components/QuickAction";
 import NotificationItemFE from "./Components/NotificationItem";
@@ -28,12 +28,6 @@ export default function StudentDashboard() {
                                 } : undefined} />
                             </div>
                         </div>
-
-                        <div className="col-12">
-                            <div className="CourseCard">
-                                <CourseFE courses={data?.courses} />
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -44,11 +38,11 @@ export default function StudentDashboard() {
                                 <QuickActionFE />
                             </div>
                         </div>
-                        <div className="col-12">
-                            <div className="card">
-                                <NotificationItemFE notifications={data?.notifications} />
-                            </div>
-                        </div>
+                    </div>
+                </div>
+                <div className="col-12">
+                    <div className="CourseCard">
+                        <CourseFE courses={data?.courses} />
                     </div>
                 </div>
             </div>
