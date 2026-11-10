@@ -29,6 +29,7 @@ export default function Blog() {
         <div className="pill-tabs blog-list__tabs">
           <button
             type="button"
+            aria-pressed={activeCategory === "all"}
             className={activeCategory === "all" ? "is-active" : ""}
             onClick={() => setActiveCategory("all")}
           >
@@ -37,6 +38,7 @@ export default function Blog() {
           {blogCategories.map((cat) => (
             <button
               key={cat}
+              aria-pressed={activeCategory === cat}
               type="button"
               className={activeCategory === cat ? "is-active" : ""}
               onClick={() => setActiveCategory(cat)}

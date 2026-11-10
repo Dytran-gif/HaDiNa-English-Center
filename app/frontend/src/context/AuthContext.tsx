@@ -1,13 +1,11 @@
 ﻿import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
 import type { User, UserRole } from "../types";
-import { findAccount } from "../data/users";
 import { request } from "../services/apiClient";
 
 interface Session { user: User; token: string | null }
 interface AuthContextValue {
   user: User | null;
   token: string | null;
-  login: (email: string, password: string) => User | null;
   loginApi: (email: string, password: string) => Promise<User>;
   replaceToken: (token: string) => void;
   logout: () => void;
@@ -20,7 +18,8 @@ function readSession(): Session | null {
     if (!value) return null;
     const user = value.user ?? value;
     if (!["admin", "teacher", "student"].includes(user.role) || typeof user.email !== "string") return null;
-    return { user, token: typeof value.token === "string" ? value.token : null };
+    if (typeof value.token !== "string" || !value.token || value.token === "local-admin-mock-preview") { localStorage.removeItem(STORAGE_KEY); return null; }
+    return { user, token: value.token };
   } catch { return null; }
 }
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -33,11 +32,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null);
     localStorage.removeItem(STORAGE_KEY);
   }, []);
-  function login(email: string, password: string): User | null {
-    const found = findAccount(email, password);
-    if (found) save({ user: found, token: null });
-    return found;
-  }
   async function loginApi(email: string, password: string) {
     const result = await request<{ token: string; userId: number; email: string; role: UserRole }>("/api/auth/login", null,
       { method: "POST", body: JSON.stringify({ email, password }) });
@@ -48,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return user;
   }
   function replaceToken(token: string) { if (session) save({ ...session, token }); }
-  return <AuthContext.Provider value={{ user: session?.user ?? null, token: session?.token ?? null, login, loginApi, replaceToken, logout }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ user: session?.user ?? null, token: session?.token ?? null, loginApi, replaceToken, logout }}>{children}</AuthContext.Provider>;
 }
 export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext);

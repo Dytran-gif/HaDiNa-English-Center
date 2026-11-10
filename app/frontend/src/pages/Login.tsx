@@ -11,10 +11,10 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [demo, setDemo] = useState(false);
+
   const [busy, setBusy] = useState(false);
 
-  const { login, loginApi } = useAuth();
+  const { loginApi } = useAuth();
   const navigate = useNavigate();
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -27,8 +27,7 @@ export default function Login() {
 
     setBusy(true); setError("");
     try {
-      const user = demo ? login(email, password) : await loginApi(email, password);
-      if (!user) { setError("Sai email hoặc mật khẩu demo."); return; }
+      const user = await loginApi(email, password);
       navigate(`/${user.role}`);
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Không đăng nhập được."); }
     finally { setBusy(false); }
@@ -56,7 +55,6 @@ export default function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            <label className="field"><span><input type="checkbox" checked={demo} disabled={busy} onChange={e => setDemo(e.target.checked)} /> Xem giao diện bằng tài khoản demo (không cần máy chủ)</span></label>
             {error && <p className="auth-error" role="alert">{error}</p>}
             <Button type="submit" variant="primary" disabled={busy}>
               {busy ? "Đang đăng nhập…" : "Đăng nhập"}

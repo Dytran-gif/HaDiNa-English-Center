@@ -29,14 +29,15 @@ export default function Contact() {
         <Card className="contact-form-card">
           {submitted ? (
             <div className="contact-success">
-              <h2>Gửi liên hệ thành công!</h2>
-              <p>Cảm ơn bạn đã liên hệ. Happy IELTS sẽ phản hồi trong vòng 24 giờ.</p>
+              <h2>Thông tin chưa được gửi</h2>
+              <p>Biểu mẫu chưa kết nối máy chủ nên chưa lưu yêu cầu của bạn. Thông tin liên hệ trên trang hiện là dữ liệu minh họa.</p>
               <Button variant="outline" onClick={() => setSubmitted(false)}>
-                Gửi liên hệ khác
+                Quay lại biểu mẫu
               </Button>
             </div>
           ) : (
             <form onSubmit={handleSubmit}>
+              <p role="note">Trang minh họa: biểu mẫu chưa gửi thông tin, địa chỉ và hotline cần được trung tâm xác nhận.</p>
               <InputField
                 label="Họ và tên"
                 id="contact-name"

@@ -27,6 +27,7 @@ export default function Courses() {
         <div className="pill-tabs courses-list__tabs">
           <button
             type="button"
+            aria-pressed={activeCategory === "all"}
             className={activeCategory === "all" ? "is-active" : ""}
             onClick={() => setActiveCategory("all")}
           >
@@ -35,6 +36,7 @@ export default function Courses() {
           {categories.map((cat) => (
             <button
               key={cat.category_id}
+              aria-pressed={activeCategory === cat.category_id}
               type="button"
               className={activeCategory === cat.category_id ? "is-active" : ""}
               onClick={() => setActiveCategory(cat.category_id)}

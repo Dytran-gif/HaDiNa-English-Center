@@ -32,10 +32,10 @@ export default function RegisterCta() {
         <div className="register-cta__form">
           {submitted ? (
             <div className="register-cta__success">
-              <h3>Đăng ký thành công!</h3>
+              <h3>Thông tin chưa được gửi</h3>
               <p>
-                Cảm ơn bạn đã điền thông tin đăng ký. Happy IELTS sẽ liên hệ và
-                tư vấn cho bạn trong vòng 24 giờ.
+                Form tư vấn hiện chưa kết nối máy chủ. Chưa có yêu cầu nào được lưu;
+                bạn có thể xem thêm thông tin tại trang Liên hệ.
               </p>
               <Button
                 variant="outline"
@@ -46,11 +46,12 @@ export default function RegisterCta() {
                   setEmail("");
                 }}
               >
-                Gửi đăng ký khác
+                Quay lại biểu mẫu
               </Button>
             </div>
           ) : (
             <form onSubmit={handleSubmit}>
+              <p role="note">Biểu mẫu đang trong quá trình hoàn thiện, chưa gửi thông tin tới trung tâm.</p>
               <InputField
                 label="Họ và tên"
                 id="register-name"
