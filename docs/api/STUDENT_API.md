@@ -69,6 +69,22 @@ Lỗi: 403 buổi không thuộc lớp mình · 409 buổi đã diễn ra / khun
 
 Quiz `answers`: `{ "12": "B", "13": "photosynthesis" }` (key = id câu hỏi).
 
+## 4b. File bài tập + nộp bài (popup Present Lessons) ✅
+
+> Bảng dùng chung: `Assignments` (học viên đã tạo sẵn trong DB, CHECK `FileType IN ('Student','Teacher')`).
+> `FileType='Teacher'` = file GV giao (StudentId NULL); `FileType='Student'` = bài nộp của HV.
+> File vật lý lưu ở `wwwroot/uploads/AssignmentUploads/`; tự xóa sau 7 ngày bằng `AssignmentFileCleanupService`.
+
+| Method | URL | Mô tả |
+|---|---|---|
+| GET | `/api/student/courses/{courseId}/detail` ✅ | Chi tiết khóa cho popup: `{ id, name, description, bandFrom/To, totalSessions, sessionsPerWeek, tuition, discountPercent, teachers[{fullName, specialty, degree}], classes[{id, name, startDate, endDate, maxStudents, teacherName, schedules[{dayOfWeek, startTime, endTime, roomName}]}] }` |
+| GET | `/api/student/assignments?courseId=` ✅ | Bài tập GV giao cho khóa (theo GV dạy khóa): `[{ id, title, description, fileName, hasFile, createdAt, mySubmission }]`. `mySubmission` = bài nộp mới nhất của chính mình (null nếu chưa nộp) |
+| GET | `/api/student/assignments/{id}/download` ✅ | Tải file GV giao (tên gốc). `403` nếu không thuộc lớp của GV này |
+| POST | `/api/student/assignments/{id}/submit` ✅ | Nộp bài (multipart `file`: pdf/doc/docx ≤ 15MB). `StudentId` từ token, không tin client. Lưu vào `AssignmentUploads/StudentSubmissions/` |
+| GET | `/api/student/assignments/{id}/my-submission/download` ✅ | Tải bài nộp mới nhất của chính mình |
+
+> Phía giáo viên (xem/tải bài nộp) do người làm module Teacher tự viết — dữ liệu nằm trong bảng `Assignments` (cột `FileType='Teacher'` = bài GV giao, `'Student'` = bài nộp của HV, `StudentId` khác NULL).
+
 ## 5. Kết quả học tập ⬜ (plan 13)
 
 | Method | URL | Mô tả |

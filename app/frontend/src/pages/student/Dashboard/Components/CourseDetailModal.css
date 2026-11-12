@@ -1,0 +1,340 @@
+/* Popup chi tiết khóa học (Present Lessons) — 2 tab: thông tin + bài tập */
+
+.cdm-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+    padding: 16px;
+}
+
+.cdm-content {
+    background: #ffffff;
+    width: 100%;
+    max-width: 640px;
+    max-height: calc(100vh - 48px);
+    border-radius: 14px;
+    box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.35);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: cdmIn 0.18s ease-out;
+}
+
+@keyframes cdmIn {
+    from { transform: scale(0.96); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.cdm-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.cdm-header h2 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.cdm-title-box {
+    min-width: 0;
+}
+
+.cdm-band {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #2563eb;
+    background: #dbeafe;
+    padding: 2px 10px;
+    border-radius: 999px;
+}
+
+.cdm-close {
+    background: none;
+    border: none;
+    font-size: 22px;
+    color: #64748b;
+    cursor: pointer;
+    line-height: 1;
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+.cdm-close:hover { background: #f1f5f9; color: #0f172a; }
+
+.cdm-tabs {
+    display: flex;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+.cdm-tab {
+    flex: 1;
+    padding: 11px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+}
+
+.cdm-tab.active {
+    color: #2563eb;
+    border-bottom-color: #2563eb;
+    background: #ffffff;
+}
+
+.cdm-body {
+    padding: 18px;
+    overflow-y: auto;
+}
+
+/* Tab 1: thông tin */
+.cdm-desc {
+    margin: 0 0 14px;
+    font-size: 14px;
+    color: #334155;
+    line-height: 1.6;
+}
+
+.cdm-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.cdm-meta > div {
+    background: #f8fafc;
+    border: 1px solid #eef2f7;
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.cdm-meta span { font-size: 11px; color: #64748b; }
+.cdm-meta strong { font-size: 14px; color: #0f172a; }
+
+/* Tab 2: bài tập */
+.cdm-assignments {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cdm-assignment {
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 13px 15px;
+}
+
+.cdm-assignment-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+}
+
+.cdm-assignment-head h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.cdm-date {
+    font-size: 12px;
+    color: #94a3b8;
+    white-space: nowrap;
+}
+
+.cdm-assignment-desc {
+    margin: 6px 0 0;
+    font-size: 13px;
+    color: #475569;
+    line-height: 1.5;
+}
+
+.cdm-file-row {
+    margin-top: 8px;
+    padding: 7px 10px;
+    background: #f8fafc;
+    border-radius: 8px;
+}
+
+.cdm-link {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #2563eb;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cdm-link:hover { text-decoration: underline; }
+
+.cdm-muted { color: #94a3b8; font-size: 13px; }
+
+.cdm-submit {
+    margin-top: 10px;
+    border-top: 1px dashed #e2e8f0;
+    padding-top: 10px;
+}
+
+.cdm-submitted {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.cdm-ok {
+    font-size: 13px;
+    color: #047857;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cdm-upload-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.cdm-upload-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #2563eb;
+    color: #ffffff;
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.cdm-upload-btn:hover { background: #1d4ed8; }
+
+.cdm-upload-btn input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+/* Tab 1: các section chi tiết */
+.cdm-section {
+    margin-top: 18px;
+}
+
+.cdm-section h3 {
+    margin: 0 0 10px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 8px;
+}
+
+.cdm-section h3 i {
+    color: #2563eb;
+}
+
+.cdm-teacher {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    background: #f8fafc;
+    border: 1px solid #eef2f7;
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.cdm-teacher strong {
+    font-size: 14px;
+    color: #0f172a;
+}
+
+.cdm-teacher-extra {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.cdm-class {
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+}
+
+.cdm-class-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+}
+
+.cdm-class-head strong {
+    font-size: 14px;
+    color: #0f172a;
+}
+
+.cdm-class-head span {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.cdm-class-meta {
+    display: flex;
+    gap: 14px;
+    margin: 6px 0 10px;
+    font-size: 12px;
+    color: #475569;
+}
+
+.cdm-schedules {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.cdm-schedules th,
+.cdm-schedules td {
+    text-align: left;
+    padding: 6px 8px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.cdm-schedules th {
+    color: #64748b;
+    font-weight: 600;
+    font-size: 12px;
+}

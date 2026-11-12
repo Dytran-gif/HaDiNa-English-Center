@@ -63,7 +63,8 @@ public class DashboardController : ControllerBase
                 TotalSessions = e.Class.Course.TotalSessions,
                 SessionsPerWeek = e.Class.Course.SessionsPerWeek,
                 Tuition = e.Class.Course.Tuition,
-                DiscountPercent = e.Class.Course.DiscountPercent
+                DiscountPercent = e.Class.Course.DiscountPercent,
+                TeacherName = e.Class.Teacher.FullName
             })
             .ToListAsync();
 
@@ -78,7 +79,8 @@ public class DashboardController : ControllerBase
             SessionsPerWeek = e.SessionsPerWeek,
             Tuition = e.Tuition,
             DiscountPercent = e.DiscountPercent,
-            ImageUrl = null // bảng Courses chưa có cột ảnh
+            ImageUrl = null, // bảng Courses chưa có cột ảnh
+            TeacherName = e.TeacherName
         }).ToList();
 
         // ---------- Khối "Your next lesson": buổi học sắp tới GẦN NHẤT theo lịch tuần ----------

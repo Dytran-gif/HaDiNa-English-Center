@@ -233,16 +233,17 @@
 }
 
 /* --- TRẠNG THÁI KÉO THẢ CHUỘT --- */
+/* Lưu ý: KHÔNG đặt pointer-events:none cho card khi kéo, vì nó chặn cả sự kiện click
+   -> bấm vào card sẽ không mở popup. Chỉ tắt chọn text (user-select) khi kéo. */
 .cf-horizontal-scroll-wrapper {
-    cursor: grab;
+    cursor: default;
 }
 
 .cf-horizontal-scroll-wrapper.cf-active-drag {
-    cursor: grabbing;
+    cursor: default;
     scroll-behavior: auto;
 }
 
 .cf-horizontal-scroll-wrapper.cf-active-drag .cf-course-card {
-    pointer-events: none;
     user-select: none;
 }

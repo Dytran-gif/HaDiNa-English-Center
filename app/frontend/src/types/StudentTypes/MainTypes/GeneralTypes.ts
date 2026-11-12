@@ -119,3 +119,16 @@ export interface AppNotification {
     type: 'Cancellation' | 'ScheduleChange' | 'General';
     createdAt?: string;
 }
+
+// 11. Bảng Assignments (file bài tập GV + bài nộp HV — 1 bảng, DB có CHECK: FileType IN ('Student','Teacher'))
+export interface AssignmentFile {
+    id: number;
+    teacherId: number;
+    studentId?: number;
+    title: string;
+    description?: string;
+    fileName: string;
+    filePath: string;
+    fileType: 'Teacher' | 'Student';
+    createdAt: string;
+}
