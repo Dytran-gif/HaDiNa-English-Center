@@ -1,5 +1,6 @@
 .course-showcase {
-  padding-block: var(--section-y);
+  padding-top: 50px;
+  padding-bottom: 50px;
 }
 
 .course-showcase__grid {

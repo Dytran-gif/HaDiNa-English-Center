@@ -89,7 +89,7 @@ export const courses: Course[] = [
     short_description:
       "Lộ trình luyện thi SAT khoa học, bám sát tiêu chí đánh giá thực tế của bài thi.",
     description:
-      "Luyện thi SAT tại Happy IELTS với lộ trình học tập khoa học, giúp cải thiện và phát triển toàn diện kỹ năng cho học viên với trọng tâm sát nhất với các tiêu chí đánh giá của bài thi.",
+      "Luyện thi SAT tại Hadi IELTS với lộ trình học tập khoa học, giúp cải thiện và phát triển toàn diện kỹ năng cho học viên với trọng tâm sát nhất với các tiêu chí đánh giá của bài thi.",
     category_id: 5,
     teacher_id: 3,
     price: 6000000,

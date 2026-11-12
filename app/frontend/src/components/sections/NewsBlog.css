@@ -1,5 +1,6 @@
 .news-blog {
-  padding-block: var(--section-y);
+ padding-bottom: 50px;
+ padding-top: 80px;
 }
 
 .news-blog__head {

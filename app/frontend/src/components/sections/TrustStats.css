@@ -1,5 +1,6 @@
 .trust-stats {
   padding-block: clamp(32px, 5vw, 56px);
+  padding-top:100px;
 }
 
 .trust-stats__grid {

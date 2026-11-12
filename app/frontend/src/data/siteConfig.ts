@@ -3,12 +3,12 @@ export interface NavLink {
   to: string;
 }
 
-export const siteName = "HAPPY IELTS";
-export const siteFullName = "Trung tâm Anh ngữ Happy IELTS";
+export const siteName = "Hadi IELTS";
+export const siteFullName = "Trung tâm Anh ngữ Hadi IELTS";
 export const siteTagline =
   "Trung tâm Anh ngữ hàng đầu chuyên luyện thi IELTS, SAT và giảng dạy tiếng Anh cho mọi trình độ.";
 export const siteAbout =
-  "Happy IELTS là tổ chức giáo dục chuyên đào tạo luyện thi IELTS, SAT, và giảng dạy Tiếng Anh ở mọi trình độ. Happy IELTS kết hợp các giải pháp công nghệ mới nhất cùng khả năng chuyên môn tối ưu nhằm đem lại chất lượng giảng dạy cao nhất.";
+  "Hadi IELTS là tổ chức giáo dục chuyên đào tạo luyện thi IELTS, SAT, và giảng dạy Tiếng Anh ở mọi trình độ. Hadi IELTS kết hợp các giải pháp công nghệ mới nhất cùng khả năng chuyên môn tối ưu nhằm đem lại chất lượng giảng dạy cao nhất.";
 
 export const primaryNav: NavLink[] = [
   { label: "Trang chủ", to: "/" },
@@ -33,7 +33,7 @@ export const offices = [
   },
 ];
 
-export const contactEmail = "hi@happyielts.vn";
+export const contactEmail = "hi@hadiielts.vn";
 export const contactPhone = "1900 0000";
 
 export const footerCoursesNav: NavLink[] = [

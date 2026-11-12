@@ -17,7 +17,7 @@ export default function AboutTeaser() {
           <h2>Môi trường học tập năng động — chuẩn quốc tế</h2>
           <p>{siteAbout}</p>
           <Button to="/ve-chung-toi" variant="outline">
-            Tìm hiểu về Happy IELTS →
+            Tìm hiểu về Hadi IELTS →
           </Button>
         </div>
       </div>

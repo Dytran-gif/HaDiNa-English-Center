@@ -9,7 +9,7 @@ export const teachers: Teacher[] = [
     initials: "HH",
     rating_avg: 4.9,
     credentials: ["FHNW University", "IELTS 8.5", "8 năm giảng dạy"],
-    bio: "Tốt nghiệp thạc sĩ tại FHNW University, Thụy Sĩ. Người xây dựng mô hình học University Lecture của Happy IELTS, chuyên luyện Writing và Speaking cho học viên target band 7.0+.",
+    bio: "Tốt nghiệp thạc sĩ tại FHNW University, Thụy Sĩ. Người xây dựng mô hình học University Lecture của Hadi IELTS, chuyên luyện Writing và Speaking cho học viên target band 7.0+.",
   },
   {
     teacher_id: 2,
@@ -32,7 +32,7 @@ export const teachers: Teacher[] = [
     initials: "VN",
     rating_avg: 4.9,
     credentials: ["Đại học Việt Đức", "SAT 1500"],
-    bio: "Cử nhân Đại học Việt Đức, đạt SAT 1500. Phụ trách lộ trình luyện thi SAT tại Happy IELTS với phương pháp bám sát tiêu chí chấm điểm thực tế.",
+    bio: "Cử nhân Đại học Việt Đức, đạt SAT 1500. Phụ trách lộ trình luyện thi SAT tại Hadi IELTS với phương pháp bám sát tiêu chí chấm điểm thực tế.",
   },
   {
     teacher_id: 4,

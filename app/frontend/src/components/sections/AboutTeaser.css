@@ -1,5 +1,6 @@
 .about-teaser {
-  padding-block: var(--section-y);
+  padding-top: 50px;
+  padding-bottom: 50px;
   background: var(--blue-dark);
   color: #fff;
 }
