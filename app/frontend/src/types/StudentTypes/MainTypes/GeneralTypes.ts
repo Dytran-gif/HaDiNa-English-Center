@@ -125,6 +125,7 @@ export interface AssignmentFile {
     id: number;
     teacherId: number;
     studentId?: number;
+    courseId?: number;
     title: string;
     description?: string;
     fileName: string;

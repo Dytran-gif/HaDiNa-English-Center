@@ -43,22 +43,14 @@ public class AssignmentsController : ControllerBase
         var studentId = await CurrentStudentId();
         if (studentId == null) return Unauthorized(new { message = "Token không hợp lệ" });
 
-        var teacherIds = await _db.Classes.AsNoTracking()
-            .Where(c => c.CourseId == courseId)
-            .Select(c => c.TeacherId)
-            .Distinct()
-            .ToListAsync();
-
-        if (teacherIds.Count == 0)
-            return Ok(new object[] { });
-
+        // Lọc theo CourseId để bài tập/bài nộp của khóa này không lẫn sang khóa khác
         var assignments = await _db.AssignmentFiles
-            .Where(f => f.FileType == "Teacher" && teacherIds.Contains(f.TeacherId))
+            .Where(f => f.FileType == "Teacher" && f.CourseId == courseId)
             .OrderByDescending(f => f.CreatedAt)
             .ToListAsync();
 
         var mySubs = await _db.AssignmentFiles
-            .Where(f => f.FileType == "Student" && f.StudentId == studentId && teacherIds.Contains(f.TeacherId))
+            .Where(f => f.FileType == "Student" && f.StudentId == studentId && f.CourseId == courseId)
             .ToListAsync();
 
         var items = assignments.Select(a => new StudentAssignmentDto
@@ -70,7 +62,7 @@ public class AssignmentsController : ControllerBase
             HasFile = !string.IsNullOrEmpty(a.FilePath),
             CreatedAt = a.CreatedAt,
             MySubmission = mySubs
-                .Where(s => s.TeacherId == a.TeacherId && s.Title == a.Title)
+                .Where(s => s.Title == a.Title)
                 .OrderByDescending(s => s.CreatedAt)
                 .Select(s => new StudentSubmissionInfoDto
                 {
@@ -97,9 +89,9 @@ public class AssignmentsController : ControllerBase
             return NotFound(new { message = "Không tìm thấy file bài tập" });
 
         var enrolled = await _db.Enrollments.AsNoTracking()
-            .AnyAsync(e => e.StudentId == studentId && e.Class.TeacherId == a.TeacherId);
+            .AnyAsync(e => e.StudentId == studentId && e.Class.CourseId == a.CourseId);
         if (!enrolled)
-            return StatusCode(403, new { message = "Bạn không thuộc lớp của giáo viên này" });
+            return StatusCode(403, new { message = "Bạn không thuộc khóa học này" });
 
         var full = AssignmentFileStorage.Resolve(_env, a.FilePath);
         if (full == null || !System.IO.File.Exists(full))
@@ -122,9 +114,9 @@ public class AssignmentsController : ControllerBase
             return NotFound(new { message = "Không tìm thấy bài tập" });
 
         var enrolled = await _db.Enrollments.AsNoTracking()
-            .AnyAsync(e => e.StudentId == studentId && e.Class.TeacherId == a.TeacherId);
+            .AnyAsync(e => e.StudentId == studentId && e.Class.CourseId == a.CourseId);
         if (!enrolled)
-            return StatusCode(403, new { message = "Bạn không thuộc lớp của giáo viên này" });
+            return StatusCode(403, new { message = "Bạn không thuộc khóa học này" });
 
         if (file == null || file.Length == 0)
             return BadRequest(new { message = "Chưa chọn file" });
@@ -136,7 +128,7 @@ public class AssignmentsController : ControllerBase
         var (fileName, filePath) = await AssignmentFileStorage.SaveAsync(_env, file, "StudentSubmissions");
 
         await _db.Database.ExecuteSqlInterpolatedAsync(
-            $"INSERT INTO Assignments (TeacherId, StudentId, Title, Description, FileName, FilePath, FileType, CreatedAt) VALUES ({a.TeacherId}, {studentId}, {a.Title}, {null}, {fileName}, {filePath}, {"Student"}, {AppTime.Now})");
+            $"INSERT INTO Assignments (TeacherId, StudentId, CourseId, Title, Description, FileName, FilePath, FileType, CreatedAt) VALUES ({a.TeacherId}, {studentId}, {a.CourseId}, {a.Title}, {null}, {fileName}, {filePath}, {"Student"}, {AppTime.Now})");
 
         return StatusCode(201, new { message = "Nộp bài thành công" });
     }
@@ -155,7 +147,7 @@ public class AssignmentsController : ControllerBase
 
         var sub = await _db.AssignmentFiles
             .Where(s => s.FileType == "Student" && s.StudentId == studentId
-                && s.TeacherId == a.TeacherId && s.Title == a.Title)
+                && s.CourseId == a.CourseId && s.Title == a.Title)
             .OrderByDescending(s => s.CreatedAt)
             .FirstOrDefaultAsync();
 
