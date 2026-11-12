@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { ApiError, request } from "../apiClient";
+import { ApiError, request, downloadFile } from "../apiClient";
 import type { Course } from "../../types/StudentTypes/MainTypes";
 
 export interface StudentDashboardResponse {
@@ -33,6 +33,7 @@ export interface StudentDashboardResponse {
     tuition: number;
     discountPercent: number;
     imageUrl?: string;
+    teacherName?: string;
   }>;
   notifications: Array<{
     id: string;
@@ -71,6 +72,16 @@ export function useStudentApi() {
       if (!token) throw new ApiError(401, "Chưa đăng nhập.");
       try {
         return await request<T>(`/api/student/${path}`, token, { method: "POST", body: form });
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 401) logout();
+        throw error;
+      }
+    },
+    // Tải file (kèm Authorization) rồi lưu về máy với tên gốc
+    async download(path: string, fileName?: string) {
+      if (!token) throw new ApiError(401, "Chưa đăng nhập.");
+      try {
+        return await downloadFile(`/api/student/${path}`, token, fileName);
       } catch (error) {
         if (error instanceof ApiError && error.status === 401) logout();
         throw error;
@@ -434,10 +445,10 @@ export interface StudentFeedbackItem {
   id: number;
   content: string;
   createdAt: string;
-  studentName: string;
+  teacherName: string;
 }
 
-// GET api/student/feedback?classId= - phản hồi của lớp (classId null thì không gọi)
+// GET api/student/feedback?classId= - nhận xét giáo viên viết cho chính mình (classId null thì không gọi)
 export function useStudentFeedbackList(classId: number | null) {
   const api = useStudentApi();
   const { token } = useAuth();
@@ -475,6 +486,112 @@ export function useStudentFeedbackList(classId: number | null) {
   return { data, error, loading, reload: () => setReloadKey(k => k + 1) };
 }
 
+export interface StudentAssignmentItem {
+  id: number;
+  title: string;
+  description?: string;
+  fileName: string;
+  hasFile: boolean;
+  createdAt: string;
+  mySubmission?: { id: number; fileName: string; submittedAt: string } | null;
+}
+
+// GET api/student/assignments?courseId= - bài tập GV giao cho khóa + bài nộp của mình
+export function useStudentAssignments(courseId: string | undefined) {
+  const api = useStudentApi();
+  const { token } = useAuth();
+  const [data, setData] = useState<StudentAssignmentItem[]>([]);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    if (!token || !courseId) {
+      setData([]);
+      setLoading(false);
+      return;
+    }
+    const controller = new AbortController();
+    setLoading(true);
+    setError("");
+
+    api.get<StudentAssignmentItem[]>(`assignments?courseId=${courseId}`, controller.signal)
+      .then((res) => {
+        if (!controller.signal.aborted) setData(res);
+      })
+      .catch((err) => {
+        if (!controller.signal.aborted) {
+          setError(err instanceof Error ? err.message : "Không tải được danh sách bài tập.");
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [api, token, courseId, reloadKey]);
+
+  return { data, error, loading, reload: () => setReloadKey(k => k + 1) };
+}
+
+export interface StudentCourseDetail {
+  id: string;
+  name: string;
+  description?: string;
+  bandFrom: string;
+  bandTo: string;
+  totalSessions: number;
+  sessionsPerWeek: number;
+  tuition: number;
+  discountPercent: number;
+  teachers: { fullName: string; specialty?: string; degree?: string }[];
+  classes: {
+    id: number;
+    name: string;
+    startDate: string;
+    endDate: string;
+    maxStudents: number;
+    teacherName: string;
+    schedules: { dayOfWeek: string; startTime: string; endTime: string; roomName?: string }[];
+  }[];
+}
+
+// GET api/student/courses/{courseId}/detail - chi tiết khóa (popup Present Lessons)
+export function useStudentCourseDetail(courseId: string | undefined) {
+  const api = useStudentApi();
+  const { token } = useAuth();
+  const [data, setData] = useState<StudentCourseDetail>();
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!token || !courseId) {
+      setLoading(false);
+      return;
+    }
+    const controller = new AbortController();
+    setLoading(true);
+    setError("");
+
+    api.get<StudentCourseDetail>(`courses/${courseId}/detail`, controller.signal)
+      .then((res) => {
+        if (!controller.signal.aborted) setData(res);
+      })
+      .catch((err) => {
+        if (!controller.signal.aborted) {
+          setError(err instanceof Error ? err.message : "Không tải được chi tiết khóa học.");
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [api, token, courseId]);
+
+  return { data, error, loading };
+}
+
 export interface StudentProfile {
   code: string;
   fullName: string;
@@ -486,6 +603,7 @@ export interface StudentProfile {
   address?: string;
   parentName?: string;
   parentPhone?: string;
+  status?: string;
   targetBand?: number;
 }
 
@@ -496,6 +614,7 @@ export function useStudentProfile() {
   const [data, setData] = useState<StudentProfile>();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     if (!token) {
@@ -520,7 +639,7 @@ export function useStudentProfile() {
       });
 
     return () => controller.abort();
-  }, [api, token]);
+  }, [api, token, reloadKey]);
 
-  return { data, error, loading };
+  return { data, error, loading, reload: () => setReloadKey(k => k + 1) };
 }

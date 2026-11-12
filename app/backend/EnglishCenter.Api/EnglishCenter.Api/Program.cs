@@ -20,6 +20,9 @@ builder.Services.AddScoped<StatsService>();
 builder.Services.AddScoped<SubmissionService>();
 builder.Services.AddScoped<GradebookService>();
 
+// Dọn file bài tập/bài nộp quá 7 ngày (module Student)
+builder.Services.AddHostedService<AssignmentFileCleanupService>();
+
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(opt =>

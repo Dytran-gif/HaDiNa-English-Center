@@ -1,8 +1,6 @@
 using System.Security.Claims;
 using EnglishCenter.Api.Data;
 using EnglishCenter.Api.Dtos.StudentPortal;
-using EnglishCenter.Api.Entities;
-using EnglishCenter.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,9 +9,9 @@ using Microsoft.EntityFrameworkCore;
 // đã trùng với entity Student, đặt tên Student sẽ phá các controller khác.
 namespace EnglishCenter.Api.Controllers.StudentPortal;
 
-// Phản hồi của học viên về giáo viên/lớp (trang Feedback).
-// Chỉ lớp học viên đang học (Enrollment); StudentId/TeacherId luôn lấy từ token + quan hệ DB,
-// không tin id gửi từ client.
+// Nhận xét giáo viên viết cho học viên (trang Feedback).
+// Học viên chỉ XEM nhận xét của chính mình, không được gửi/sửa/xóa.
+// StudentId lấy từ token; classId phải là lớp học viên đang học -> không tin id từ client.
 [ApiController]
 [Authorize(Roles = "student")]
 [Route("api/student/feedback")]
@@ -26,7 +24,7 @@ public class FeedbackController : ControllerBase
         _db = db;
     }
 
-    // GET api/student/feedback/classes - các lớp đang học để chọn gửi phản hồi
+    // GET api/student/feedback/classes - các lớp đang học để chọn xem nhận xét
     [HttpGet("classes")]
     public async Task<IActionResult> GetClasses()
     {
@@ -80,7 +78,8 @@ public class FeedbackController : ControllerBase
         return Ok(items);
     }
 
-    // GET api/student/feedback?classId= - phản hồi của lớp (chỉ lớp học viên có ghi danh)
+    // GET api/student/feedback?classId= - nhận xét giáo viên viết cho CHÍNH học viên đang đăng nhập,
+    // trong lớp classId. 403 nếu học viên không có ghi danh lớp này.
     [HttpGet]
     public async Task<IActionResult> GetList(int classId)
     {
@@ -100,10 +99,11 @@ public class FeedbackController : ControllerBase
         if (!enrolled)
             return StatusCode(403, new { message = "Bạn không thuộc lớp này" });
 
+        // Chỉ lấy nhận xét của chính học viên (StudentId = bản thân), không bao giờ trả nhận xét của người khác.
         var rows = await _db.StudentFeedbacks.AsNoTracking()
-            .Where(f => f.ClassId == classId)
+            .Where(f => f.StudentId == studentId && f.ClassId == classId)
             .OrderByDescending(f => f.CreatedAt)
-            .Select(f => new { f.Id, f.Content, f.CreatedAt, StudentName = f.Student.FullName })
+            .Select(f => new { f.Id, f.Content, f.CreatedAt, TeacherName = f.Teacher.FullName })
             .ToListAsync();
 
         var items = rows.Select(f => new StudentFeedbackItemDto
@@ -111,57 +111,9 @@ public class FeedbackController : ControllerBase
             Id = f.Id,
             Content = f.Content,
             CreatedAt = f.CreatedAt,
-            StudentName = f.StudentName
+            TeacherName = f.TeacherName
         }).ToList();
 
         return Ok(items);
-    }
-
-    // POST api/student/feedback - gửi phản hồi { classId, content }
-    [HttpPost]
-    public async Task<IActionResult> Create(FeedbackCreateRequest req)
-    {
-        if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
-            return Unauthorized(new { message = "Token không hợp lệ" });
-
-        var student = await _db.Students.AsNoTracking()
-            .Where(s => s.UserId == userId)
-            .Select(s => new { s.Id, s.FullName })
-            .FirstOrDefaultAsync();
-
-        if (student == null)
-            return StatusCode(403, new { message = "Tài khoản chưa có hồ sơ học viên" });
-
-        var content = (req.Content ?? "").Trim();
-        if (content.Length == 0)
-            return BadRequest(new { message = "Nội dung phản hồi không được để trống" });
-        if (content.Length > 1000)
-            return BadRequest(new { message = "Nội dung phản hồi tối đa 1000 ký tự" });
-
-        // Lớp phải tồn tại và học viên đang học (Active)
-        var cls = await _db.Classes.AsNoTracking()
-            .Where(c => c.Id == req.ClassId)
-            .Select(c => new { c.Id, c.TeacherId })
-            .FirstOrDefaultAsync();
-        if (cls == null)
-            return NotFound(new { message = "Không tìm thấy lớp học" });
-
-        var enrolled = await _db.Enrollments.AsNoTracking()
-            .AnyAsync(e => e.StudentId == student.Id && e.ClassId == req.ClassId && e.Status == "Active");
-        if (!enrolled)
-            return StatusCode(403, new { message = "Bạn không thuộc lớp này" });
-
-        var feedback = new StudentFeedback
-        {
-            StudentId = student.Id,
-            ClassId = cls.Id,
-            TeacherId = cls.TeacherId, // giáo viên lấy từ lớp, không tin id từ client
-            Content = content,
-            CreatedAt = AppTime.Now
-        };
-        _db.StudentFeedbacks.Add(feedback);
-        await _db.SaveChangesAsync();
-
-        return StatusCode(201, new { feedback.Id, message = "Gửi phản hồi thành công" });
     }
 }

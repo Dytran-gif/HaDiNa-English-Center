@@ -39,7 +39,7 @@ export const reviews: Review[] = [
     rating: 5,
     created_at: "2025-12-18",
     comment:
-      "Em xin gửi lời cảm ơn chân thành đến trung tâm tiếng Anh Happy IELTS cùng hai thầy Huy và Minh vì đã đồng hành và hỗ trợ em hết mình trong suốt quá trình ôn luyện IELTS. Nhờ sự tận tâm, chuyên môn vững vàng và phương pháp giảng dạy hiệu quả của thầy cô, em đã đạt được IELTS 8.0 — một kết quả đúng với kỳ vọng ban đầu.",
+      "Em xin gửi lời cảm ơn chân thành đến trung tâm tiếng Anh Hadi IELTS cùng hai thầy Huy và Minh vì đã đồng hành và hỗ trợ em hết mình trong suốt quá trình ôn luyện IELTS. Nhờ sự tận tâm, chuyên môn vững vàng và phương pháp giảng dạy hiệu quả của thầy cô, em đã đạt được IELTS 8.0 — một kết quả đúng với kỳ vọng ban đầu.",
   },
   {
     review_id: 5,

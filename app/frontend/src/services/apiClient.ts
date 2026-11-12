@@ -43,3 +43,28 @@ export async function request<T>(path: string, token?: string | null, init: Requ
   if (body === null) throw new ApiError(0, "Máy chủ chưa trả dữ liệu hợp lệ. Kiểm tra địa chỉ API.");
   return body as T;
 }
+
+// Tải file qua endpoint (kèm Authorization header) rồi lưu về máy bằng tên gốc.
+export async function downloadFile(path: string, token: string | null, fileName?: string): Promise<void> {
+  let response: Response;
+  try {
+    response = await fetch(baseUrl + path, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+  } catch {
+    throw new ApiError(0, "Không kết nối được máy chủ. Kiểm tra BE và kết nối mạng rồi thử lại.");
+  }
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new ApiError(response.status, body?.message || "Không thể tải file.");
+  }
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName || "download";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}

@@ -19,8 +19,8 @@ Dữ liệu dùng chung với Teacher (bảng nào bên nào ghi): xem mục cu�
 
 | Method | URL | Mô tả |
 |---|---|---|
-| GET | `/api/student/profile` ✅ | `{ code, fullName, email, role, avatarUrl, phone, dateOfBirth, address, parentName, parentPhone, targetBand }` của học viên đang đăng nhập |
-| PUT | `/api/student/profile` | `{ phone, address, parentName, parentPhone }` (họ tên, email, mã do Admin quản lý) |
+| GET | `/api/student/profile` ✅ | `{ code, fullName, email, role, avatarUrl, phone, dateOfBirth, address, parentName, parentPhone, status, targetBand }` của học viên đang đăng nhập |
+| PUT | `/api/student/profile` ✅ | `{ dateOfBirth, phone, address, parentPhone }` — học viên tự cập nhật thông tin được phép (họ tên, email, mã, trạng thái do Admin quản lý). Trả `{ message }` |
 | POST | `/api/student/profile/avatar` ✅ | multipart `file` (jpg/jpeg/png/webp ≤ 5 MB). Ảnh lưu vào `wwwroot/uploads/avatars/`, đường dẫn `/uploads/avatars/{ten}` ghi vào `Users.AvatarUrl`; **file avatar cũ bị xóa khỏi đĩa** (chỉ xóa khi đường dẫn cũ bắt đầu bằng `/uploads/avatars/` nên ảnh của tài khoản khác hay link ngoài không bị đụng). Trả `{ avatarUrl, message }`; `400` khi sai định dạng/quá cỡ/chưa chọn file |
 | POST | `/api/student/profile/change-password` ✅ | `{ currentPassword, newPassword, confirmPassword }`. `400` sai mật khẩu cũ / mật khẩu mới < 8 ký tự / trùng mật khẩu cũ. Thành công: `TokenVersion++` (token cũ mất hiệu lực) và trả `{ message, token }` mới — FE dùng `replaceToken` giữ phiên |
 | POST | `/api/student/profile/logout` | Tăng `TokenVersion` |
@@ -69,6 +69,23 @@ Lỗi: 403 buổi không thuộc lớp mình · 409 buổi đã diễn ra / khun
 
 Quiz `answers`: `{ "12": "B", "13": "photosynthesis" }` (key = id câu hỏi).
 
+## 4b. File bài tập + nộp bài (popup Present Lessons) ✅
+
+> Bảng dùng chung: `Assignments` (học viên đã tạo sẵn trong DB, CHECK `FileType IN ('Student','Teacher')`).
+> `FileType='Teacher'` = file GV giao (StudentId NULL); `FileType='Student'` = bài nộp của HV.
+> `CourseId` phân biệt khóa; `AssignmentId` (bài nộp) = Id bài tập gốc → khớp đúng bài, không lẫn khi trùng tiêu đề.
+> File vật lý lưu ở `wwwroot/uploads/AssignmentUploads/`; tự xóa sau 7 ngày bằng `AssignmentFileCleanupService`.
+
+| Method | URL | Mô tả |
+|---|---|---|
+| GET | `/api/student/courses/{courseId}/detail` ✅ | Chi tiết khóa cho popup: `{ id, name, description, bandFrom/To, totalSessions, sessionsPerWeek, tuition, discountPercent, teachers[{fullName, specialty, degree}], classes[{id, name, startDate, endDate, maxStudents, teacherName, schedules[{dayOfWeek, startTime, endTime, roomName}]}] }` |
+| GET | `/api/student/assignments?courseId=` ✅ | Bài tập GV giao **đúng khóa** (`CourseId = courseId`): `[{ id, title, description, fileName, hasFile, createdAt, mySubmission }]`. `mySubmission` = bài nộp mới nhất của chính mình trong khóa đó (null nếu chưa nộp) |
+| GET | `/api/student/assignments/{id}/download` ✅ | Tải file GV giao (tên gốc). `403` nếu không thuộc khóa học này |
+| POST | `/api/student/assignments/{id}/submit` ✅ | Nộp bài (multipart `file`: pdf/doc/docx ≤ 15MB). `StudentId` từ token, không tin client; `CourseId` copy từ bài tập. Lưu vào `AssignmentUploads/StudentSubmissions/` |
+| GET | `/api/student/assignments/{id}/my-submission/download` ✅ | Tải bài nộp mới nhất của chính mình |
+
+> Phía giáo viên (xem/tải bài nộp) do người làm module Teacher tự viết — dữ liệu nằm trong bảng `Assignments` (cột `FileType='Teacher'` = bài GV giao, `'Student'` = bài nộp của HV, `CourseId` = khóa, `StudentId` khác NULL).
+
 ## 5. Kết quả học tập ⬜ (plan 13)
 
 | Method | URL | Mô tả |
@@ -80,15 +97,14 @@ Quiz `answers`: `{ "12": "B", "13": "photosynthesis" }` (key = id câu hỏi).
 | GET | `/api/student/final-report?classId=` | Phiếu cuối khóa (JSON). `/print` trả HTML để in |
 | POST | `/api/student/teacher-ratings` | `{ classId, score: 1-5, comment }`. 409 nếu đã đánh giá lớp này |
 
-## 5b. Phản hồi về giáo viên/lớp ✅ (trang Feedback)
+## 5b. Nhận xét của giáo viên ✅ (trang Feedback)
 
 | Method | URL | Mô tả |
 |---|---|---|
-| GET | `/api/student/feedback/classes` ✅ | Các lớp đang học (Active) của học viên: `{ classId, className, courseId, courseName, description, bandFrom/To, totalSessions, sessionsPerWeek, tuition, teacherId, teacherName }` |
-| GET | `/api/student/feedback?classId=` ✅ | Phản hồi của lớp (mới nhất trước): `[{ id, content, createdAt, studentName }]`. `403` nếu học viên không có ghi danh lớp này |
-| POST | `/api/student/feedback` ✅ | Body `{ classId, content }`. Lưu vào bảng **StudentFeedbacks** (StudentId từ token, TeacherId từ lớp). `400` content rỗng/quá 1000 ký tự; `403` không đang học lớp này. Trả `201 { id, message }` |
+| GET | `/api/student/feedback/classes` ✅ | Các lớp đang học (Active) của học viên để chọn xem nhận xét: `{ classId, className, courseId, courseName, description, bandFrom/To, totalSessions, sessionsPerWeek, tuition, teacherId, teacherName }` |
+| GET | `/api/student/feedback?classId=` ✅ | Nhận xét giáo viên viết cho **chính học viên đang đăng nhập** trong lớp `classId` (mới nhất trước): `[{ id, content, createdAt, teacherName }]`. `403` nếu học viên không có ghi danh lớp này. Chỉ lọc theo `StudentId` từ token — không bao giờ trả nhận xét của học viên khác |
 
-> Bảng `StudentFeedbacks` tạo bằng script `docs/admin/sql/2026-11-04-student-feedback-table.sql` (DB local đang drift schema, chưa dùng được `dotnet ef migrations add` — nó sẽ kéo theo toàn bộ bảng TeacherFeatures của plan 00). Khi nhóm tạo migration `TeacherFeatures`, nhớ gộp bảng này vào cùng migration.
+> Bảng `StudentFeedbacks` tạo bằng script `docs/admin/sql/2026-11-04-student-feedback-table.sql` (DB local đang drift schema, chưa dùng được `dotnet ef migrations add` — nó sẽ kéo theo toàn bộ bảng TeacherFeatures của plan 00). Khi nhóm tạo migration `TeacherFeatures`, nhớ gộp bảng này vào cùng migration. Cấu trúc bảng gồm `Id, StudentId (học viên nhận nhận xét), TeacherId (giáo viên viết), ClassId, Content, CreatedAt` — không cần thay đổi schema cho logic mới.
 
 ## 6. Học phí ✅ (plan 14) — trang Tuition
 

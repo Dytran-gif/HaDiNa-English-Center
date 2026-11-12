@@ -162,8 +162,8 @@
 
 .decorative-text {
     position: absolute;
-    top: 18px;
-    left: 50px;
+    top: 30px;
+    left: 20px;
     color: #2563eb;
     font-size: 16px;
     font-weight: 700;
@@ -173,11 +173,11 @@
 
 .illustration-image {
     position: absolute;
-    bottom: -30px;
-    right: -20px;
+    bottom: -45px;
+    right: -35px;
     height: 83.333%;
     object-fit: contain;
-    width: 80%;
+    width: 100%;
 }
 .arrow-image {
     position: absolute;

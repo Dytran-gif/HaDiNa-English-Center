@@ -19,6 +19,7 @@ public partial class AppDbContext : DbContext
     public DbSet<Post> Posts => Set<Post>();
     public DbSet<HomepageImage> HomepageImages => Set<HomepageImage>();
     public DbSet<CenterSetting> CenterSettings => Set<CenterSetting>();
+    public DbSet<AssignmentFile> AssignmentFiles => Set<AssignmentFile>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -227,5 +228,14 @@ public partial class AppDbContext : DbContext
 
         // ---------- Các bảng cho chức năng Student (xem AppDbContext.Student.cs) ----------
         ConfigureStudentFeatures(b);
+
+        // ---------- AssignmentFiles (bảng "Assignments" do học viên tự tạo trong DB) ----------
+        // Entity Teacher.Assignment đã chiếm tên bảng "Assignments" trong EF (khác cấu trúc),
+        // nên map entity này dạng view (chỉ đọc). Ghi dữ liệu dùng SQL thô trong controller/service.
+        b.Entity<AssignmentFile>(e =>
+        {
+            e.HasNoKey();
+            e.ToView("Assignments");
+        });
     }
 }

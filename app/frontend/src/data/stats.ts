@@ -31,7 +31,7 @@ export const whyDifferentItems: WhyDifferentItem[] = [
     title: "Khoá học trực tuyến bổ trợ chất lượng cao",
     bullets: [
       "Tất cả khoá học đều đi kèm Online Courses bổ trợ miễn phí 100%",
-      "Video bài giảng học thuật biên soạn bởi đội ngũ chuyên gia Happy IELTS",
+      "Video bài giảng học thuật biên soạn bởi đội ngũ chuyên gia Hadi IELTS",
       "Bổ trợ kiến thức, giúp học viên rèn luyện mọi lúc mọi nơi",
     ],
   },

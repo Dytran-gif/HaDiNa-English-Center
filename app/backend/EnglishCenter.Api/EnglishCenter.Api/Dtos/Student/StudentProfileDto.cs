@@ -15,7 +15,17 @@ public class StudentProfileResponse
     public string? Address { get; set; }
     public string? ParentName { get; set; }
     public string? ParentPhone { get; set; }
+    public string Status { get; set; } = "Studying";
     public decimal? TargetBand { get; set; }
+}
+
+// PUT api/student/profile - học viên tự cập nhật các thông tin được phép (họ tên/email/mã/trạng thái do Admin quản lý)
+public class StudentUpdateProfileRequest
+{
+    public DateOnly? DateOfBirth { get; set; }
+    public string Phone { get; set; } = "";
+    public string? Address { get; set; }
+    public string? ParentPhone { get; set; }
 }
 
 public class StudentChangePasswordRequest

@@ -71,6 +71,92 @@ public class CoursesController : ControllerBase
         return Ok(courses);
     }
 
+    private static string DayName(byte d) => d switch
+    {
+        1 => "Mon", 2 => "Tue", 3 => "Wed", 4 => "Thu", 5 => "Fri", 6 => "Sat", 7 => "Sun",
+        _ => ""
+    };
+
+    // GET api/student/courses/{courseId}/detail - chi tiết khóa cho popup Present Lessons:
+    // thông tin khóa + danh sách giáo viên + các lớp (kèm lịch học, phòng).
+    [HttpGet("{courseId}/detail")]
+    public async Task<IActionResult> GetDetail(int courseId)
+    {
+        var course = await _db.Courses.AsNoTracking()
+            .Where(c => c.Id == courseId)
+            .Select(c => new
+            {
+                c.Id, c.Name, c.Description, c.BandFrom, c.BandTo,
+                c.TotalSessions, c.SessionsPerWeek, c.Tuition, c.DiscountPercent
+            })
+            .FirstOrDefaultAsync();
+
+        if (course == null)
+            return NotFound(new { message = "Không tìm thấy khóa học" });
+
+        // Giáo viên dạy khóa (bỏ trùng, kèm chuyên môn + bằng cấp)
+        var teachers = await _db.Classes.AsNoTracking()
+            .Where(c => c.CourseId == courseId)
+            .Select(c => new { c.Teacher.FullName, c.Teacher.Specialty, c.Teacher.Degree })
+            .Distinct()
+            .ToListAsync();
+
+        // Các lớp của khóa
+        var classes = await _db.Classes.AsNoTracking()
+            .Where(c => c.CourseId == courseId)
+            .OrderBy(c => c.StartDate)
+            .Select(c => new
+            {
+                c.Id, c.Name, c.StartDate, c.EndDate, c.MaxStudents,
+                TeacherName = c.Teacher.FullName
+            })
+            .ToListAsync();
+
+        // Lịch học + phòng của các lớp
+        var classIds = classes.Select(c => c.Id).ToList();
+        var schedules = await _db.ClassSchedules.AsNoTracking()
+            .Where(s => classIds.Contains(s.ClassId))
+            .OrderBy(s => s.DayOfWeek).ThenBy(s => s.StartTime)
+            .Select(s => new { s.ClassId, s.DayOfWeek, s.StartTime, s.EndTime, RoomName = s.Room.Name })
+            .ToListAsync();
+
+        return Ok(new StudentCourseDetailDto
+        {
+            Id = course.Id.ToString(),
+            Name = course.Name,
+            Description = course.Description,
+            BandFrom = course.BandFrom.ToString("0.#"),
+            BandTo = course.BandTo.ToString("0.#"),
+            TotalSessions = course.TotalSessions,
+            SessionsPerWeek = course.SessionsPerWeek,
+            Tuition = course.Tuition,
+            DiscountPercent = course.DiscountPercent,
+            Teachers = teachers.Select(t => new StudentCourseTeacherDto
+            {
+                FullName = t.FullName,
+                Specialty = t.Specialty,
+                Degree = t.Degree
+            }).ToList(),
+            Classes = classes.Select(c => new StudentCourseClassDto
+            {
+                Id = c.Id,
+                Name = c.Name,
+                StartDate = c.StartDate,
+                EndDate = c.EndDate,
+                MaxStudents = c.MaxStudents,
+                TeacherName = c.TeacherName,
+                Schedules = schedules.Where(s => s.ClassId == c.Id)
+                    .Select(s => new StudentCourseScheduleDto
+                    {
+                        DayOfWeek = DayName(s.DayOfWeek),
+                        StartTime = s.StartTime.ToString("HH:mm"),
+                        EndTime = s.EndTime.ToString("HH:mm"),
+                        RoomName = s.RoomName
+                    }).ToList()
+            }).ToList()
+        });
+    }
+
     // POST api/student/courses/{courseId}/register
     // Đăng ký giả lập: chọn khóa -> tạo Enrollment (Active) vào lớp đầu tiên của khóa.
     // Không cho đăng ký trùng một khóa (đã có enrollment bất kỳ cho khóa đó thì trả 409).

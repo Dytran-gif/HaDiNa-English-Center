@@ -2,6 +2,7 @@ import { useRef, useState, useMemo, type MouseEvent } from 'react';
 import { mockCourses, mockEnrollments, mockClasses } from "../../../../data/StudentData/MainData";
 import type { Course, ClassItem, Enrollment } from "../../../../types/StudentTypes/MainTypes";
 import defaultCourseImage from "../../../../assets/images/next-lesson-mock.jpg";
+import CourseDetailModal from "./CourseDetailModal";
 import "./Course.css";
 
 interface CourseProps {
@@ -10,12 +11,15 @@ interface CourseProps {
 
 export default function CourseFE({ courses }: CourseProps) {
     const scrollRef = useRef<HTMLDivElement>(null);
+    const didDragRef = useRef(false);
     const [isDragging, setIsDragging] = useState(false);
     const [startX, setStartX] = useState(0);
     const [scrollLeft, setScrollLeft] = useState(0);
+    const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
     const handleMouseDown = (e: MouseEvent) => {
         if (!scrollRef.current) return;
+        didDragRef.current = false;
         setIsDragging(true);
         setStartX(e.pageX - scrollRef.current.offsetLeft);
         setScrollLeft(scrollRef.current.scrollLeft);
@@ -30,7 +34,16 @@ export default function CourseFE({ courses }: CourseProps) {
         e.preventDefault();
         const x = e.pageX - scrollRef.current.offsetLeft;
         const walk = (x - startX) * 0.5;
+        if (Math.abs(walk) > 3) didDragRef.current = true;
         scrollRef.current.scrollLeft = scrollLeft - walk;
+    };
+
+    const handleCardClick = (course: Course) => {
+        if (didDragRef.current) {
+            didDragRef.current = false;
+            return;
+        }
+        setSelectedCourse(course);
     };
 
     // ID học viên đang đăng nhập (khớp với dữ liệu mẫu hệ thống)
@@ -83,8 +96,10 @@ export default function CourseFE({ courses }: CourseProps) {
                         key={course.id}
                         className="cf-course-card cf-scroll-item"
                         style={{
-                            backgroundImage: `url("${course.imageUrl || defaultCourseImage}")`
+                            backgroundImage: `url("${course.imageUrl || defaultCourseImage}")`,
+                            cursor: 'pointer'
                         }}
+                        onClick={() => handleCardClick(course)}
                     >
                         <div className="cf-course-content">
                             <h3 className="cf-course-title">
@@ -114,6 +129,10 @@ export default function CourseFE({ courses }: CourseProps) {
                     </div>
                 )}
             </div>
+
+            {selectedCourse && (
+                <CourseDetailModal course={selectedCourse} onClose={() => setSelectedCourse(null)} />
+            )}
         </section>
     );
 }

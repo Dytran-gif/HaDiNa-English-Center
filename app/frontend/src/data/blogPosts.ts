@@ -8,11 +8,11 @@ export const blogPosts: BlogPost[] = [
     category: "Tips luyện thi - du học",
     published_at: "2026-02-23",
     excerpt:
-      "Dành cho những bậc phụ huynh – học viên đang băn khoăn câu hỏi “Học IELTS tại Bình Thạnh ở đâu uy tín?”. Cùng Happy IELTS điểm ngay Top 10 trung tâm luyện thi IELTS…",
+      "Dành cho những bậc phụ huynh – học viên đang băn khoăn câu hỏi “Học IELTS tại Bình Thạnh ở đâu uy tín?”. Cùng Hadi IELTS điểm ngay Top 10 trung tâm luyện thi IELTS…",
     content: [
       "Dành cho những bậc phụ huynh – học viên đang băn khoăn câu hỏi “Học IELTS tại Bình Thạnh ở đâu uy tín?”, bài viết này tổng hợp các tiêu chí quan trọng cần cân nhắc trước khi chọn trung tâm: đội ngũ giáo viên, lộ trình cá nhân hoá, cam kết đầu ra và học phí minh bạch.",
       "Ngoài yếu tố vị trí, học viên nên ưu tiên các trung tâm có giáo trình được thiết kế riêng theo từng band điểm mục tiêu, thay vì áp dụng một giáo trình chung cho mọi trình độ.",
-      "Happy IELTS tự hào là một trong những lựa chọn được học viên khu vực Bình Thạnh và lân cận tin tưởng, với mô hình University Lecture độc quyền và cam kết chất lượng đầu ra rõ ràng.",
+      "Hadi IELTS tự hào là một trong những lựa chọn được học viên khu vực Bình Thạnh và lân cận tin tưởng, với mô hình University Lecture độc quyền và cam kết chất lượng đầu ra rõ ràng.",
     ],
   },
   {
@@ -22,11 +22,11 @@ export const blogPosts: BlogPost[] = [
     category: "Tips luyện thi - du học",
     published_at: "2026-03-03",
     excerpt:
-      "IELTS 6.5 có khó không? và làm được gì với band điểm như trên. Happy IELTS chia sẻ chi tiết về cách tính điểm cho band 6.5, cách học và những tài liệu…",
+      "IELTS 6.5 có khó không? và làm được gì với band điểm như trên. Hadi IELTS chia sẻ chi tiết về cách tính điểm cho band 6.5, cách học và những tài liệu…",
     content: [
       "IELTS 6.5 là mức điểm phổ biến được nhiều trường đại học quốc tế và chương trình du học yêu cầu. Để đạt được mốc này, học viên cần đạt đều cả 4 kỹ năng, không để kỹ năng nào dưới 6.0.",
       "Một kế hoạch luyện thi hiệu quả thường kéo dài 10-12 tuần, kết hợp học nền tảng ngữ pháp - từ vựng học thuật với luyện đề theo format thi thật mỗi tuần.",
-      "Happy IELTS thiết kế lộ trình 6.5+ riêng biệt, tập trung vào các lỗi thường gặp khiến học viên Việt Nam bị mất điểm oan ở Writing và Speaking.",
+      "Hadi IELTS thiết kế lộ trình 6.5+ riêng biệt, tập trung vào các lỗi thường gặp khiến học viên Việt Nam bị mất điểm oan ở Writing và Speaking.",
     ],
   },
   {
@@ -64,7 +64,7 @@ export const blogPosts: BlogPost[] = [
     category: "IELTS Writing",
     published_at: "2025-11-28",
     excerpt:
-      "Một bài Writing Task 2 đạt band 7.0+ cần nhiều hơn từ vựng hay — đó là khả năng lập luận mạch lạc. Đây là khung cấu trúc Happy IELTS áp dụng cho học viên.",
+      "Một bài Writing Task 2 đạt band 7.0+ cần nhiều hơn từ vựng hay — đó là khả năng lập luận mạch lạc. Đây là khung cấu trúc Hadi IELTS áp dụng cho học viên.",
     content: [
       "Một bài luận band 7.0+ cần thể hiện được lập luận rõ ràng, mỗi đoạn thân bài chỉ nên triển khai một ý chính duy nhất, tránh lan man.",
       "Khung University Lecture khuyến khích học viên đặt câu hỏi phản biện trước khi viết: quan điểm này đúng với ai, trong hoàn cảnh nào — giúp bài viết có chiều sâu hơn.",

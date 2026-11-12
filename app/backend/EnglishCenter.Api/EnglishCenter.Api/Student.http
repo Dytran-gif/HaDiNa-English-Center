@@ -63,28 +63,30 @@ GET http://localhost:5220/api/student/schedule/history
 Authorization: Bearer {{token}}
 
 
-### Lấy danh sách lớp đang học để gửi phản hồi (trang Feedback)
+### Lấy danh sách lớp đang học để xem nhận xét của giáo viên (trang Feedback)
 GET http://localhost:5220/api/student/feedback/classes
 Authorization: Bearer {{token}}
 
-### Lấy phản hồi của một lớp (chỉ lớp mình có ghi danh, 403 nếu không thuộc lớp)
+### Lấy nhận xét giáo viên viết cho CHÍNH mình ở một lớp (403 nếu không thuộc lớp)
 GET http://localhost:5220/api/student/feedback?classId=5
 Authorization: Bearer {{token}}
-
-### Gửi phản hồi về giáo viên/lớp -> lưu bảng StudentFeedbacks
-# 400 nếu content rỗng/quá 1000 ký tự; 403 nếu không đang học lớp này
-POST http://localhost:5220/api/student/feedback
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-{
-  "classId": 5,
-  "content": "Giáo viên giảng dạy rất nhiệt tình, dễ hiểu."
-}
 
 ### Lấy hồ sơ học viên đang đăng nhập (Header / Personal Info)
 GET http://localhost:5220/api/student/profile
 Authorization: Bearer {{token}}
+
+### Cập nhật hồ sơ (học viên tự sửa: dateOfBirth, phone, address, parentPhone)
+# họ tên/email/mã/status do Admin quản lý
+PUT http://localhost:5220/api/student/profile
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "dateOfBirth": "2005-01-15",
+  "phone": "0900000002",
+  "address": "12 Nguyễn Huệ, Q.1, TP.HCM",
+  "parentPhone": "0912345678"
+}
 
 ### Đổi mật khẩu -> TokenVersion tăng, trả token mới (dùng token mới cho các request sau)
 # 400 nếu sai mật khẩu hiện tại / mật khẩu mới < 8 ký tự / trùng mật khẩu cũ
@@ -110,3 +112,33 @@ Content-Type: image/jpeg
 
 < D:/Capstone/HaDiNa-English-Center/app/frontend/src/assets/images/next-lesson-mock.jpg
 ----HTTPBoundary--
+
+### Chi tiết khóa học (popup Present Lessons): thông tin khóa + GV + lớp + lịch học
+GET http://localhost:5220/api/student/courses/14/detail
+Authorization: Bearer {{token}}
+
+### Lấy danh sách bài tập GV giao cho khóa (kèm bài nộp của chính mình) — popup Present Lessons
+# Trả [] nếu khóa chưa có bài tập; mySubmission = bài nộp mới nhất của mình (null nếu chưa nộp)
+GET http://localhost:5220/api/student/assignments?courseId=14
+Authorization: Bearer {{token}}
+
+### Tải file bài tập của GV (403 nếu không thuộc lớp GV này; 404 nếu file không còn)
+GET http://localhost:5220/api/student/assignments/1/download
+Authorization: Bearer {{token}}
+
+### Nộp bài (multipart field "file": pdf/doc/docx, tối đa 15 MB)
+# File lưu vào wwwroot/uploads/AssignmentUploads/StudentSubmissions/
+POST http://localhost:5220/api/student/assignments/1/submit
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=--HTTPBoundary
+
+----HTTPBoundary
+Content-Disposition: form-data; name="file"; filename="bai-lam.pdf"
+Content-Type: application/pdf
+
+< D:/Capstone/HaDiNa-English-Center/app/frontend/src/assets/images/next-lesson-mock.jpg
+----HTTPBoundary--
+
+### Tải bài nộp mới nhất của chính mình cho bài tập này
+GET http://localhost:5220/api/student/assignments/1/my-submission/download
+Authorization: Bearer {{token}}

@@ -11,7 +11,7 @@ public partial class AppDbContext
 
     private static void ConfigureStudentFeatures(ModelBuilder b)
     {
-        // ---------- StudentFeedbacks (học viên phản hồi về giáo viên/lớp) ----------
+        // ---------- StudentFeedbacks (giáo viên nhận xét học viên ở một lớp) ----------
         b.Entity<StudentFeedback>(e =>
         {
             e.Property(x => x.Content).HasMaxLength(1000).IsRequired();

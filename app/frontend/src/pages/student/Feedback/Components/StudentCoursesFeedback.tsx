@@ -1,8 +1,7 @@
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
 import {
     useStudentFeedbackClasses,
     useStudentFeedbackList,
-    useStudentApi,
     type StudentFeedbackClass
 } from "../../../../services/student/useStudentApi";
 import './StudentCoursesFeedback.css';
@@ -12,24 +11,8 @@ const StudentCoursesFeedback = () => {
     const { data: enrolledClasses } = useStudentFeedbackClasses();
     const [selectedItem, setSelectedItem] = useState<StudentFeedbackClass | null>(null);
 
-    // 2. Phản hồi của lớp đang chọn + form
-    const { data: feedbacks, reload: reloadFeedbacks } = useStudentFeedbackList(selectedItem?.classId ?? null);
-    const [feedbackText, setFeedbackText] = useState("");
-    const api = useStudentApi();
-
-    const handleSendFeedback = async (e: FormEvent) => {
-        e.preventDefault();
-        if (!selectedItem || !feedbackText.trim()) return;
-
-        try {
-            await api.send("POST", "feedback", { classId: selectedItem.classId, content: feedbackText.trim() });
-            setFeedbackText("");
-            reloadFeedbacks();
-            alert("Gửi phản hồi thành công!");
-        } catch (err) {
-            alert(err instanceof Error ? err.message : "Gửi phản hồi thất bại.");
-        }
-    };
+    // 2. Nhận xét giáo viên viết cho chính mình ở lớp đang chọn
+    const { data: feedbacks } = useStudentFeedbackList(selectedItem?.classId ?? null);
 
     const formatCurrency = (amount: number) => {
         return amount.toLocaleString('vi-VN') + ' VNĐ';
@@ -102,9 +85,9 @@ const StudentCoursesFeedback = () => {
                                 </ul>
                             </div>
 
-                            {/* Cột feedback */}
+                            {/* Cột nhận xét của giáo viên */}
                             <div className="Feedback-modal-column">
-                                <h3>Student & Teacher Feedback</h3>
+                                <h3>Teacher Feedback</h3>
 
                                 <div className="Feedback-feedback-list">
                                     {feedbacks.length > 0 ? (
@@ -112,27 +95,14 @@ const StudentCoursesFeedback = () => {
                                             <div key={fb.id} className="Feedback-feedback-item">
                                                 <p>{fb.content}</p>
                                                 <span className="Feedback-feedback-time">
-                                                    {fb.studentName} · {fb.createdAt.slice(0, 10)}
+                                                    {fb.teacherName} · {fb.createdAt.slice(0, 10)}
                                                 </span>
                                             </div>
                                         ))
                                     ) : (
-                                        <p className="Feedback-no-feedback">Chưa có phản hồi nào cho khóa học này.</p>
+                                        <p className="Feedback-no-feedback">Không có nhận xét</p>
                                     )}
                                 </div>
-
-                                <form onSubmit={handleSendFeedback} className="Feedback-feedback-form">
-                                    <textarea
-                                        rows={3}
-                                        placeholder="Write your feedback or review..."
-                                        value={feedbackText}
-                                        onChange={(e) => setFeedbackText(e.target.value)}
-                                        className="Feedback-feedback-textarea"
-                                    />
-                                    <button type="submit" className="Feedback-btn-submit-feedback">
-                                        Submit Feedback
-                                    </button>
-                                </form>
                             </div>
                         </div>
                     </div>
