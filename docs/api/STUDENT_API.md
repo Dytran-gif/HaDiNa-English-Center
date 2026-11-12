@@ -80,15 +80,14 @@ Quiz `answers`: `{ "12": "B", "13": "photosynthesis" }` (key = id câu hỏi).
 | GET | `/api/student/final-report?classId=` | Phiếu cuối khóa (JSON). `/print` trả HTML để in |
 | POST | `/api/student/teacher-ratings` | `{ classId, score: 1-5, comment }`. 409 nếu đã đánh giá lớp này |
 
-## 5b. Phản hồi về giáo viên/lớp ✅ (trang Feedback)
+## 5b. Nhận xét của giáo viên ✅ (trang Feedback)
 
 | Method | URL | Mô tả |
 |---|---|---|
-| GET | `/api/student/feedback/classes` ✅ | Các lớp đang học (Active) của học viên: `{ classId, className, courseId, courseName, description, bandFrom/To, totalSessions, sessionsPerWeek, tuition, teacherId, teacherName }` |
-| GET | `/api/student/feedback?classId=` ✅ | Phản hồi của lớp (mới nhất trước): `[{ id, content, createdAt, studentName }]`. `403` nếu học viên không có ghi danh lớp này |
-| POST | `/api/student/feedback` ✅ | Body `{ classId, content }`. Lưu vào bảng **StudentFeedbacks** (StudentId từ token, TeacherId từ lớp). `400` content rỗng/quá 1000 ký tự; `403` không đang học lớp này. Trả `201 { id, message }` |
+| GET | `/api/student/feedback/classes` ✅ | Các lớp đang học (Active) của học viên để chọn xem nhận xét: `{ classId, className, courseId, courseName, description, bandFrom/To, totalSessions, sessionsPerWeek, tuition, teacherId, teacherName }` |
+| GET | `/api/student/feedback?classId=` ✅ | Nhận xét giáo viên viết cho **chính học viên đang đăng nhập** trong lớp `classId` (mới nhất trước): `[{ id, content, createdAt, teacherName }]`. `403` nếu học viên không có ghi danh lớp này. Chỉ lọc theo `StudentId` từ token — không bao giờ trả nhận xét của học viên khác |
 
-> Bảng `StudentFeedbacks` tạo bằng script `docs/admin/sql/2026-11-04-student-feedback-table.sql` (DB local đang drift schema, chưa dùng được `dotnet ef migrations add` — nó sẽ kéo theo toàn bộ bảng TeacherFeatures của plan 00). Khi nhóm tạo migration `TeacherFeatures`, nhớ gộp bảng này vào cùng migration.
+> Bảng `StudentFeedbacks` tạo bằng script `docs/admin/sql/2026-11-04-student-feedback-table.sql` (DB local đang drift schema, chưa dùng được `dotnet ef migrations add` — nó sẽ kéo theo toàn bộ bảng TeacherFeatures của plan 00). Khi nhóm tạo migration `TeacherFeatures`, nhớ gộp bảng này vào cùng migration. Cấu trúc bảng gồm `Id, StudentId (học viên nhận nhận xét), TeacherId (giáo viên viết), ClassId, Content, CreatedAt` — không cần thay đổi schema cho logic mới.
 
 ## 6. Học phí ✅ (plan 14) — trang Tuition
 

@@ -1,5 +1,6 @@
 .why-different {
-  padding-block: var(--section-y);
+  padding-top: 70px;
+  padding-bottom: 50px;
 }
 
 .why-different__grid {

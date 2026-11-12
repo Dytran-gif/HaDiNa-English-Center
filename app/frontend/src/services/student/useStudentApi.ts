@@ -434,10 +434,10 @@ export interface StudentFeedbackItem {
   id: number;
   content: string;
   createdAt: string;
-  studentName: string;
+  teacherName: string;
 }
 
-// GET api/student/feedback?classId= - phản hồi của lớp (classId null thì không gọi)
+// GET api/student/feedback?classId= - nhận xét giáo viên viết cho chính mình (classId null thì không gọi)
 export function useStudentFeedbackList(classId: number | null) {
   const api = useStudentApi();
   const { token } = useAuth();

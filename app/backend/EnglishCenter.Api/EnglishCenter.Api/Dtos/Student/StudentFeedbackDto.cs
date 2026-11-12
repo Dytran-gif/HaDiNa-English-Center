@@ -1,6 +1,6 @@
 namespace EnglishCenter.Api.Dtos.StudentPortal;
 
-// Một lớp học của học viên để gửi phản hồi (trang Feedback)
+// Một lớp học của học viên để xem nhận xét (trang Feedback)
 public class StudentFeedbackClassDto
 {
     public int ClassId { get; set; }
@@ -17,17 +17,11 @@ public class StudentFeedbackClassDto
     public string TeacherName { get; set; } = "";
 }
 
-// Một phản hồi của lớp (ai gửi + nội dung + thời điểm)
+// Một nhận xét giáo viên viết cho học viên (trang Feedback)
 public class StudentFeedbackItemDto
 {
     public int Id { get; set; }
     public string Content { get; set; } = "";
     public DateTime CreatedAt { get; set; }
-    public string StudentName { get; set; } = "";
-}
-
-public class FeedbackCreateRequest
-{
-    public int ClassId { get; set; }
-    public string Content { get; set; } = "";
+    public string TeacherName { get; set; } = "";
 }

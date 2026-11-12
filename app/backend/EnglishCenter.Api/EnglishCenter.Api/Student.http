@@ -63,24 +63,13 @@ GET http://localhost:5220/api/student/schedule/history
 Authorization: Bearer {{token}}
 
 
-### Lấy danh sách lớp đang học để gửi phản hồi (trang Feedback)
+### Lấy danh sách lớp đang học để xem nhận xét của giáo viên (trang Feedback)
 GET http://localhost:5220/api/student/feedback/classes
 Authorization: Bearer {{token}}
 
-### Lấy phản hồi của một lớp (chỉ lớp mình có ghi danh, 403 nếu không thuộc lớp)
+### Lấy nhận xét giáo viên viết cho CHÍNH mình ở một lớp (403 nếu không thuộc lớp)
 GET http://localhost:5220/api/student/feedback?classId=5
 Authorization: Bearer {{token}}
-
-### Gửi phản hồi về giáo viên/lớp -> lưu bảng StudentFeedbacks
-# 400 nếu content rỗng/quá 1000 ký tự; 403 nếu không đang học lớp này
-POST http://localhost:5220/api/student/feedback
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-{
-  "classId": 5,
-  "content": "Giáo viên giảng dạy rất nhiệt tình, dễ hiểu."
-}
 
 ### Lấy hồ sơ học viên đang đăng nhập (Header / Personal Info)
 GET http://localhost:5220/api/student/profile

@@ -1,6 +1,7 @@
 namespace EnglishCenter.Api.Entities;
 
-// Phản hồi của học viên về giáo viên / lớp học (trang Feedback của Student).
+// Nhận xét giáo viên viết cho một học viên ở một lớp học (trang Feedback của Student).
+// StudentId = học viên nhận nhận xét; TeacherId = giáo viên viết; ClassId = lớp/khóa.
 // Bảng StudentFeedbacks - tạo bằng script docs/admin/sql/2026-11-04-student-feedback-table.sql
 public class StudentFeedback
 {
