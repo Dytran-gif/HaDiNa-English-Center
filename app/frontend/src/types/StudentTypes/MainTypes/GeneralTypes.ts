@@ -126,6 +126,7 @@ export interface AssignmentFile {
     teacherId: number;
     studentId?: number;
     courseId?: number;
+    assignmentId?: number; // bài nộp: Id bài tập gốc; bài GV giao: undefined
     title: string;
     description?: string;
     fileName: string;

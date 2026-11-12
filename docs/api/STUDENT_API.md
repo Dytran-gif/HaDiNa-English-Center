@@ -73,7 +73,7 @@ Quiz `answers`: `{ "12": "B", "13": "photosynthesis" }` (key = id câu hỏi).
 
 > Bảng dùng chung: `Assignments` (học viên đã tạo sẵn trong DB, CHECK `FileType IN ('Student','Teacher')`).
 > `FileType='Teacher'` = file GV giao (StudentId NULL); `FileType='Student'` = bài nộp của HV.
-> `CourseId` phân biệt bài tập/bài nộp thuộc khóa nào (không lẫn sang khóa khác).
+> `CourseId` phân biệt khóa; `AssignmentId` (bài nộp) = Id bài tập gốc → khớp đúng bài, không lẫn khi trùng tiêu đề.
 > File vật lý lưu ở `wwwroot/uploads/AssignmentUploads/`; tự xóa sau 7 ngày bằng `AssignmentFileCleanupService`.
 
 | Method | URL | Mô tả |

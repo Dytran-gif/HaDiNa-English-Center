@@ -62,7 +62,7 @@ public class AssignmentsController : ControllerBase
             HasFile = !string.IsNullOrEmpty(a.FilePath),
             CreatedAt = a.CreatedAt,
             MySubmission = mySubs
-                .Where(s => s.Title == a.Title)
+                .Where(s => s.AssignmentId == a.Id)
                 .OrderByDescending(s => s.CreatedAt)
                 .Select(s => new StudentSubmissionInfoDto
                 {
@@ -128,7 +128,7 @@ public class AssignmentsController : ControllerBase
         var (fileName, filePath) = await AssignmentFileStorage.SaveAsync(_env, file, "StudentSubmissions");
 
         await _db.Database.ExecuteSqlInterpolatedAsync(
-            $"INSERT INTO Assignments (TeacherId, StudentId, CourseId, Title, Description, FileName, FilePath, FileType, CreatedAt) VALUES ({a.TeacherId}, {studentId}, {a.CourseId}, {a.Title}, {null}, {fileName}, {filePath}, {"Student"}, {AppTime.Now})");
+            $"INSERT INTO Assignments (TeacherId, StudentId, CourseId, AssignmentId, Title, Description, FileName, FilePath, FileType, CreatedAt) VALUES ({a.TeacherId}, {studentId}, {a.CourseId}, {a.Id}, {a.Title}, {null}, {fileName}, {filePath}, {"Student"}, {AppTime.Now})");
 
         return StatusCode(201, new { message = "Nộp bài thành công" });
     }
@@ -147,7 +147,7 @@ public class AssignmentsController : ControllerBase
 
         var sub = await _db.AssignmentFiles
             .Where(s => s.FileType == "Student" && s.StudentId == studentId
-                && s.CourseId == a.CourseId && s.Title == a.Title)
+                && s.AssignmentId == a.Id)
             .OrderByDescending(s => s.CreatedAt)
             .FirstOrDefaultAsync();
 

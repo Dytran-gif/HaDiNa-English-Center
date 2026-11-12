@@ -13,6 +13,9 @@ public class AssignmentFile
     public int TeacherId { get; set; }
     public int? StudentId { get; set; }
     public int? CourseId { get; set; }
+    // Với bài nộp (FileType=Student): Id của bài tập gốc (FileType=Teacher) mà học viên nộp vào.
+    // NULL với chính bài tập của GV. Dùng để khớp đúng bài nộp - bài tập (không lẫn khi trùng tiêu đề).
+    public int? AssignmentId { get; set; }
     public string Title { get; set; } = "";
     public string? Description { get; set; }
     public string FileName { get; set; } = "";
