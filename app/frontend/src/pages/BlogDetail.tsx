@@ -4,7 +4,7 @@ import Button from "../components/ui/Button";
 import Tag from "../components/ui/Tag";
 import MiniCta from "../components/ui/MiniCta";
 import BlogCard from "../components/ui/BlogCard";
-import { getBlogPostBySlug, blogPosts } from "../data/blogPosts";
+import usePublicPosts from "../services/usePublicPosts";
 import NotFound from "./NotFound";
 import "./BlogDetail.css";
 
@@ -16,7 +16,8 @@ const formatter = new Intl.DateTimeFormat("vi-VN", {
 
 export default function BlogDetail() {
   const { slug = "" } = useParams();
-  const post = getBlogPostBySlug(slug);
+  const blogPosts = usePublicPosts();
+  const post = blogPosts.find(item => item.slug === slug);
 
   if (!post) {
     return <NotFound />;
@@ -41,6 +42,7 @@ export default function BlogDetail() {
         </div>
 
         <h1>{post.title}</h1>
+        {post.thumbnailUrl && <img className="blog-detail__cover" src={post.thumbnailUrl} alt={`Ảnh bìa: ${post.title}`} onError={event => { event.currentTarget.hidden = true; }}/>} 
 
         <div className="blog-detail__body">
           {post.content.map((paragraph, i) => (

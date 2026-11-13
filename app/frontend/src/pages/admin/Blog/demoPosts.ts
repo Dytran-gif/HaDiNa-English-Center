@@ -8,6 +8,7 @@ export function localDate(): string {
 }
 export function safeCover(value: unknown): string | null {
   if (typeof value !== "string") return null;
+  if (value.length <= 1400000 && /^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(value)) return value;
   if (/^\/uploads\/[a-z0-9/_.-]+$/i.test(value)) return value;
   try { const url = new URL(value); return ["http:","https:"].includes(url.protocol) ? url.href : null; } catch { return null; }
 }
@@ -37,6 +38,7 @@ export function readDemoPosts(): DemoPost[] {
 function persist(posts: DemoPost[]) {
   try { localStorage.setItem(storageKey, JSON.stringify(posts)); }
   catch { throw new Error("Không lưu được thay đổi trên trình duyệt. Dung lượng có thể đã đầy; dữ liệu chưa bị thay đổi."); }
+  if (typeof window !== "undefined") window.dispatchEvent(new Event("admin-blog-updated"));
 }
 export async function listDemoPosts(query: PostQuery): Promise<DemoPostPage> {
   const keyword = query.search.trim().toLocaleLowerCase("vi-VN");
@@ -54,11 +56,12 @@ export async function deleteDemoPost(id: number) {
 export async function saveDemoPost(id: number | null, input: DemoPostInput): Promise<DemoPost> {
   if (!input.title.trim() || input.title.trim().length > 250) throw new Error("Tiêu đề bắt buộc và tối đa 250 ký tự.");
   if (input.status === "Published" && !input.content.some(part => part.trim())) throw new Error("Nội dung không được để trống khi đăng bài.");
+  if (input.thumbnailUrl && !safeCover(input.thumbnailUrl)) throw new Error("Ảnh bìa không hợp lệ hoặc vượt quá dung lượng cho phép.");
   const posts = readDemoPosts(); const old = posts.find(post => post.id === id);
   if (id !== null && !old) throw new Error("Không tìm thấy bài viết minh họa này.");
   const post: DemoPost = { id: id ?? posts.reduce((max,item) => Math.max(max,item.id),0)+1, title: input.title.trim(), content: input.content,
     status: input.status, publishedAt: input.status === "Published" ? old?.publishedAt ?? localDate() : null,
-    thumbnailUrl: old?.thumbnailUrl ?? null, legacyCategory: old?.legacyCategory ?? null };
+    thumbnailUrl: input.thumbnailUrl === undefined ? old?.thumbnailUrl ?? null : safeCover(input.thumbnailUrl), legacyCategory: old?.legacyCategory ?? null };
   if (!Number.isSafeInteger(post.id)) throw new Error("Không tạo được mã bài viết an toàn. Dữ liệu chưa bị thay đổi.");
   persist(old ? posts.map(item => item.id === id ? post : item) : [...posts,post]);
   return post;

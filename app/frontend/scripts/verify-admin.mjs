@@ -63,7 +63,7 @@ try {
   check(!html.includes("protected-admin-content"), "guest cannot render protected admin content");
   store.set("ecw_auth_user",JSON.stringify({user_id:3,full_name:"Demo",email:"admin@demo.com",role:"admin",phone:"",created_at:""}));
   html = renderToStaticMarkup(React.createElement(MemoryRouter,null,React.createElement(AuthProvider,null,React.createElement(ProtectedRoute,{role:"admin"},React.createElement("p",null,"protected-admin-content")))));
-  check(html.includes("protected-admin-content"), "legacy demo session remains readable");
+  check(!html.includes("protected-admin-content"), "removed demo login cannot grant access through a legacy session");
   store.set("ecw_auth_user","invalid-json");
   html = renderToStaticMarkup(React.createElement(MemoryRouter,null,React.createElement(AuthProvider,null,React.createElement(ProtectedRoute,{role:"admin"},React.createElement("p",null,"protected-admin-content")))));
   check(!html.includes("protected-admin-content"), "malformed session does not crash or grant access");

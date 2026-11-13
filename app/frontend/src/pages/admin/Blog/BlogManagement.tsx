@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import Card from "../../../components/ui/Card";
-import Button, { IconButton } from "../Components/Ui/Button";
+import RowActions from "../Components/Ui/RowActions";
+import Button from "../Components/Ui/Button";
 import Badge from "../Components/Ui/Badge";
 import Icon from "../Components/Ui/Icon";
 import Notice from "../Components/Ui/Notice";
@@ -59,7 +60,7 @@ export default function BlogManagement() {
         <td>{post.legacyCategory ? <Badge tone="neutral">{post.legacyCategory}</Badge> : "—"}</td>
         <td><Badge status={post.status}/></td>
         <td className="admin-content-date">{post.status === "Published" && post.publishedAt ? post.publishedAt.split("-").reverse().join("/") : "—"}</td>
-        <td><div className="admin-content-actions"><IconButton icon="edit" label={`Sửa bài: ${post.title}`} onClick={() => composePost(post.id)}/><IconButton icon="eye" label={`Xem trước bài: ${post.title}`} onClick={() => setPreview(post)}/><IconButton icon="trash" label={`Xóa bài: ${post.title}`} variant="ghost" onClick={() => setDeleting(post)}/></div></td>
+        <td><RowActions name={post.title} onEdit={() => composePost(post.id)} onView={() => setPreview(post)} onDelete={() => setDeleting(post)}/></td>
       </tr>)}
     </tbody></table></div></Card>
     <Pagination page={result?.page ?? page} total={result?.total ?? 0} itemLabel="bài viết" loading={loading || Boolean(error)} onChange={value => changeQuery("page", String(value))}/>

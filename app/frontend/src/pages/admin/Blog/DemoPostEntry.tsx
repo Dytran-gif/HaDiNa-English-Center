@@ -10,6 +10,9 @@ export default function DemoPostEntry({ selector, saved, back }: { selector: str
   const [post, setPost] = useState<DemoPost | null>(null);
   const [loading, setLoading] = useState(true); const [error, setError] = useState("");
   const [title, setTitle] = useState(""); const [content, setContent] = useState("");
+  const [cover, setCover] = useState<string | null>(null);
+  const [coverError, setCoverError] = useState("");
+  const [readingCover, setReadingCover] = useState(false);
   const [busy, setBusy] = useState(false); const [titleError, setTitleError] = useState(""); const [contentError, setContentError] = useState("");
   const { notify } = useToast();
   useEffect(() => {
@@ -18,13 +21,33 @@ export default function DemoPostEntry({ selector, saved, back }: { selector: str
         const item = readDemoPosts().find(item => item.id === Number(selector));
         if (!item) throw new Error("Không tìm thấy bài viết");
         setPost(item); setTitle(item.title); setContent(item.content.join("\n\n"));
+        setCover(item.thumbnailUrl);
       }
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Không tải được bài viết."); }
     finally { setLoading(false); }
   }, [selector]);
-  const dirty = title !== (post?.title ?? "") || content !== (post?.content.join("\n\n") ?? "");
+  const dirty = title !== (post?.title ?? "") || content !== (post?.content.join("\n\n") ?? "") || cover !== (post?.thumbnailUrl ?? null);
+  async function chooseCover(file?: File) {
+    if (!file) return;
+    setCoverError("");
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 1024 * 1024) {
+      setCoverError("Chọn ảnh JPG, PNG hoặc WebP không quá 1 MB."); return;
+    }
+    setReadingCover(true);
+    try {
+      const data = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => typeof reader.result === "string" ? resolve(reader.result) : reject(new Error());
+        reader.onerror = () => reject(new Error());
+        reader.readAsDataURL(file);
+      });
+      await new Promise<void>((resolve, reject) => { const image = new Image(); image.onload = () => resolve(); image.onerror = () => reject(new Error()); image.src = data; });
+      setCover(data);
+    } catch { setCoverError("Không đọc được ảnh. Hãy chọn một file ảnh khác."); }
+    finally { setReadingCover(false); }
+  }
   async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); if (busy) return;
+    event.preventDefault(); if (busy || readingCover) return;
     const button = (event.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
     const status = button?.value === "Published" ? "Published" : "Draft";
     if (!dirty && post?.status === status) return;
@@ -33,7 +56,7 @@ export default function DemoPostEntry({ selector, saved, back }: { selector: str
     if (status === "Published" && !content.trim()) { setContentError("Nội dung không được để trống khi đăng bài."); document.getElementById("demo-post-content")?.focus(); return; }
     setBusy(true);
     try {
-      const result = await saveDemoPost(post?.id ?? null, { title, content: content.split(/\n\s*\n/).map(part => part.trim()).filter(Boolean), status });
+      const result = await saveDemoPost(post?.id ?? null, { title, content: content.split(/\n\s*\n/).map(part => part.trim()).filter(Boolean), status, thumbnailUrl: cover });
       setPost(result); setTitle(result.title); setContent(result.content.join("\n\n"));
       notify({ title: status === "Draft" ? "Đã lưu bản nháp minh họa trên trình duyệt." : "Đã lưu bài đã đăng trong dữ liệu minh họa.", tone: "success" });
       saved(result);
@@ -45,6 +68,10 @@ export default function DemoPostEntry({ selector, saved, back }: { selector: str
       {loading ? <p role="status">Đang tải bài viết…</p> : error ? <Notice tone="error" action={<Button onClick={back}>Về danh sách</Button>}>{error}</Notice> : <form className="admin-panel-form" onSubmit={submit}>
         <p className="admin-api-muted">Bản soạn thử chỉ lưu trên trình duyệt, hỗ trợ nội dung văn bản.</p>
         <InputField id="demo-post-title" label="Tiêu đề" placeholder="Nhập tiêu đề bài viết" value={title} maxLength={250} required disabled={busy} error={titleError} help={`${title.length}/250 ký tự`} onChange={event => setTitle(event.target.value)}/>
+        <InputField type="file" label="Ảnh bìa" accept="image/jpeg,image/png,image/webp" disabled={busy || readingCover} help="JPG, PNG, WebP tối đa 1 MB. Nên dùng ảnh ngang tỷ lệ 16:9. Ảnh chỉ được lưu khi bạn lưu bài viết." error={coverError} onChange={event => { void chooseCover(event.target.files?.[0]); event.target.value = ""; }}/>
+        {readingCover && <p role="status">Đang đọc ảnh…</p>}
+        {cover && <div className="admin-post-cover-editor"><img className="admin-post-cover-preview" src={cover} alt="Xem trước ảnh bìa"/><div><Button type="button" variant="danger" icon="trash" disabled={busy || readingCover} onClick={() => { setCover(null); setCoverError(""); }}>Xóa ảnh bìa</Button></div></div>}
+        {!cover && post?.thumbnailUrl && <Notice tone="info">Đã bỏ ảnh khỏi bản soạn. Bấm “Cập nhật” hoặc “Lưu nháp” bên dưới để lưu việc xóa ảnh.</Notice>}
         <TextareaField id="demo-post-content" label="Nội dung văn bản" placeholder="Mỗi đoạn cách nhau một dòng trống" rows={10} value={content} disabled={busy} error={contentError} onChange={event => setContent(event.target.value)}/>
         <div className="admin-content-actions"><Button type="submit" name="intent" value="Draft" disabled={(!dirty && post?.status !== "Published") || busy} loading={busy}>Lưu nháp</Button><Button type="submit" name="intent" value="Published" variant="primary" disabled={(!dirty && post?.status !== "Draft") || busy} loading={busy}>{post?.status === "Published" ? "Cập nhật" : "Đăng bài"}</Button></div>
       </form>}

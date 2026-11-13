@@ -16,6 +16,7 @@ const formatter = new Intl.DateTimeFormat("vi-VN", {
 export default function BlogCard({ post }: BlogCardProps) {
   return (
     <article className="blog-card">
+      {post.thumbnailUrl && <img className="blog-card__cover" src={post.thumbnailUrl} alt={`Ảnh bìa: ${post.title}`} loading="lazy" onError={event => { event.currentTarget.hidden = true; }}/>} 
       <div className="blog-card__top">
         <Tag>{post.category}</Tag>
         <time className="blog-card__date" dateTime={post.published_at}>

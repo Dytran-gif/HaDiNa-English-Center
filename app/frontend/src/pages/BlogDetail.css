@@ -5,6 +5,8 @@
   gap: 24px;
   max-width: 760px;
 }
+.page-shell .blog-detail__cover { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 16px; }
+.page-shell .blog-detail__cover[hidden] { display: none; }
 
 .blog-detail__back {
   align-self: flex-start;

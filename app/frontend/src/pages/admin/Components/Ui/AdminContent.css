@@ -18,6 +18,10 @@
 .admin-layout .admin-post-preview { display: grid; gap: var(--admin-space-4); overflow-wrap: anywhere; }
 .admin-layout .admin-post-preview h2, .admin-layout .admin-post-preview p { margin: 0; }
 .admin-layout .admin-post-preview time { color: var(--admin-muted); font-size: var(--admin-font-sm); }
+.admin-layout .admin-post-cover-preview { display: block; width: min(100%, 480px); aspect-ratio: 16 / 9; object-fit: cover; border: 1px solid var(--admin-border); border-radius: var(--admin-radius-control); margin-block-end: var(--admin-space-3); }
+.admin-layout .admin-post-cover-editor { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--admin-space-3); flex-shrink: 0; }
+.admin-layout .admin-post-cover-editor .admin-post-cover-preview { margin: 0; }
+.admin-layout .admin-post-cover-editor > div { position: static; display: flex; align-items: center; min-height: var(--admin-control-height); }
 .admin-layout .admin-content-table td .admin-badge .tag { white-space: normal; max-width: 18ch; }
 @media (max-width: 39.999em) { .admin-layout .admin-content-toolbar > .admin-button { width: 100%; } .admin-layout .admin-content-filters > .admin-field { flex: 1; } }
 .admin-layout .admin-content-table:focus-visible { outline: 2px solid var(--admin-primary); outline-offset: var(--admin-space-1); }
