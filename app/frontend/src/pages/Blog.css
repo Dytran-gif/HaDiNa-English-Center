@@ -1,5 +1,6 @@
 .blog-list {
-  padding-block: var(--section-y);
+  padding-top: 50px;
+  padding-bottom: 50px;
   display: flex;
   flex-direction: column;
   gap: 32px;

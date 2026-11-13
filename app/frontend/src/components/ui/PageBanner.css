@@ -1,5 +1,5 @@
 .page-banner {
-  padding-block: clamp(40px, 6vw, 72px);
+  padding-block: clamp(30px, 6vw, 0px);
   background: var(--blue-light);
 }
 

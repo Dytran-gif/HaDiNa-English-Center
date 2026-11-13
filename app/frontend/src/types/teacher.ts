@@ -7,4 +7,5 @@ export interface Teacher {
   credentials: string[];
   initials: string;
   rating_avg: number;
+  avatar?: string;
 }

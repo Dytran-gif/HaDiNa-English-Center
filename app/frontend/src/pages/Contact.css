@@ -1,5 +1,6 @@
 .contact-grid {
-  padding-block: var(--section-y);
+  padding-top: 50px;
+  padding-bottom: 50px;
   display: grid;
   gap: 32px;
   grid-template-columns: 1fr;

@@ -25,7 +25,16 @@ export default function TeacherDetail() {
         </Button>
 
         <div className="teacher-detail__head">
-          <InitialsBlock initials={teacher.initials} size="lg" tone="green" />
+          {teacher.avatar ? (
+            <img
+              src={teacher.avatar}
+              alt={teacher.full_name}
+              className="teacher-detail__avatar"
+            />
+          ) : (
+            <InitialsBlock initials={teacher.initials} size="lg" tone="green" />
+          )}
+
           <div>
             <h1>{teacher.full_name}</h1>
             <p className="teacher-detail__title">{teacher.title}</p>
