@@ -1,0 +1,14 @@
+.admin-layout .admin-resource-actions { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: flex-start; gap: 8px; }
+.admin-layout .admin-resource-actions > .admin-button,
+.admin-layout .admin-resource-actions .admin-action-menu .admin-button,
+.admin-layout .admin-resource-actions .admin-action-menu > summary { box-sizing: border-box; height: 40px; min-height: 40px; padding: 8px 16px; font-size: 14px; font-weight: 600; white-space: nowrap; }
+.admin-layout .admin-resource-actions .admin-button { gap: 8px; }
+.admin-layout .admin-resource-actions .admin-icon { width: 18px; height: 18px; flex-shrink: 0; }
+.admin-layout .admin-action-menu > .admin-action-popover {
+  position: fixed; inset: auto; margin: 0; box-sizing: border-box;
+  width: max-content; max-width: calc(100vw - 16px); max-height: calc(100dvh - 16px);
+  overflow: auto; padding: 8px; gap: 8px;
+  border: 1px solid var(--admin-border); border-radius: var(--admin-radius-control);
+  background: var(--admin-surface); color: var(--admin-text); box-shadow: 0 8px 24px #10204026;
+}
+.admin-layout .admin-action-menu > .admin-action-popover:not(:popover-open) { display: none; }

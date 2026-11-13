@@ -6,6 +6,7 @@ import { ApiError } from "../../../../services/apiClient";
 import type { AdminRecord, PagedResponse } from "../../../../types/adminApi";
 import Button from "../Ui/Button";
 import Modal from "../Ui/Modal";
+import RowActions from "../Ui/RowActions";
 import ActionMenu from "../Ui/ActionMenu";
 import Badge from "../Ui/Badge";
 import ConfirmDialog from "../Ui/ConfirmDialog";
@@ -75,12 +76,12 @@ export default function ResourcePage({ config }: { config: ResourceConfig }) {
   }
   const nameOf=(row:AdminRecord)=>String(row.fullName ?? row.name ?? config.singular);
   function actions(row:AdminRecord){
-    const deleteButton=<Button variant="danger" onClick={()=>setConfirmation({row,action:"delete"})} disabled={busy}>Xóa {config.singular}</Button>;
-    return <div className="admin-row-actions"><Button onClick={()=>edit(row)} disabled={busy} icon="edit">Sửa</Button>{accounts?<ActionMenu label={nameOf(row)}>
+    const deleteButton=<Button icon="trash" variant="danger" onClick={()=>setConfirmation({row,action:"delete"})} disabled={busy}>Xóa {config.singular}</Button>;
+    return <RowActions name={nameOf(row)} onEdit={()=>edit(row)} disabled={busy} onDelete={accounts?undefined:()=>setConfirmation({row,action:"delete"})}>{accounts?<ActionMenu label={nameOf(row)}>
       <Button onClick={()=>{setResetRow(row);setPassword("");setActionError("");setFieldErrors({});}} disabled={busy}>Đặt lại mật khẩu</Button>
       <Button onClick={()=>setConfirmation({row,action:"lock"})} disabled={busy}>{row.isLocked?"Mở khóa tài khoản":"Khóa tài khoản"}</Button>
       {deleteButton}
-    </ActionMenu>:deleteButton}</div>;
+    </ActionMenu>:null}</RowActions>;
   }
   const filtered=Boolean(params.get("search")||params.get("status")||params.get("specialty"));
   return <div className="admin-api-stack">

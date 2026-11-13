@@ -133,6 +133,16 @@ To run desktop browser checks, launch a separate Chrome headless profile on debu
 
 ## Simplification requested — 2026-11-06
 
+### Đồng bộ thao tác Admin — 2026-11-13
+
+- Tùy chọn Học viên/Giáo viên dùng bảng nổi native popover manual, không làm tăng chiều cao hàng hoặc bị cắt trong vùng cuộn của bảng. Canh trong viewport và cập nhật vị trí khi cuộn/resize; click ngoài vẫn giữ mở, Escape/bấm lại/ chọn hành động sẽ đóng. Build/typecheck đạt; chưa nghiệm thu trực quan trên browser.
+
+- RowActions dùng chung cho Lớp, Khóa học, Phòng, Học viên, Giáo viên và Blog.
+- Nút cao 40px, chữ 14px/600, icon 18px, gap 8px; Sửa/Xem nền trắng, Xóa nền đỏ có icon thùng rác.
+- Thứ tự Sửa → Xem (nếu có) → Xóa; Học viên/Giáo viên vẫn giữ thao tác bảo mật và Xóa trong Tùy chọn.
+- Giữ hộp xác nhận, API và hành vi hiện có; canh đầu hàng để Sửa không bị giãn khi mở Tùy chọn.
+- Build/typecheck đạt; không thực hiện xóa hay thay đổi dữ liệu DB để kiểm tra giao diện. Không mở rộng mobile.
+
 - Account actions: rename “Thêm thao tác” to “Tùy chọn”; opening the group keeps Edit at its normal height. Clicking outside leaves the group open; its trigger and Escape can close it, and choosing an action closes it before opening the dialog.
 
 - Courses and Rooms: remove the detail action/dialog; show Edit and Delete directly. Delete still requires a named confirmation and uses the existing BE checks.

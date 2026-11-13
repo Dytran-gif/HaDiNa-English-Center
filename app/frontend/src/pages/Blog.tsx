@@ -3,13 +3,14 @@ import PageShell from "../components/layout/PageShell";
 import PageBanner from "../components/ui/PageBanner";
 import BlogCard from "../components/ui/BlogCard";
 import MiniCta from "../components/ui/MiniCta";
-import { blogPosts } from "../data/blogPosts";
+import usePublicPosts from "../services/usePublicPosts";
 import "./Blog.css";
 
 export default function Blog() {
+  const blogPosts = usePublicPosts();
   const blogCategories = useMemo(
     () => Array.from(new Set(blogPosts.map((p) => p.category))),
-    [],
+    [blogPosts],
   );
   const [activeCategory, setActiveCategory] = useState<string | "all">("all");
 

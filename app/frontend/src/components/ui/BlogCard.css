@@ -11,6 +11,8 @@
     transform 0.15s ease,
     box-shadow 0.15s ease;
 }
+.page-shell .blog-card__cover { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 12px; }
+.page-shell .blog-card__cover[hidden] { display: none; }
 
 .blog-card:hover {
   transform: translateY(-4px);

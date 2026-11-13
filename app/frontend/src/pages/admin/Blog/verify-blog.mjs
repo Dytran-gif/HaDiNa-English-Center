@@ -24,6 +24,18 @@ try{
  await repo.deleteDemoPost(21);check(!repo.readDemoPosts().some(post=>post.id===21),'delete persists after reload');
  page=await repo.listDemoPosts({search:'',status:'',page:999,pageSize:10});check(page.page===1&&page.total===1,'last page clamps after deletion');
  check(repo.safeCover('javascript:alert(1)')===null&&repo.safeCover('data:image/svg+xml,bad')===null,'unsafe cover URLs rejected');
+ const cover='data:image/png;base64,iVBORw0KGgo=';
+ const withCover=await repo.saveDemoPost(published.id,{title:published.title,content:published.content,status:'Published',thumbnailUrl:cover});
+ check(withCover.thumbnailUrl===cover&&repo.readDemoPosts().find(p=>p.id===published.id)?.thumbnailUrl===cover,'cover persists after reload');
+ const {readPublicPosts}=await vite.ssrLoadModule('/src/services/usePublicPosts.ts');
+ check(readPublicPosts().find(p=>p.post_id===published.id)?.thumbnailUrl===cover,'public blog receives uploaded cover');
+ const snapshot=store.get('admin_blog_v2');
+ await repo.saveDemoPost(null,{title:'Private draft',content:['private'],status:'Draft',thumbnailUrl:cover});
+ check(!readPublicPosts().some(p=>p.title==='Private draft'),'public blog excludes drafts');
+ store.set('admin_blog_v2',snapshot);
+ await assert.rejects(repo.saveDemoPost(published.id,{title:published.title,content:published.content,status:'Published',thumbnailUrl:'javascript:alert(1)'}));count++;console.log('PASS unsafe cover rejected on save');
+ const withoutCover=await repo.saveDemoPost(published.id,{title:published.title,content:published.content,status:'Published',thumbnailUrl:null});
+ check(withoutCover.thumbnailUrl===null,'cover removal persists');
  const valid=store.get('admin_blog_v2');store.set('admin_blog_v2','broken json');assert.throws(()=>repo.readDemoPosts());check(store.get('admin_blog_v2')==='broken json','corrupt storage is not silently overwritten');store.set('admin_blog_v2',valid);
  const {default:Preview}=await vite.ssrLoadModule('/src/pages/admin/Blog/PostTextPreview.tsx');
  let html=markup(React.createElement(Preview,{post:{id:1,title:'<script>alert(1)</script>',content:['<img src=x onerror=alert(1)>','<script>alert(2)</script>'],status:'Draft',publishedAt:null,thumbnailUrl:null,legacyCategory:null}}));

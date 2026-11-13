@@ -1,11 +1,11 @@
 import SectionHeading from "../ui/SectionHeading";
 import BlogCard from "../ui/BlogCard";
 import Button from "../ui/Button";
-import { blogPosts } from "../../data/blogPosts";
+import usePublicPosts from "../../services/usePublicPosts";
 import "./NewsBlog.css";
 
 export default function NewsBlog() {
-  const featured = blogPosts.slice(0, 3);
+  const featured = usePublicPosts().slice(0, 3);
 
   return (
     <section className="news-blog">
