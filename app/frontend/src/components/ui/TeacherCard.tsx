@@ -10,7 +10,16 @@ interface TeacherCardProps {
 export default function TeacherCard({ teacher }: TeacherCardProps) {
   return (
     <article className="teacher-card">
-      <InitialsBlock initials={teacher.initials} size="lg" tone="green" />
+      {teacher.avatar ? (
+        <img
+          src={teacher.avatar}
+          alt={teacher.full_name}
+          className="teacher-card__avatar"
+        />
+      ) : (
+        <InitialsBlock initials={teacher.initials} size="lg" tone="green" />
+      )}
+
       <div className="teacher-card__body">
         <h3 className="teacher-card__name">{teacher.full_name}</h3>
         <p className="teacher-card__title">{teacher.title}</p>

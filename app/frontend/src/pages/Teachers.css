@@ -1,5 +1,6 @@
 .teachers-grid {
-  padding-block: var(--section-y);
+  padding-top: 50px;
+  padding-bottom: 50px;
   display: grid;
   gap: 24px;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));

@@ -1,5 +1,6 @@
 .teacher-detail {
-  padding-block: var(--section-y);
+  padding-top: 50px;
+  padding-bottom: 50px;
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -16,14 +17,14 @@
   gap: 24px;
 }
 
-.page-shell .teacher-detail__head > .initials-block {
+.page-shell .teacher-detail__head>.initials-block {
   width: 144px;
   height: 144px;
   flex: 0 0 144px;
   font-size: 48px;
 }
 
-.page-shell .teacher-detail__head > div:last-child {
+.page-shell .teacher-detail__head>div:last-child {
   min-width: 0;
   overflow-wrap: anywhere;
 }
@@ -90,4 +91,17 @@
 .teacher-courses span {
   font-size: 0.85rem;
   color: var(--muted);
+}
+
+.teacher-detail__avatar {
+  width: 140px;
+  /* Chỉnh theo kích thước khối InitialsBlock trong TeacherDetail.css của bạn */
+  height: 140px;
+  border-radius: 16px;
+  background-color: #2c3e8c;
+  /* Đồng bộ nền xanh cho ảnh PNG tách nền */
+  object-fit: cover;
+  object-position: top center;
+  flex-shrink: 0;
+  display: block;
 }
