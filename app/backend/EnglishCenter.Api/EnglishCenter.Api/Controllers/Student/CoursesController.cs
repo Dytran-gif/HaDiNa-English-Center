@@ -193,6 +193,29 @@ public class CoursesController : ControllerBase
         if (cls == null)
             return StatusCode(409, new { message = "Khóa học chưa có lớp để đăng ký" });
 
+        // Chặn đăng ký khi lịch học của lớp mới trùng giờ với lớp đang học (Active)
+        // (cùng ngày trong tuần + khoảng thời gian chồng lấn)
+        var newSchedules = await _db.ClassSchedules.AsNoTracking()
+            .Where(s => s.ClassId == cls.Id)
+            .Select(s => new { s.DayOfWeek, s.StartTime, s.EndTime })
+            .ToListAsync();
+
+        if (newSchedules.Count > 0)
+        {
+            var existingSchedules = await _db.ClassSchedules.AsNoTracking()
+                .Where(s => s.Class.Enrollments.Any(e => e.StudentId == student.Id && e.Status == "Active"))
+                .Select(s => new { s.DayOfWeek, s.StartTime, s.EndTime, CourseName = s.Class.Course.Name, ClassName = s.Class.Name })
+                .ToListAsync();
+
+            var conflict = (from a in newSchedules
+                            from b in existingSchedules
+                            where a.DayOfWeek == b.DayOfWeek && a.StartTime < b.EndTime && b.StartTime < a.EndTime
+                            select $"{b.CourseName} ({b.ClassName})").FirstOrDefault();
+
+            if (conflict != null)
+                return StatusCode(409, new { message = $"Không thể đăng ký: lịch học trùng giờ với {conflict} bạn đang học" });
+        }
+
         var discountAmount = Math.Round(course.Tuition * course.DiscountPercent / 100, 2);
         var enrollment = new Enrollment
         {
