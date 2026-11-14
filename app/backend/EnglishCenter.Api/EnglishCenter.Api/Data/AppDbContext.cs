@@ -20,6 +20,7 @@ public partial class AppDbContext : DbContext
     public DbSet<HomepageImage> HomepageImages => Set<HomepageImage>();
     public DbSet<CenterSetting> CenterSettings => Set<CenterSetting>();
     public DbSet<AssignmentFile> AssignmentFiles => Set<AssignmentFile>();
+    public DbSet<Attendance> Attendances => Set<Attendance>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -64,7 +65,6 @@ public partial class AppDbContext : DbContext
             e.Property(x => x.ParentName).HasMaxLength(150);
             e.Property(x => x.ParentPhone).HasMaxLength(20);
             e.Property(x => x.Status).HasMaxLength(20).IsRequired();
-            e.Property(x => x.TargetBand).HasPrecision(3, 1);
             e.Property(x => x.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
 
             e.HasOne(x => x.User).WithOne(u => u.Student)
@@ -223,19 +223,49 @@ public partial class AppDbContext : DbContext
             e.ToTable(t => t.HasCheckConstraint("CK_CenterSettings_SingleRow", "[Id] = 1"));
         });
 
-        // ---------- Các bảng cho chức năng Teacher (xem AppDbContext.Teacher.cs) ----------
-        ConfigureTeacherFeatures(b);
-
         // ---------- Các bảng cho chức năng Student (xem AppDbContext.Student.cs) ----------
         ConfigureStudentFeatures(b);
 
-        // ---------- AssignmentFiles (bảng "Assignments" do học viên tự tạo trong DB) ----------
-        // Entity Teacher.Assignment đã chiếm tên bảng "Assignments" trong EF (khác cấu trúc),
-        // nên map entity này dạng view (chỉ đọc). Ghi dữ liệu dùng SQL thô trong controller/service.
+        // ---------- Attendances (điểm danh theo ngày học, không có bảng buổi học riêng) ----------
+        b.Entity<Attendance>(e =>
+        {
+            e.Property(x => x.Status).HasMaxLength(10).IsRequired();
+            e.Property(x => x.Note).HasMaxLength(300);
+            e.Property(x => x.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+            e.HasIndex(x => new { x.ClassId, x.StudentId, x.Date }).IsUnique();
+            e.HasIndex(x => new { x.ClassId, x.Date });
+            e.HasIndex(x => x.StudentId);
+
+            // Xóa lớp / học viên thì xóa luôn điểm danh (các FK phía trên đều Restrict nên không bị nhiều đường cascade)
+            e.HasOne(x => x.Class).WithMany().HasForeignKey(x => x.ClassId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Student).WithMany().HasForeignKey(x => x.StudentId).OnDelete(DeleteBehavior.Cascade);
+
+            e.ToTable(t => t.HasCheckConstraint("CK_Attendances_Status",
+                "[Status] IN ('Present','Late','Absent','Excused')"));
+        });
+
+        // ---------- Assignments (file bài tập GV giao + file bài nộp của HV, phân biệt bằng FileType) ----------
+        // Entity tên AssignmentFile nhưng bảng tên "Assignments" (giữ đúng bảng trong DB của nhóm).
         b.Entity<AssignmentFile>(e =>
         {
-            e.HasNoKey();
-            e.ToView("Assignments");
+            e.ToTable("Assignments", t => t.HasCheckConstraint("CK_Assignments_FileType",
+                "[FileType] IN ('Student','Teacher')"));
+            e.Property(x => x.Title).HasMaxLength(250).IsRequired();
+            e.Property(x => x.Description).HasMaxLength(2000);
+            e.Property(x => x.FileName).HasMaxLength(260).IsRequired();
+            e.Property(x => x.FilePath).HasMaxLength(500).IsRequired();
+            e.Property(x => x.FileType).HasMaxLength(10).IsRequired();
+            e.Property(x => x.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+            e.HasIndex(x => x.TeacherId);
+            e.HasIndex(x => x.StudentId);
+            e.HasIndex(x => x.CourseId);
+
+            e.HasOne<Teacher>().WithMany().HasForeignKey(x => x.TeacherId)
+                .OnDelete(DeleteBehavior.Restrict).HasConstraintName("FK_Assignments_Teachers");
+            e.HasOne<Student>().WithMany().HasForeignKey(x => x.StudentId)
+                .OnDelete(DeleteBehavior.Restrict).HasConstraintName("FK_Assignments_Students");
+            e.HasOne<Course>().WithMany().HasForeignKey(x => x.CourseId)
+                .OnDelete(DeleteBehavior.Restrict).HasConstraintName("FK_Assignments_Courses");
         });
     }
 }

@@ -51,14 +51,10 @@ function ClassCard({ c }: { c: TeacherClass }) {
           <li key={i}>{dayNames[s.dayOfWeek]} {fmtTime(s.startTime)}–{fmtTime(s.endTime)} · {s.roomName}</li>
         ))}
       </ul>
-      <div className="t-row t-row--between t-small t-muted" style={{ marginBottom: 6 }}>
-        <span>Tiến độ: {c.doneSessions}/{c.totalSessions} buổi</span><span>{c.progressPercent}%</span>
-      </div>
-      <div className="t-progress"><span style={{ width: `${c.progressPercent}%` }} /></div>
       <div className="t-row" style={{ marginTop: 14 }}>
         <Link className="t-link t-small" to={`/teacher/classes/${c.id}`}>Chi tiết lớp</Link>
         <Link className="t-link t-small" to={`/teacher/attendance?class=${c.id}`}>Điểm danh</Link>
-        <Link className="t-link t-small" to={`/teacher/grades?class=${c.id}`}>Sổ điểm</Link>
+        <Link className="t-link t-small" to={`/teacher/assignments?course=${c.courseId}`}>Bài tập</Link>
         {c.meetingUrl && <a className="t-link t-small" href={c.meetingUrl} target="_blank" rel="noreferrer">Link học online</a>}
       </div>
     </Card>

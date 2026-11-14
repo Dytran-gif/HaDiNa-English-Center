@@ -39,6 +39,12 @@ export function useTeacherApi() {
         throw error;
       }
     }
+    function postForm<T = unknown>(path: string, form: FormData) {
+      return guard(async t => {
+        const response = await rawFetch(`/api/teacher/${path}`, t, { method: "POST", body: form });
+        return (await response.json()) as T;
+      });
+    }
     return {
       get<T>(path: string, signal?: AbortSignal) {
         return guard(t => request<T>(`/api/teacher/${path}`, t, { signal }));
@@ -47,16 +53,15 @@ export function useTeacherApi() {
         return guard(t => request<T>(`/api/teacher/${path}`, t,
           { method, body: body === undefined ? undefined : JSON.stringify(body) }));
       },
-      // Upload multipart (field "file"). Trả { url, ... }
+      // Upload 1 file (field "file"). Trả { url, ... }
       upload<T = { url: string }>(path: string, file: File | Blob, fileName?: string) {
-        return guard(async t => {
-          const form = new FormData();
-          form.append("file", file, fileName ?? (file instanceof File ? file.name : "file"));
-          const response = await rawFetch(`/api/teacher/${path}`, t, { method: "POST", body: form });
-          return (await response.json()) as T;
-        });
+        const form = new FormData();
+        form.append("file", file, fileName ?? (file instanceof File ? file.name : "file"));
+        return postForm<T>(path, form);
       },
-      // Tải file (Excel sổ điểm) rồi cho trình duyệt lưu
+      // Gửi multipart có nhiều trường (giao bài tập: title, description, courseId, file)
+      postForm,
+      // Tải file (đề bài, bài nộp) rồi cho trình duyệt lưu
       download(path: string, fallbackName: string) {
         return guard(async t => {
           const response = await rawFetch(`/api/teacher/${path}`, t);
@@ -67,17 +72,6 @@ export function useTeacherApi() {
           const a = document.createElement("a");
           a.href = url; a.download = name; a.click();
           setTimeout(() => URL.revokeObjectURL(url), 1000);
-        });
-      },
-      // Mở trang HTML (phiếu cuối khóa) ở cửa sổ mới rồi gọi in
-      openPrint(path: string, target: Window | null) {
-        return guard(async t => {
-          const response = await rawFetch(`/api/teacher/${path}`, t);
-          const html = await response.text();
-          if (!target) throw new ApiError(0, "Trình duyệt đã chặn cửa sổ mới. Hãy cho phép popup rồi thử lại.");
-          target.document.open(); target.document.write(html); target.document.close();
-          target.focus();
-          setTimeout(() => target.print(), 300);
         });
       },
     };

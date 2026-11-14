@@ -1,4 +1,25 @@
 # Nhật ký bàn giao
+## [2026-11-14] Duy (Claude) — Bỏ bảng Teacher, DB chung theo bản của Hải, DB tự dựng
+
+**Đã xong**
+- Schema chuẩn = DB của Hải (`tools/db/EnglishCenterDb.bak`, thay bản cũ 12 bảng): 14 bảng. Bỏ 22 bảng Teacher, cột `Students.TargetBand`, migration `TeacherFeatures` + `StudentFeedbackAndSubmissionFile`.
+- Migration mới `20261114065932_StudentModuleTables`: `Assignments` (dạng file, FileType Teacher/Student) + `StudentFeedbacks`, viết `IF NOT EXISTS` vì DB của Hải đã có sẵn 2 bảng này. `AssignmentFile` nay là bảng thật (trước map dạng view).
+- `Data/DatabaseBootstrapper.cs`: `dotnet run` ở Development tự restore `.bak` khi máy chưa có DB (không được thì EF tạo DB trống + seed), áp migration còn thiếu, seed tài khoản.
+- Gỡ backend Teacher: `Controllers/TeacherPortal`, `Dtos/TeacherPortal`, `AppDbContext.Teacher.cs`, `TeacherSeeder`, Session/Notification/Stats/Submission/Gradebook service, `tools/db/demo`, `teacher-features.ps1`. `AppTime` tách ra `Services/AppTime.cs`. Admin bỏ chuông thông báo khi đổi lịch lớp.
+- `dotnet build` PASS; `HasPendingModelChanges` = False (14 bảng, 2 migration). SQL migration qua sqlfluff (tsql) không lỗi.
+
+- Cổng Giáo viên viết lại tối giản trên 14 bảng (BE `Controllers/TeacherPortal`, FE `pages/teacher`): Dashboard, Lịch dạy (sinh từ `ClassSchedules`), Lớp + chi tiết, Học viên + hồ sơ, Bài tập (giao file theo khóa, xem/tải bài nộp trong `Assignments`), Nhận xét (`StudentFeedbacks`), Hồ sơ. Header bỏ chuông thông báo. API: `docs/api/TEACHER_API.md`.
+- Giữ lại **điểm danh** bằng 1 bảng `Attendances` (migration `AddAttendances`, tổng 15 bảng): trang Điểm danh (chọn lớp → ngày học → có mặt/muộn/vắng/có phép + ghi chú), cột chuyên cần ở chi tiết lớp, chuyên cần + vắng gần đây ở hồ sơ học viên, Dashboard báo buổi 7 ngày qua chưa điểm danh, Lịch dạy đánh dấu đã/chưa điểm danh. Ngày học tính từ `ClassSchedules`, không có bảng buổi học. `DatabaseBootstrapper` đổi tên `Attendances` kiểu Teacher cũ (cột `SessionId`) thành `Attendances_TeacherOld`.
+- FE: sửa import `Teacher4.png` sai hoa/thường (build lỗi trên Linux). `npm run typecheck`, `build` PASS; lint 0 lỗi (1 cảnh báo cũ AuthContext).
+
+**Việc tiếp theo**
+- Chạy thử trên máy có SQL Server: đăng nhập `teacher@demo.com` → giao bài → đăng nhập học viên cùng khóa nộp bài → GV tải bài, viết nhận xét → HV xem ở trang Feedback.
+- DB của Hải có thêm `Notifications`, `Announcements` (tạo tay, chưa có code) → muốn dùng thì thêm entity + migration.
+
+**Bẫy cần biết**
+- Chưa chạy thử trên SQL Server thật. File `.bak` tạo từ SQL Server 2025: máy bản cũ hơn sẽ không restore được (API tự chuyển sang tạo DB trống).
+- Máy từng chạy migration Teacher: bảng `Assignments` kiểu Teacher được đổi tên `Assignments_TeacherOld`; 22 bảng Teacher cũ vẫn nằm trong DB (code không dùng). Muốn sạch: xóa DB rồi `dotnet run`.
+
 ## [2026-11-08] Duy (Claude) — Dữ liệu demo cổng Giáo viên
 
 **Đã xong**

@@ -5,8 +5,7 @@ namespace EnglishCenter.Api.Entities;
 // - FileType = "Student": bài nộp của HV. StudentId = id học viên nộp.
 // (CHECK constraint trong DB: [FileType] IN ('Student','Teacher'))
 // TeacherId luôn là GV liên quan; mối liên hệ khóa học suy ra từ TeacherId (GV dạy lớp thuộc khóa).
-// Lưu ý: entity Teacher.Assignment (module Teacher) cũng map tới bảng "Assignments" nên entity này
-// được map dạng view (chỉ đọc) trong AppDbContext, còn ghi dữ liệu bằng SQL thô trong controller.
+// Ghi dữ liệu vẫn bằng SQL thô trong controller (giữ nguyên code module Student).
 public class AssignmentFile
 {
     public int Id { get; set; }

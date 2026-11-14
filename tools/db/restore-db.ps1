@@ -2,7 +2,7 @@
   restore-db.ps1 - Khoi phuc EnglishCenterDb tu file backup (.bak) vao SQL Server tren may minh
 
   Dung khi may minh CHUA co database EnglishCenterDb (loi "Cannot open database EnglishCenterDb").
-  File backup mac dinh: tools\db\EnglishCenterDb.bak (12 bang cua InitialCreate + du lieu demo:
+  File backup mac dinh: tools\db\EnglishCenterDb.bak (DB chung cua nhom, SQL Server 2025, du lieu demo:
   admin / teacher / teacher2 / student / student2 @demo.com, mat khau 123456).
 
   Script lam:
@@ -17,7 +17,7 @@
     powershell -ExecutionPolicy Bypass -File tools\db\restore-db.ps1 -BackupFile D:\EnglishCenterDb.bak
     powershell -ExecutionPolicy Bypass -File tools\db\restore-db.ps1 -Force    # ghi de DB dang co (MAT du lieu cu)
 
-  Sau khi restore: chay tools\db\teacher-features.ps1 de them 22 bang Teacher.
+  Thuong KHONG can chay script nay: dotnet run (Development) tu restore khi may chua co DB.
 #>
 param(
     [string]$BackupFile = "",
@@ -118,14 +118,14 @@ catch {
         $sqlBak = $public
         try { $header = Read-Header $sqlBak } catch { Fail "Van khong doc duoc backup: $($_.Exception.Message)`n    Hay chep file vao thu muc Backup cua SQL Server roi chay lai voi -BackupFile <duong dan>" }
     } elseif ($msg -match "version|phien ban|cannot be restored") {
-        Fail "Backup duoc tao tu SQL Server moi hon server cua ban.`n    $msg`n    Cach khac: tao DB moi bang EF -> powershell -ExecutionPolicy Bypass -File tools\db\teacher-features.ps1 -CreateFresh -SeedDemo"
+        Fail "Backup duoc tao tu SQL Server moi hon server cua ban.`n    $msg`n    Cach khac: dotnet run (EF tu tao DB trong + tai khoan demo)"
     } else { Fail "Khong doc duoc backup: $msg" }
 }
 $h = $header.Rows[0]
 $bakMajor = [int]$h.SoftwareVersionMajor
 Ok ("Backup cua DB '{0}', tao luc {1}, SQL Server ban {2}.{3}" -f $h.DatabaseName, $h.BackupFinishDate, $h.SoftwareVersionMajor, $h.SoftwareVersionMinor)
 if ($bakMajor -gt $serverMajor) {
-    Fail ("Backup tao tu SQL Server ban {0} (vd SQL Server 2025 = 17) nhung may ban la ban {1}. SQL Server khong restore nguoc phien ban.`n    Cach 1: cai SQL Server 2025 Developer/Express.`n    Cach 2: tao DB moi bang EF -> powershell -ExecutionPolicy Bypass -File tools\db\teacher-features.ps1 -CreateFresh -SeedDemo" -f $bakMajor, $serverMajor)
+    Fail ("Backup tao tu SQL Server ban {0} (vd SQL Server 2025 = 17) nhung may ban la ban {1}. SQL Server khong restore nguoc phien ban.`n    Cach 1: cai SQL Server 2025 Developer/Express.`n    Cach 2: dotnet run (EF tu tao DB trong + tai khoan demo)" -f $bakMajor, $serverMajor)
 }
 
 $files = Sql-Query "RESTORE FILELISTONLY FROM DISK = N'$(Q $sqlBak)'"
@@ -165,12 +165,7 @@ Ok "Da restore $Database"
 
 # ---------- 5. Kiem tra ----------
 Step "Kiem tra"
-$check = Sql-Query "SELECT (SELECT COUNT(*) FROM [$Database].dbo.Users) AS Users, (SELECT COUNT(*) FROM [$Database].sys.tables) AS Tables, CASE WHEN OBJECT_ID(N'[$Database].dbo.ClassSessions', N'U') IS NULL THEN 0 ELSE 1 END AS HasTeacher"
+$check = Sql-Query "SELECT (SELECT COUNT(*) FROM [$Database].dbo.Users) AS Users, (SELECT COUNT(*) FROM [$Database].sys.tables) AS Tables"
 $r = $check.Rows[0]
 Ok "So bang: $($r.Tables) | So tai khoan: $($r.Users)"
-if ($r.HasTeacher -eq 0) {
-    Warn "Chua co bang Teacher (ClassSessions...). Buoc tiep theo:"
-    Write-Host "    powershell -ExecutionPolicy Bypass -File tools\db\teacher-features.ps1 -SeedDemo" -ForegroundColor White
-} else {
-    Ok "Da co bang Teacher. Chay API: cd app\backend\EnglishCenter.Api\EnglishCenter.Api ; dotnet ef database update ; dotnet run --launch-profile http"
-}
+Ok "Chay API: cd app\backend\EnglishCenter.Api\EnglishCenter.Api ; dotnet run --launch-profile http"
