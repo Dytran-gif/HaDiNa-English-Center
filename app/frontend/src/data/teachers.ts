@@ -2,7 +2,7 @@ import type { Teacher } from "../types";
 import teacher1 from "../assets/images/teacher1.png";
 import teacher2 from "../assets/images/teacher2.png";
 import teacher3 from "../assets/images/teacher3.jpg";
-import teacher4 from "../assets/images/teacher4.png";
+import teacher4 from "../assets/images/Teacher4.png";
 import teacher5 from "../assets/images/teacher5.png";
 
 export const teachers: Teacher[] = [

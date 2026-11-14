@@ -212,3 +212,19 @@ textarea.t-input { resize: vertical; min-height: 80px; }
 
 /* Trong portal Teacher, tone "red" của Tag dùng cho cảnh báo -> hiện đỏ thật (không đổi component dùng chung) */
 .teacher-layout .tag--red { background: #fdecec; color: var(--red-hover); }
+
+/* điểm danh */
+.t-attendance { display: grid; grid-template-columns: minmax(280px, 340px) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 1000px) { .t-attendance { grid-template-columns: 1fr; } }
+.t-session-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; max-height: 70vh; overflow-y: auto; }
+.t-session { width: 100%; text-align: left; border: 1px solid var(--line); background: var(--paper); border-radius: var(--radius-sm); padding: 8px 10px; cursor: pointer; font-family: inherit; display: flex; justify-content: space-between; gap: 8px; align-items: center; color: var(--ink); }
+.t-session:hover { border-color: var(--blue); }
+.t-session.active { border-color: var(--blue); background: var(--blue-light); }
+.teacher-attendance-btn.active.is-Absent { background-color: #fef2f2; border-color: var(--red); color: var(--red); }
+.teacher-attendance-btn.active.is-Late { background-color: #fffbeb; border-color: #f59e0b; color: #b45309; }
+.teacher-attendance-btn.active.is-Excused { background-color: #f5f3ff; border-color: #8b5cf6; color: #6d28d9; }
+.teacher-attendance-btn:disabled { cursor: not-allowed; opacity: .6; }
+.t-attendance .teacher-attendance-actions { flex-wrap: nowrap; }
+.t-attendance .teacher-table td:last-child { min-width: 160px; }
+.t-session__tag { white-space: nowrap; flex-shrink: 0; }
+.t-session__date { white-space: nowrap; }

@@ -5,13 +5,11 @@ ASP.NET Core Web API (.NET 10) + EF Core + SQL Server + JWT.
 ## Yêu cầu
 - .NET SDK 10
 - SQL Server (Developer / Express / LocalDB)
-- `dotnet tool install --global dotnet-ef`
 
 ## Chạy
 ```powershell
 cd EnglishCenter.Api\EnglishCenter.Api
-dotnet ef database update
-dotnet run
+dotnet run          # tự tạo/cập nhật DB EnglishCenterDb (xem docs/DATABASE.md)
 ```
 API ở `http://localhost:5220`. Tài khoản demo (mật khẩu `123456`): `admin@demo.com`, `teacher@demo.com`, `student@demo.com`.
 

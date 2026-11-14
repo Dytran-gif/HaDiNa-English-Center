@@ -17,15 +17,12 @@ public class ClassesController : ControllerBase
     private readonly AppDbContext _db;
     private readonly ScheduleService _schedules;
     private readonly EnrollmentService _enrollments;
-    private readonly NotificationService _notify;
 
-    public ClassesController(AppDbContext db, ScheduleService schedules, EnrollmentService enrollments,
-        NotificationService notify)
+    public ClassesController(AppDbContext db, ScheduleService schedules, EnrollmentService enrollments)
     {
         _db = db;
         _schedules = schedules;
         _enrollments = enrollments;
-        _notify = notify;
     }
 
     private static DateOnly Today() => AppTime.Today;
@@ -251,7 +248,6 @@ public class ClassesController : ControllerBase
         // Xóa lịch cũ rồi thêm lịch mới, làm trong một transaction
         await using var tx = await _db.Database.BeginTransactionAsync();
 
-        var oldTeacherId = cls.TeacherId;
         cls.Name = req.Name.Trim();
         cls.CourseId = req.CourseId;
         cls.TeacherId = req.TeacherId;
@@ -274,14 +270,6 @@ public class ClassesController : ControllerBase
         await _db.SaveChangesAsync();
 
         await tx.CommitAsync();
-
-        // Chuông thông báo cho giáo viên: lịch lớp bị đổi (buổi học cụ thể tự đồng bộ khi giáo viên mở lịch)
-        var teacherUserIds = await _db.Teachers
-            .Where(t => t.Id == cls.TeacherId || t.Id == oldTeacherId)
-            .Select(t => t.UserId).ToListAsync();
-        _notify.Add(teacherUserIds, "ScheduleChange", $"Lớp {cls.Name} vừa được cập nhật lịch học / phân công",
-            null, $"/teacher/classes/{id}");
-        await _db.SaveChangesAsync();
 
         var result = await BuildDetail(id);
         return Ok(result);

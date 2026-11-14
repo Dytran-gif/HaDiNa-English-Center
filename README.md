@@ -18,9 +18,7 @@ Repo dùng khung **harness** cho Claude Code: luật + context + quy trình **Pl
 ```powershell
 # 1. Backend
 cd app\backend\EnglishCenter.Api\EnglishCenter.Api
-dotnet tool install --global dotnet-ef        # lần đầu
-dotnet ef database update
-dotnet run                                    # http://localhost:5220
+dotnet run                                    # http://localhost:5220 — tự tạo/cập nhật DB
 
 # 2. Frontend (terminal khác)
 cd app\frontend
@@ -30,7 +28,7 @@ npm run dev                                   # http://localhost:5173
 
 Tài khoản demo, mật khẩu `123456`: `admin@demo.com` · `teacher@demo.com` · `student@demo.com`
 
-> ⚠️ Trước khi chạy BE lần đầu cần có migration `TeacherFeatures`: xem [`plans/00`](./plans/00-be-migration-teacher-features.md).
+> **Database tự dựng, không cần migration/script.** Máy chưa có DB thì lần đầu `dotnet run` tự restore DB chung của nhóm (`tools/db/EnglishCenterDb.bak`, cần SQL Server 2025); không restore được thì tạo DB trống + tài khoản demo. Máy đã có DB thì chỉ bổ sung phần thiếu. Xem [`docs/DATABASE.md`](./docs/DATABASE.md).
 
 ---
 
