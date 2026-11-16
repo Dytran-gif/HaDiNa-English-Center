@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { ApiError, request, downloadFile } from "../apiClient";
-import type { Course } from "../../types/StudentTypes/MainTypes";
+import type { Course, AttendancePage } from "../../types/StudentTypes/MainTypes";
 
 export interface StudentDashboardResponse {
   student: {
@@ -588,6 +588,42 @@ export function useStudentCourseDetail(courseId: string | undefined) {
 
     return () => controller.abort();
   }, [api, token, courseId]);
+
+  return { data, error, loading };
+}
+
+// GET api/student/attendance?courseId=&page= - điểm danh của mình trong khóa, 10 buổi/trang
+export function useStudentAttendance(courseId: string | undefined, page: number) {
+  const api = useStudentApi();
+  const { token } = useAuth();
+  const [data, setData] = useState<AttendancePage>();
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!token || !courseId) {
+      setLoading(false);
+      return;
+    }
+    const controller = new AbortController();
+    setLoading(true);
+    setError("");
+
+    api.get<AttendancePage>(`attendance?courseId=${courseId}&page=${page}`, controller.signal)
+      .then((res) => {
+        if (!controller.signal.aborted) setData(res);
+      })
+      .catch((err) => {
+        if (!controller.signal.aborted) {
+          setError(err instanceof Error ? err.message : "Không tải được dữ liệu điểm danh.");
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [api, token, courseId, page]);
 
   return { data, error, loading };
 }

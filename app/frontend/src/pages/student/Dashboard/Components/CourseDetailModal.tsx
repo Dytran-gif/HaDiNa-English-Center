@@ -4,6 +4,7 @@ import {
     useStudentApi,
     useStudentCourseDetail,
     useStudentAssignments,
+    useStudentAttendance,
     type StudentAssignmentItem
 } from "../../../../services/student/useStudentApi";
 import "./CourseDetailModal.css";
@@ -18,16 +19,33 @@ const DAY_LABELS: Record<string, string> = {
     Fri: "Thứ 6", Sat: "Thứ 7", Sun: "Chủ nhật"
 };
 
+const DOW_LABELS = ["Chủ nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
+
+const ATT_LABEL: Record<string, string> = {
+    Present: "Có mặt", Late: "Đi muộn", Absent: "Vắng", Excused: "Có phép"
+};
+
+const ATT_ICON: Record<string, string> = {
+    Present: "fa-circle-check", Late: "fa-clock", Absent: "fa-circle-xmark", Excused: "fa-circle-info"
+};
+
 function formatDate(d?: string) {
     if (!d) return "—";
     const parts = d.split("-");
     return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : d;
 }
 
+function weekdayLabel(d: string) {
+    const dt = new Date(`${d}T00:00:00`);
+    return isNaN(dt.getTime()) ? "" : DOW_LABELS[dt.getDay()];
+}
+
 export default function CourseDetailModal({ course, onClose }: Props) {
-    const [tab, setTab] = useState<'info' | 'assignments'>('info');
+    const [tab, setTab] = useState<'info' | 'assignments' | 'attendance'>('info');
+    const [attPage, setAttPage] = useState(1);
     const { data: detail, loading: detailLoading } = useStudentCourseDetail(course.id);
     const { data: assignments, loading, reload } = useStudentAssignments(course.id);
+    const { data: attendance, loading: attLoading, error: attError } = useStudentAttendance(course.id, attPage);
     const api = useStudentApi();
     const [busyId, setBusyId] = useState<number | null>(null);
 
@@ -89,6 +107,12 @@ export default function CourseDetailModal({ course, onClose }: Props) {
                         onClick={() => setTab('assignments')}
                     >
                         Bài tập{assignments.length > 0 ? ` (${assignments.length})` : ""}
+                    </button>
+                    <button
+                        className={`cdm-tab ${tab === 'attendance' ? 'active' : ''}`}
+                        onClick={() => setTab('attendance')}
+                    >
+                        Điểm danh{attendance && attendance.totalItems > 0 ? ` (${attendance.totalItems})` : ""}
                     </button>
                 </div>
 
@@ -228,6 +252,97 @@ export default function CourseDetailModal({ course, onClose }: Props) {
                                     </div>
                                 </div>
                             ))}
+                        </div>
+                    )}
+
+                    {tab === 'attendance' && (
+                        <div className="cdm-attendance">
+                            {attLoading && <p className="cdm-muted">Đang tải điểm danh...</p>}
+                            {!attLoading && attError && <p className="cdm-error">{attError}</p>}
+                            {!attLoading && !attError && attendance && attendance.totalItems === 0 && (
+                                <div className="cdm-att-empty">
+                                    <i className="fa-solid fa-calendar-check"></i>
+                                    <p>Chưa có dữ liệu điểm danh cho khóa học này.</p>
+                                </div>
+                            )}
+                            {!attLoading && !attError && attendance && attendance.totalItems > 0 && (
+                                <>
+                                    <div className="cdm-att-summary">
+                                        <div className="cdm-att-chip total">
+                                            <span>Tổng buổi</span><strong>{attendance.totalItems}</strong>
+                                        </div>
+                                        <div className="cdm-att-chip present">
+                                            <span>Có mặt</span><strong>{attendance.summary.present}</strong>
+                                        </div>
+                                        <div className="cdm-att-chip late">
+                                            <span>Đi muộn</span><strong>{attendance.summary.late}</strong>
+                                        </div>
+                                        <div className="cdm-att-chip absent">
+                                            <span>Vắng</span><strong>{attendance.summary.absent}</strong>
+                                        </div>
+                                        <div className="cdm-att-chip excused">
+                                            <span>Có phép</span><strong>{attendance.summary.excused}</strong>
+                                        </div>
+                                    </div>
+
+                                    <table className="cdm-att-table">
+                                        <thead>
+                                            <tr><th>Số buổi</th><th>Ngày</th><th>Trạng thái</th></tr>
+                                        </thead>
+                                        <tbody>
+                                            {attendance.items.map((a) => (
+                                                <tr key={a.id}>
+                                                    <td className="cdm-att-no">Buổi {a.sessionNumber}</td>
+                                                    <td>
+                                                        {formatDate(a.date)}
+                                                        <span className="cdm-att-dow">{weekdayLabel(a.date)}</span>
+                                                    </td>
+                                                    <td>
+                                                        <span className={`cdm-att-badge ${a.status.toLowerCase()}`}>
+                                                            <i className={`fa-solid ${ATT_ICON[a.status] ?? 'fa-circle-info'}`}></i>
+                                                            {ATT_LABEL[a.status] ?? a.status}
+                                                        </span>
+                                                        {a.note && <span className="cdm-att-note">{a.note}</span>}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+
+                                    <div className="cdm-att-pager">
+                                        <span className="cdm-att-range">
+                                            {attendance.items.length} / {attendance.totalItems} buổi · trang {attendance.page}/{Math.max(1, Math.ceil(attendance.totalItems / attendance.pageSize))}
+                                        </span>
+                                        <div className="cdm-att-pages">
+                                            <button
+                                                className="cdm-page-btn"
+                                                disabled={attendance.page <= 1}
+                                                onClick={() => setAttPage(p => p - 1)}
+                                                aria-label="Trang trước"
+                                            >
+                                                <i className="fa-solid fa-chevron-left"></i>
+                                            </button>
+                                            {Array.from({ length: Math.max(1, Math.ceil(attendance.totalItems / attendance.pageSize)) }, (_, i) => i + 1).map((p) => (
+                                                <button
+                                                    key={p}
+                                                    className={`cdm-page-btn ${p === attendance.page ? 'active' : ''}`}
+                                                    onClick={() => setAttPage(p)}
+                                                >
+                                                    {p}
+                                                </button>
+                                            ))}
+                                            <button
+                                                className="cdm-page-btn"
+                                                disabled={attendance.page >= Math.ceil(attendance.totalItems / attendance.pageSize)}
+                                                onClick={() => setAttPage(p => p + 1)}
+                                                aria-label="Trang sau"
+                                            >
+                                                <i className="fa-solid fa-chevron-right"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     )}
                 </div>

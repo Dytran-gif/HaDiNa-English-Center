@@ -1,14 +1,13 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import "../teacher-shared.css";
 import Card from "../../../components/ui/Card";
 import Button from "../../../components/ui/Button";
 import { useAuth } from "../../../context/AuthContext";
 import { assetUrl } from "../../../services/apiClient";
 import { errorMessage, useTeacherApi, useTeacherQuery } from "../../../services/teacher/teacherApi";
-import type { TeacherClass, TeacherProfile, TeacherRatings, Timesheet } from "../../../types/teacherApi";
-import { Empty, Notice, QueryState, StatusTag } from "../Components/Common/Feedback";
-import { classStatusLabel, eventKindLabel, fmtDate, fmtDateTime, fmtNumber, fmtTime, todayStr } from "../Components/Common/format";
+import type { TeacherProfile } from "../../../types/teacherApi";
+import { Notice, QueryState } from "../Components/Common/Feedback";
+import { fmtDate } from "../Components/Common/format";
 
 type NoticeState = { text: string; tone: "ok" | "error" };
 
@@ -81,114 +80,6 @@ export default function Profile() {
           </div>
         )}
       </QueryState>
-      <TimesheetCard />
-      <div className="t-grid--2">
-        <RatingsCard />
-        <ClassHistory />
-      </div>
     </div>
-  );
-}
-
-function TimesheetCard() {
-  const [month, setMonth] = useState(todayStr().slice(0, 7));
-  const { data, loading, error, reload } = useTeacherQuery<Timesheet>(`profile/timesheet?month=${month}`);
-  return (
-    <Card>
-      <h3 className="t-card-title">Bảng công <input className="t-input t-input--sm" type="month" value={month} onChange={e => setMonth(e.target.value)} aria-label="Tháng" /></h3>
-      <QueryState loading={loading} error={error} onRetry={reload}>
-        {data && (
-          <>
-            <div className="t-grid--stats">
-              <div className="t-stat"><span className="t-stat__value">{data.totalSessions}</span><span className="t-stat__label">Tổng buổi</span></div>
-              <div className="t-stat"><span className="t-stat__value">{fmtNumber(data.totalHours)}</span><span className="t-stat__label">Tổng giờ</span></div>
-              <div className="t-stat"><span className="t-stat__value">{data.makeupSessions}</span><span className="t-stat__label">Buổi dạy bù</span></div>
-              <div className="t-stat"><span className="t-stat__value">{data.oneOnOneSessions}</span><span className="t-stat__label">Buổi 1 kèm 1</span></div>
-              <div className={`t-stat ${data.sessionsNotMarked ? "t-stat--warn" : ""}`}><span className="t-stat__value">{data.sessionsNotMarked}</span><span className="t-stat__label">Buổi chưa điểm danh (chưa tính công)</span></div>
-            </div>
-            {data.details.length === 0 ? <Empty>Chưa có buổi được tính công trong tháng.</Empty> : (
-              <div className="t-table-wrap" style={{ marginTop: 12, maxHeight: 320, overflowY: "auto" }}>
-                <table className="teacher-table">
-                  <thead><tr><th>Ngày</th><th>Giờ</th><th>Loại</th><th>Nội dung</th><th>Số giờ</th></tr></thead>
-                  <tbody>
-                    {data.details.map(d => (
-                      <tr key={`${d.kind}-${d.id}`}>
-                        <td>{fmtDate(d.date)}</td><td>{fmtTime(d.startTime)}–{fmtTime(d.endTime)}</td><td>{eventKindLabel[d.kind] ?? d.kind}</td>
-                        <td>{d.title}{d.sessionNo ? ` · B${d.sessionNo}` : ""}</td><td>{fmtNumber(d.hours, 2)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </>
-        )}
-      </QueryState>
-    </Card>
-  );
-}
-
-function RatingsCard() {
-  const { data, loading, error, reload } = useTeacherQuery<TeacherRatings>("profile/ratings");
-  const max = Math.max(1, ...(data?.distribution.map(d => d.count) ?? [1]));
-  return (
-    <Card>
-      <h3 className="t-card-title">Đánh giá từ học viên</h3>
-      <QueryState loading={loading} error={error} onRetry={reload}>
-        {data && (data.totalRatings === 0 ? <Empty>Chưa có đánh giá sao.</Empty> : (
-          <>
-            <div className="t-row"><span className="t-overall">{fmtNumber(data.averageScore, 2)}</span><span className="t-muted">/ 5 · {data.totalRatings} lượt</span></div>
-            {[...data.distribution].reverse().map(d => (
-              <div key={d.score} className="t-row t-small" style={{ gap: 8 }}>
-                <span style={{ width: 28 }}>{d.score}★</span>
-                <div className="t-progress" style={{ flex: 1 }}><span style={{ width: `${(d.count / max) * 100}%` }} /></div>
-                <span style={{ width: 24 }}>{d.count}</span>
-              </div>
-            ))}
-            <ul className="t-list" style={{ marginTop: 8 }}>
-              {data.comments.map(c => (
-                <li key={c.id}><div><div>{"★".repeat(c.score)} <span className="t-muted t-small">{c.studentName}{c.className ? ` · ${c.className}` : ""}</span></div>{c.comment && <div>{c.comment}</div>}</div><span className="t-muted t-small">{fmtDateTime(c.createdAt)}</span></li>
-              ))}
-            </ul>
-          </>
-        ))}
-        {data && (
-          <>
-            <h4 style={{ margin: "16px 0 4px" }}>Phản hồi học viên gửi ({data.feedbacks?.length ?? 0})</h4>
-            {!data.feedbacks?.length ? <Empty>Chưa có phản hồi.</Empty> : (
-              <ul className="t-list">
-                {data.feedbacks.map(f => (
-                  <li key={f.id}>
-                    <div><div className="t-muted t-small">{f.studentName} · {f.className}</div><div className="t-wrap">{f.content}</div></div>
-                    <span className="t-muted t-small">{fmtDateTime(f.createdAt)}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </>
-        )}
-      </QueryState>
-    </Card>
-  );
-}
-
-function ClassHistory() {
-  const { data, loading, error, reload } = useTeacherQuery<(Pick<TeacherClass, "id" | "name" | "courseName" | "startDate" | "endDate" | "status"> & { studentCount: number })[]>("profile/classes");
-  return (
-    <Card>
-      <h3 className="t-card-title">Lịch sử lớp</h3>
-      <QueryState loading={loading} error={error} onRetry={reload}>
-        {data && (data.length === 0 ? <Empty>Chưa có lớp.</Empty> : (
-          <ul className="t-list">
-            {data.map(c => (
-              <li key={c.id}>
-                <div><Link className="t-link" to={`/teacher/classes/${c.id}`}>{c.name}</Link><div className="t-muted t-small">{c.courseName} · {fmtDate(c.startDate)} – {fmtDate(c.endDate)} · {c.studentCount} HV</div></div>
-                <StatusTag status={c.status} labels={classStatusLabel} />
-              </li>
-            ))}
-          </ul>
-        ))}
-      </QueryState>
-    </Card>
   );
 }

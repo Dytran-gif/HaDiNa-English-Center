@@ -1,104 +1,66 @@
 # Database — nằm ở đâu, gồm những gì
 
-> Cập nhật 08/11/2026. Dự án dùng **EF Core Code-First**: bảng được định nghĩa bằng class C#, EF sinh migration, migration tạo bảng trong SQL Server.
-> Muốn đổi bảng: sửa **Entity + cấu hình DbContext** → tạo **migration** (chỉ 1 người) → `dotnet ef database update`. Không tạo bảng bằng tay trong SSMS.
+> Cập nhật 14/11/2026. Dự án dùng **EF Core Code-First**. Schema chuẩn là **DB chung của nhóm** (`tools/db/EnglishCenterDb.bak`, bản của Hải, 14 bảng) + bảng `Attendances` cho điểm danh = **15 bảng**. Bỏ toàn bộ bảng riêng khác của Teacher.
+> Muốn đổi bảng: sửa **Entity + `AppDbContext`** → tạo **migration** (chỉ 1 người) → commit. Người khác `git pull` + `dotnet run` là DB tự cập nhật. **Không tạo bảng bằng tay trong SSMS** (máy khác sẽ không có).
 
-## 1. Năm chỗ cần biết (đi từ code xuống ổ đĩa)
+## 0. Tự dựng database (không cần migration tay)
 
-| # | Ở đâu | Là gì |
-|---|---|---|
-| 1 | `app/backend/EnglishCenter.Api/EnglishCenter.Api/appsettings.json` → `ConnectionStrings:Default` | Chuỗi kết nối: `Server=localhost;Database=EnglishCenterDb;Trusted_Connection=True;TrustServerCertificate=True;` (đăng nhập bằng tài khoản Windows) |
-| 2 | `.../Entities/*.cs` | **Mỗi class = một bảng**, mỗi property = một cột (vd. `Submission.cs` → bảng `Submissions`) |
-| 3 | `.../Data/AppDbContext.cs` (+ `AppDbContext.Teacher.cs`, `AppDbContext.Student.cs`) | Danh sách bảng (`DbSet<...>`) và luật: độ dài cột, khóa ngoại, index, CHECK. Chia 3 file theo vùng để đỡ xung đột |
-| 4 | `.../Migrations/` | Lịch sử thay đổi schema. `AppDbContextModelSnapshot.cs` = ảnh chụp schema hiện tại. Bảng `__EFMigrationsHistory` trong DB ghi migration nào đã chạy |
-| 5 | SQL Server trên máy (instance `MSSQLSERVER`, SQL Server 2025) | File dữ liệu thật: `C:\Program Files\Microsoft SQL Server\MSSQL17.MSSQLSERVER\MSSQL\DATA\EnglishCenterDb.mdf` + `.ldf`. **Mỗi máy một DB riêng**, không commit file này |
+Chạy API ở Development (`dotnet run`, hoặc profile `http`/`https` trong Visual Studio), `Data/DatabaseBootstrapper.cs` làm lần lượt, phần nào có rồi thì bỏ qua:
 
-Ngoài ra:
-- `.../Data/DbSeeder.cs`, `TeacherSeeder.cs`: dữ liệu demo (5 tài khoản, khóa học, lớp…), chỉ chạy khi `--Database:InitializeOnStartup=true`.
-- `tools/db/EnglishCenterDb.bak`: bản backup DB nhóm (chỉ có 12 bảng gốc). `restore-db.ps1` khôi phục, `teacher-features.ps1` áp migration + seed.
-- `docs/admin/sql/*.sql`: script sửa tay của Admin/Student (TokenVersion, seed test, StudentFeedbacks). Bảng `StudentFeedbacks` nay **đã có trong migration**, không cần chạy script đó nữa.
-- File upload (tài liệu, bài nộp, ghi âm, ảnh đại diện) **không** lưu trong DB: lưu ở thư mục `wwwroot/uploads/...` của backend, DB chỉ lưu đường dẫn `/uploads/...`.
+1. **Máy chưa có DB** → restore `tools/db/EnglishCenterDb.bak` (có sẵn dữ liệu của nhóm). Restore không được (SQL Server cũ hơn 2025, SQL Server không đọc được file…) thì EF tạo DB trống.
+2. **Sửa DB cũ**: DB tạo tay chưa ghi `InitialCreate` thì ghi nhận. Máy từng chạy migration Teacher cũ có bảng `Assignments` / `Attendances` kiểu Teacher → đổi tên thành `Assignments_TeacherOld` / `Attendances_TeacherOld` (giữ dữ liệu, xóa tay sau nếu không cần).
+3. **Áp migration còn thiếu** (chỉ thêm bảng/cột, không xóa dữ liệu).
+4. **DB chưa có user** → tạo `admin / teacher / student @demo.com`, mật khẩu `123456`.
 
-## 2. Migration hiện có (theo thứ tự)
+Cấu hình: `Database:AutoSetup` (mặc định bật ở Development), `Database:BackupFile` (đổi file .bak). Tắt: `dotnet run -- --Database:AutoSetup=false`.
+
+Lỗi thường gặp: *Cannot connect to SQL Server* → SQL Server chưa chạy hoặc chuỗi kết nối sai (`appsettings.json` → `ConnectionStrings:Default`; máy dùng SQL Express thì `Server=localhost\\SQLEXPRESS`). Muốn lấy lại dữ liệu chung từ đầu: xóa DB `EnglishCenterDb` trong SSMS rồi `dotnet run`.
+
+## 1. Những chỗ cần biết
+
+| Ở đâu | Là gì |
+|---|---|
+| `app/backend/EnglishCenter.Api/EnglishCenter.Api/appsettings.json` → `ConnectionStrings:Default` | Chuỗi kết nối, mặc định `Server=localhost;Database=EnglishCenterDb;Trusted_Connection=True;TrustServerCertificate=True;` |
+| `.../Entities/*.cs` | Mỗi class = một bảng (riêng `AssignmentFile` → bảng `Assignments`) |
+| `.../Data/AppDbContext.cs` (+ `AppDbContext.Student.cs`) | Danh sách bảng và luật: độ dài cột, khóa ngoại, index, CHECK |
+| `.../Migrations/` | Lịch sử schema. `AppDbContextModelSnapshot.cs` = ảnh chụp schema hiện tại |
+| `tools/db/EnglishCenterDb.bak` | DB chung của nhóm (SQL Server 2025), được restore tự động khi máy chưa có DB. `restore-db.ps1` để restore tay |
+| `wwwroot/uploads/...` | File upload (bài tập, bài nộp, ảnh đại diện). DB chỉ lưu đường dẫn |
+
+## 2. Migration hiện có
 
 | Migration | Nội dung |
 |---|---|
-| `20261019064930_InitialCreate` | 12 bảng gốc: Users, Teachers, Students, Courses, Rooms, Classes, ClassSchedules, Enrollments, Payments, Posts, HomepageImages, CenterSettings |
-| `20261102164417_TeacherFeatures` | 22 bảng Teacher (buổi học, điểm danh, bài tập, chấm bài, kiểm tra, nhận xét, yêu cầu, thông báo…) + cột `Students.TargetBand` |
-| `20261108140000_StudentFeedbackAndSubmissionFile` | Bảng `StudentFeedbacks` (trang Feedback của Student) + cột `Submissions.AttachmentUrl` (file học viên đính kèm khi nộp bài). Viết `IF NOT EXISTS` nên máy đã chạy script SQL cũ vẫn áp được |
+| `20261019064930_InitialCreate` | 12 bảng gốc |
+| `20261114065932_StudentModuleTables` | `Assignments` (file bài tập/bài nộp) + `StudentFeedbacks`. Hai bảng này trước được tạo tay, nên migration viết `IF NOT EXISTS`: DB đã có thì chỉ bổ sung cột/index thiếu |
+| `20261114073637_AddAttendances` | Bảng `Attendances` (điểm danh theo ngày học) |
 
-Tổng cộng **35 bảng** (+ `__EFMigrationsHistory`).
+Migration `TeacherFeatures` và `StudentFeedbackAndSubmissionFile` **đã bỏ** (22 bảng Teacher không còn trong code).
 
-## 3. Các bảng theo nhóm chức năng
+## 3. Các bảng (15)
 
-**Tài khoản & người**
-- `Users` (email, mật khẩu BCrypt, `Role` = admin / teacher / student, `TokenVersion`) — 1 user ↔ 1 hồ sơ `Teachers` hoặc `Students` (`UserId`).
+| Nhóm | Bảng |
+|---|---|
+| Tài khoản | `Users` (email, mật khẩu BCrypt, `Role` admin/teacher/student, `TokenVersion`) · `Teachers` · `Students` (1 user ↔ 1 hồ sơ) |
+| Khóa & lớp | `Courses` · `Classes` (khóa, giáo viên, ngày, sĩ số) · `ClassSchedules` (thứ, giờ, phòng) · `Rooms` |
+| Ghi danh & học phí | `Enrollments` · `Payments` |
+| Học tập | `Assignments`: `FileType='Teacher'` = file bài GV giao (`StudentId` NULL), `FileType='Student'` = bài HV nộp (`AssignmentId` = bài gốc), `CourseId` = khóa · `StudentFeedbacks` (GV nhận xét HV theo lớp) |
+| Điểm danh | `Attendances`: 1 dòng = 1 học viên · 1 lớp · 1 ngày học (unique `ClassId, StudentId, Date`), `Status` Present/Late/Absent/Excused, `Note`. Ngày học tính từ `ClassSchedules`, không có bảng buổi học. Xóa lớp/học viên thì xóa theo |
+| Trang công khai | `Posts` · `HomepageImages` · `CenterSettings` (1 dòng, `Id = 1`) |
 
-**Khóa học & lớp** (Admin tạo)
-- `Courses` (khóa: tên, band từ → đến, tổng số buổi, học phí) → `Classes` (lớp cụ thể: khóa, giáo viên, ngày bắt đầu/kết thúc, sĩ số tối đa, link online)
-- `ClassSchedules` (lịch tuần: thứ, giờ, `Rooms`) → sinh ra `ClassSessions` (từng buổi có ngày, giáo án, nhật ký)
-- `Enrollments` (học viên ghi danh vào lớp, `Status` Active/…) · `Payments` (học phí)
+DB của Hải còn 2 bảng `Notifications`, `Announcements` tạo tay, **chưa có trong code/migration**. Khi cần dùng thì thêm entity + migration để máy khác cũng có.
 
-**Giảng dạy** (Teacher)
-- `SyllabusLessons` (giáo án theo lớp) · `SessionMaterials` (tài liệu theo buổi — **cho học viên xem/tải**) · `Attendances` (điểm danh từng học viên từng buổi)
+## 4. Xem DB bằng mắt
 
-**Bài tập & chấm bài**
-- `Assignments` (đề, hạn nộp, kỹ năng, file đề) → `AssignmentStudents` (giao riêng cho vài HV) · `AssignmentQuestions` (câu Quiz)
-- `Submissions` — **nơi lưu bài học viên nộp**: `Content` (bài viết), `AudioUrl` (bài nói), `AnswersJson` (Quiz), `AttachmentUrl` (file đính kèm), điểm IELTS từng tiêu chí, `OverallBand`, nhận xét, lần nộp (`AttemptNo`)
-- `SubmissionAnnotations` (lỗi highlight trên bài) · `CommentTemplates` (nhận xét mẫu)
+1. SSMS → Server `localhost` → *Windows Authentication* → Connect.
+2. *Databases* → `EnglishCenterDb` → *Tables* → chuột phải → *Select Top 1000 Rows*.
+3. `SELECT * FROM __EFMigrationsHistory ORDER BY MigrationId;` — phải có đủ 3 dòng ở mục 2.
 
-**Điểm**
-- `Exams` → `ExamResults` (kiểm tra định kỳ / giữa kỳ / cuối kỳ) · `GradeConfigs` (trọng số tính điểm tổng kết)
+## 5. Lệnh hay dùng (PowerShell, thư mục `app\backend\EnglishCenter.Api\EnglishCenter.Api`)
 
-**Nhận xét & phản hồi**
-- `StudentReviews` — **giáo viên nhận xét từng học viên** (tháng / giữa khóa / cuối khóa)
-- `PromotionRecommendations` (đề xuất lên lớp) · `TeacherRatings` (HV chấm sao GV) · `StudentFeedbacks` (HV gửi phản hồi chữ cho GV/lớp)
-
-**Yêu cầu, lịch 1 kèm 1, thông báo**
-- `StudentRequests` (HV xin nghỉ / đổi buổi / đặt 1 kèm 1) · `TeacherAvailabilities` (giờ rảnh GV) → `OneOnOneSessions`
-- `TeacherRequests` (GV xin mở lại điểm danh; đơn nghỉ của GV đã bỏ)
-- `Notifications` (chuông) · `Announcements` (GV gửi thông báo cho lớp)
-
-**Website**: `Posts` (blog), `HomepageImages`, `CenterSettings`.
-
-## 4. Sơ đồ quan hệ chính
-
-```mermaid
-erDiagram
-  Users ||--o| Teachers : "UserId"
-  Users ||--o| Students : "UserId"
-  Courses ||--o{ Classes : ""
-  Teachers ||--o{ Classes : "phụ trách"
-  Classes ||--o{ ClassSchedules : "lịch tuần"
-  Rooms ||--o{ ClassSchedules : ""
-  Classes ||--o{ ClassSessions : "từng buổi"
-  Classes ||--o{ Enrollments : ""
-  Students ||--o{ Enrollments : ""
-  ClassSessions ||--o{ Attendances : ""
-  ClassSessions ||--o{ SessionMaterials : ""
-  Classes ||--o{ Assignments : ""
-  Assignments ||--o{ Submissions : ""
-  Students ||--o{ Submissions : "nộp"
-  Submissions ||--o{ SubmissionAnnotations : ""
-  Classes ||--o{ Exams : ""
-  Exams ||--o{ ExamResults : ""
-  Students ||--o{ StudentReviews : "được nhận xét"
-  Students ||--o{ StudentFeedbacks : "gửi phản hồi"
-```
-
-## 5. Xem DB bằng mắt
-
-1. Mở **SQL Server Management Studio (SSMS)** → Server name `localhost` → Authentication: *Windows Authentication* → Connect.
-2. *Databases* → `EnglishCenterDb` → *Tables*. Chuột phải bảng → *Select Top 1000 Rows*.
-3. Kiểm tra migration đã chạy: `SELECT * FROM __EFMigrationsHistory ORDER BY MigrationId;` — phải có đủ 3 dòng ở mục 2.
-4. (Tùy chọn) *Database Diagrams* → *New Database Diagram* → chọn các bảng để xem sơ đồ khóa ngoại.
-
-## 6. Lệnh hay dùng (PowerShell)
-
-| Việc | Thư mục | Lệnh |
-|---|---|---|
-| Áp migration mới sau khi `git pull` | `app\backend\EnglishCenter.Api\EnglishCenter.Api` | `dotnet ef database update` |
-| Kiểm tra code và snapshot khớp nhau | như trên | `dotnet ef migrations has-pending-model-changes` (phải báo *No changes*) |
-| Liệt kê migration | như trên | `dotnet ef migrations list` |
-| Seed dữ liệu demo | như trên | `dotnet run --launch-profile http -- --Database:InitializeOnStartup=true` |
-| Máy chưa có DB | gốc repo | `powershell -ExecutionPolicy Bypass -File tools\db\teacher-features.ps1 -SeedDemo` |
+| Việc | Lệnh |
+|---|---|
+| Chạy API + tự dựng/cập nhật DB | `dotnet run` |
+| Tạo migration khi đổi entity (1 người) | `dotnet ef migrations add <Ten>` rồi commit `Migrations/` |
+| Kiểm tra code và snapshot khớp nhau | `dotnet ef migrations has-pending-model-changes` (phải *No changes*) |
+| Chạy mà không đụng DB | `dotnet run -- --Database:AutoSetup=false` |

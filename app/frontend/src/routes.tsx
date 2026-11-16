@@ -39,17 +39,12 @@ import TeacherDashboard from "./pages/teacher/Dashboard/Dashboard";
 import TeacherClasses from "./pages/teacher/Classes/Classes";
 import TeacherSchedule from "./pages/teacher/Schedule/Schedule";
 import TeacherProfile from "./pages/teacher/Profile/Profile";
-import TeacherAttendance from "./pages/teacher/Attendance/Attendance";
-import TeacherGrades from "./pages/teacher/Grades/Grades";
 import TeacherAssignments from "./pages/teacher/Assignments/Assignments";
-import TeacherMaterials from "./pages/teacher/Materials/Materials";
 import TeacherClassDetail from "./pages/teacher/Classes/ClassDetail";
-import TeacherSessionDetail from "./pages/teacher/Sessions/SessionDetail";
-import TeacherGrading from "./pages/teacher/Grading/Grading";
-import TeacherGradingDetail from "./pages/teacher/Grading/GradingDetail";
 import TeacherStudents from "./pages/teacher/Students/Students";
 import TeacherStudentDetail from "./pages/teacher/Students/StudentDetail";
-import TeacherRequests from "./pages/teacher/Requests/Requests";
+import TeacherFeedback from "./pages/teacher/Feedback/Feedback";
+import TeacherAttendance from "./pages/teacher/Attendance/Attendance";
 
 export default function AppRoutes() {
     return (
@@ -120,16 +115,11 @@ export default function AppRoutes() {
                 <Route path="dashboard" element={<TeacherDashboard />} />
                 <Route path="classes" element={<TeacherClasses />} />
                 <Route path="classes/:id" element={<TeacherClassDetail />} />
-                <Route path="sessions/:id" element={<TeacherSessionDetail />} />
-                <Route path="attendance" element={<TeacherAttendance />} />
-                <Route path="grading" element={<TeacherGrading />} />
-                <Route path="grading/:id" element={<TeacherGradingDetail />} />
                 <Route path="students" element={<TeacherStudents />} />
                 <Route path="students/:id" element={<TeacherStudentDetail />} />
-                <Route path="requests" element={<TeacherRequests />} />
-                <Route path="grades" element={<TeacherGrades />} />
+                <Route path="feedback" element={<TeacherFeedback />} />
+                <Route path="attendance" element={<TeacherAttendance />} />
                 <Route path="assignments" element={<TeacherAssignments />} />
-                <Route path="materials" element={<TeacherMaterials />} />
                 <Route path="schedule" element={<TeacherSchedule />} />
                 <Route path="profile" element={<TeacherProfile />} />
             </Route>

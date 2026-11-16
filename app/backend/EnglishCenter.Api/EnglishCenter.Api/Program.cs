@@ -12,13 +12,8 @@ builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<EnrollmentService>();
 builder.Services.AddScoped<ScheduleService>();
 
-// Chức năng Teacher
-builder.Services.AddScoped<SessionService>();
-builder.Services.AddScoped<NotificationService>();
+// Lưu file upload (ảnh đại diện...)
 builder.Services.AddScoped<FileStorageService>();
-builder.Services.AddScoped<StatsService>();
-builder.Services.AddScoped<SubmissionService>();
-builder.Services.AddScoped<GradebookService>();
 
 // Dọn file bài tập/bài nộp quá 7 ngày (module Student)
 builder.Services.AddHostedService<AssignmentFileCleanupService>();
@@ -70,18 +65,9 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
-// Existing databases must not be migrated or seeded implicitly on application startup.
-// Opt in explicitly with --Database:InitializeOnStartup=true when provisioning a database.
-if (builder.Configuration.GetValue<bool>("Database:InitializeOnStartup"))
-{
-    using var scope = app.Services.CreateScope();
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await db.Database.MigrateAsync();
-    await DbSeeder.SeedAsync(db);
-    await TeacherSeeder.SeedCommentTemplatesAsync(db);
-    if (app.Environment.IsDevelopment())
-        await TeacherSeeder.SeedDemoAsync(db);
-}
+// Tự dựng database ở máy dev (tạo DB, áp migration còn thiếu, seed + dữ liệu demo).
+// Mặc định bật ở Development, tắt ở môi trường khác. Xem Data/DatabaseBootstrapper.cs
+await DatabaseBootstrapper.RunAsync(app);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

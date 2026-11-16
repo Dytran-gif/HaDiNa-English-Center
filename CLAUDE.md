@@ -123,7 +123,8 @@ Chạy cả bộ bằng `/validate` trước khi mở PR. Hook Stop tự chạy 
 
 ## Bẫy hay gặp
 
-- DB chưa có bảng cho chức năng Teacher: phải chạy migration `TeacherFeatures` (plan `00`). Nếu chưa có, API khởi động sẽ lỗi ở `TeacherSeeder`.
+- DB tự dựng khi chạy API ở Development (`Data/DatabaseBootstrapper.cs`), không cần `dotnet ef database update`. Bảng mới phải đi qua migration, không tạo tay trong SSMS.
+- 14/11/2026: bỏ toàn bộ bảng riêng của Teacher; cổng Giáo viên viết lại tối giản trên 14 bảng chung + bảng `Attendances` cho điểm danh (`docs/api/TEACHER_API.md`). Bài tập dùng chung bảng `Assignments` dạng file (`FileType` Teacher/Student) với module Student.
 - Lỗi validate DTO (`[Required]`, `[Range]`…) do `[ApiController]` trả dạng **ProblemDetails** `{ title, errors: { Field: [..] } }`, **không** phải `{ message }`. FE phải xử lý cả hai dạng.
 - `ClassSession.Status` trong DB chỉ có `Scheduled | Cancelled`. `Upcoming/Ongoing/Done` là trạng thái **tính ra** (`SessionService.StatusOf`), không lưu.
 - Backend chưa bật CORS cho request chéo origin. FE dev có Vite proxy /api và /uploads tới localhost:5220; production cần reverse proxy hoặc CORS phù hợp.

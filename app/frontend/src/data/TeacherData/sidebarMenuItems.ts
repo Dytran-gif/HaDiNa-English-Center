@@ -5,11 +5,8 @@ export const teacherSidebarMenuItems: SidebarMenuItem[] = [
     { label: "Lịch dạy", path: "/teacher/schedule", icon: "▣" },
     { label: "Lớp phụ trách", path: "/teacher/classes", icon: "▤" },
     { label: "Điểm danh", path: "/teacher/attendance", icon: "✓" },
-    { label: "Bài tập", path: "/teacher/assignments", icon: "✎" },
-    { label: "Chấm bài", path: "/teacher/grading", icon: "✍" },
-    { label: "Kiểm tra & Sổ điểm", path: "/teacher/grades", icon: "★" },
     { label: "Học viên", path: "/teacher/students", icon: "☺" },
-    { label: "Yêu cầu & Thông báo", path: "/teacher/requests", icon: "✉" },
-    { label: "Tài liệu", path: "/teacher/materials", icon: "▥" },
+    { label: "Bài tập", path: "/teacher/assignments", icon: "✎" },
+    { label: "Nhận xét", path: "/teacher/feedback", icon: "✉" },
     { label: "Hồ sơ", path: "/teacher/profile", icon: "●" },
 ];

@@ -1,4 +1,4 @@
-/* Popup chi tiết khóa học (Present Lessons) — 2 tab: thông tin + bài tập */
+/* Popup chi tiết khóa học (Present Lessons) — 3 tab: thông tin + bài tập + điểm danh */
 
 .cdm-overlay {
     position: fixed;
@@ -102,7 +102,14 @@
 .cdm-body {
     padding: 18px;
     overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
 }
+
+.cdm-body::-webkit-scrollbar { width: 8px; }
+.cdm-body::-webkit-scrollbar-track { background: #f1f5f9; }
+.cdm-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+.cdm-body::-webkit-scrollbar-thumb:hover { background: #2563eb; }
 
 /* Tab 1: thông tin */
 .cdm-desc {
@@ -337,4 +344,191 @@
     color: #64748b;
     font-weight: 600;
     font-size: 12px;
+}
+
+/* Tab 3: điểm danh */
+.cdm-attendance {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.cdm-error {
+    margin: 0;
+    color: #b91c1c;
+    font-size: 13px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+
+.cdm-att-empty {
+    text-align: center;
+    padding: 30px 0;
+}
+
+.cdm-att-empty i {
+    font-size: 34px;
+    color: #cbd5e1;
+}
+
+.cdm-att-empty p {
+    margin: 10px 0 0;
+    font-size: 13px;
+    color: #94a3b8;
+}
+
+.cdm-att-summary {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+}
+
+.cdm-att-chip {
+    border-radius: 10px;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border: 1px solid transparent;
+}
+
+.cdm-att-chip span { font-size: 11px; font-weight: 600; }
+.cdm-att-chip strong { font-size: 16px; }
+
+.cdm-att-chip.total { background: #f8fafc; border-color: #e2e8f0; }
+.cdm-att-chip.total span { color: #64748b; }
+.cdm-att-chip.total strong { color: #0f172a; }
+
+.cdm-att-chip.present { background: #ecfdf5; border-color: #a7f3d0; }
+.cdm-att-chip.present span { color: #047857; }
+.cdm-att-chip.present strong { color: #065f46; }
+
+.cdm-att-chip.late { background: #fffbeb; border-color: #fde68a; }
+.cdm-att-chip.late span { color: #b45309; }
+.cdm-att-chip.late strong { color: #92400e; }
+
+.cdm-att-chip.absent { background: #fef2f2; border-color: #fecaca; }
+.cdm-att-chip.absent span { color: #b91c1c; }
+.cdm-att-chip.absent strong { color: #991b1b; }
+
+.cdm-att-chip.excused { background: #eff6ff; border-color: #bfdbfe; }
+.cdm-att-chip.excused span { color: #1d4ed8; }
+.cdm-att-chip.excused strong { color: #1e40af; }
+
+.cdm-att-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.cdm-att-table th,
+.cdm-att-table td {
+    text-align: left;
+    padding: 9px 10px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: top;
+}
+
+.cdm-att-table th {
+    color: #64748b;
+    font-weight: 600;
+    font-size: 12px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+.cdm-att-table tbody tr:hover { background: #f8fafc; }
+
+.cdm-att-no {
+    font-weight: 700;
+    color: #0f172a;
+    white-space: nowrap;
+}
+
+.cdm-att-dow {
+    display: block;
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 2px;
+}
+
+.cdm-att-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.cdm-att-badge.present { background: #ecfdf5; color: #047857; }
+.cdm-att-badge.late { background: #fffbeb; color: #b45309; }
+.cdm-att-badge.absent { background: #fef2f2; color: #b91c1c; }
+.cdm-att-badge.excused { background: #eff6ff; color: #1d4ed8; }
+
+.cdm-att-note {
+    display: block;
+    font-size: 12px;
+    color: #64748b;
+    font-style: italic;
+    margin-top: 4px;
+}
+
+.cdm-att-pager {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.cdm-att-range {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.cdm-att-pages {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cdm-page-btn {
+    min-width: 30px;
+    height: 30px;
+    padding: 0 6px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+}
+
+.cdm-page-btn:hover:not(:disabled):not(.active) {
+    border-color: #2563eb;
+    color: #2563eb;
+}
+
+.cdm-page-btn.active {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #ffffff;
+}
+
+.cdm-page-btn:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+@media (max-width: 560px) {
+    .cdm-tab { font-size: 12px; padding: 10px 6px; }
+    .cdm-att-summary { grid-template-columns: repeat(3, 1fr); }
+    .cdm-att-table th, .cdm-att-table td { padding: 7px 6px; }
+    .cdm-att-pager { justify-content: center; }
 }
