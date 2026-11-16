@@ -134,3 +134,20 @@ export interface AssignmentFile {
     fileType: 'Teacher' | 'Student';
     createdAt: string;
 }
+
+// 12. Bảng Attendances (điểm danh theo ngày học — tab Điểm danh của popup khóa học)
+export interface AttendanceItem {
+    id: number;
+    sessionNumber: number; // số buổi theo thứ tự ngày (1 = buổi sớm nhất)
+    date: string; // YYYY-MM-DD
+    status: 'Present' | 'Late' | 'Absent' | 'Excused';
+    note?: string;
+}
+
+export interface AttendancePage {
+    items: AttendanceItem[];
+    totalItems: number;
+    page: number;
+    pageSize: number;
+    summary: { present: number; late: number; absent: number; excused: number };
+}

@@ -86,6 +86,16 @@ Quiz `answers`: `{ "12": "B", "13": "photosynthesis" }` (key = id câu hỏi).
 
 > Phía giáo viên (xem/tải bài nộp) do người làm module Teacher tự viết — dữ liệu nằm trong bảng `Assignments` (cột `FileType='Teacher'` = bài GV giao, `'Student'` = bài nộp của HV, `CourseId` = khóa, `StudentId` khác NULL).
 
+## 4c. Điểm danh (tab Điểm danh của popup Present Lessons) ✅
+
+> Bảng `Attendances` (nhóm đã tạo trong DB): `Id, ClassId, StudentId, Date, Status, Note, CreatedAt, UpdatedAt`,
+> CHECK `Status IN ('Present','Late','Absent','Excused')`, unique `(ClassId, StudentId, Date)`.
+> Chỉ trả điểm danh của **chính học viên đang đăng nhập** trong các lớp thuộc khóa `courseId`.
+
+| Method | URL | Mô tả |
+|---|---|---|
+| GET | `/api/student/attendance?courseId=&page=1` ✅ | Điểm danh phân trang **10 buổi/trang**, buổi mới nhất trước: `{ items: [{ id, sessionNumber, date, status, note }], totalItems, page, pageSize, summary: { present, late, absent, excused } }`. `sessionNumber` = số buổi theo thứ tự ngày (1 = buổi sớm nhất). `404` nếu khóa không tồn tại |
+
 ## 5. Kết quả học tập ⬜ (plan 13)
 
 | Method | URL | Mô tả |

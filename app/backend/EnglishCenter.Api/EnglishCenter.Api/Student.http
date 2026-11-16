@@ -142,3 +142,8 @@ Content-Type: application/pdf
 ### Tải bài nộp mới nhất của chính mình cho bài tập này
 GET http://localhost:5220/api/student/assignments/1/my-submission/download
 Authorization: Bearer {{token}}
+
+### Điểm danh của chính mình trong khóa (tab Điểm danh của popup Present Lessons)
+# 10 buổi/trang, buổi mới nhất trước; sessionNumber = số buổi theo thứ tự ngày (1 = sớm nhất)
+GET http://localhost:5220/api/student/attendance?courseId=2&page=1
+Authorization: Bearer {{token}}
