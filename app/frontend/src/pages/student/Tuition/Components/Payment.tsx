@@ -34,17 +34,12 @@ const PaymentFE = ({ items, onPay }: PaymentProps) => {
 
     return (
         <div className="payment-container">
-            {/* Unified Card: Tuition Title + My Courses Table */}
+            {/* Bảng khóa học cần thanh toán */}
             <div className="payment-table-card">
-                <div className="payment-header-section">
-                    <div className="payment-icon-box"><i className="fa-solid fa-file-invoice-dollar"></i></div>
-                    <div className="payment-header-text">
-                        <h1>{t("tuition.title")}</h1>
-                        <p>{t("tuition.sub")}</p>
-                    </div>
+                <div className="payment-card-header">
+                    {t("tuition.myCourses")}
+                    <span className="payment-card-count">{items.length}</span>
                 </div>
-
-                <div className="payment-card-header">{t("tuition.myCourses")}</div>
                 <div className="payment-table-responsive">
                     <table className="payment-custom-table">
                         <thead>

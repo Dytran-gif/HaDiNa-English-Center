@@ -11,17 +11,11 @@ const PaymentHistory = ({ items }: PaymentHistoryProps) => {
 
     return (
         <div className="payment-history-container">
-            {/* Unified Card: Tiêu đề trang + Bảng lịch sử giao dịch */}
             <div className="payment-table-card">
-                <div className="payment-header-section">
-                    <div className="payment-icon-box"><i className="fa-solid fa-clock-rotate-left"></i></div>
-                    <div className="payment-header-text">
-                        <h1>{t("payHistory.title")}</h1>
-                        <p>{t("payHistory.sub")}</p>
-                    </div>
+                <div className="payment-card-header">
+                    {t("payHistory.records")}
+                    <span className="payment-card-count">{items.length}</span>
                 </div>
-
-                <div className="payment-card-header">{t("payHistory.records")}</div>
                 <div className="payment-table-responsive">
                     <table className="payment-custom-table">
                         <thead>

@@ -1,5 +1,3 @@
-import bannerImage from "../../../../assets/images/Banner-dashboard.png";
-import bannerArrowImage from "../../../../assets/images/Banner-arrow-dashboard.png";
 import defaultCourseImage from "../../../../assets/images/next-lesson-mock.jpg";
 import { useLang } from "../../../../i18n/LanguageContext";
 import "./PresentLesson.css";
@@ -35,24 +33,43 @@ export default function PresentLessonFE({ lesson, onOpen }: PresentLessonProps) 
 
     return (
         <section className="next-lesson-section">
-            <div className="bg-gradient-overlay"></div>
+            <span className="nl-orb nl-orb-1" aria-hidden="true"></span>
+            <span className="nl-orb nl-orb-2" aria-hidden="true"></span>
 
-            <div className="left-column">
-                <span className="badge">
-                    {t("present.badge")}
-                </span> 
+            <div className="nl-left">
+                <span className="nl-badge">
+                    <i className="fa-solid fa-bolt"></i> {t("present.badge")}
+                </span>
 
-                <h2 className="title">
-                    {t("present.title")}
-                </h2>
+                <h2 className="nl-title">{t("present.title")}</h2>
+                <p className="nl-desc">{t("present.desc")}</p>
 
-                <p className="description">
-                    {t("present.desc")}
-                </p>
+                {(dateLabel || timeLabel) && (
+                    <div className="nl-chips">
+                        {dateLabel && (
+                            <span className="nl-chip">
+                                <i className="fa-regular fa-calendar-days"></i>
+                                {t("present.date")}: <strong>{dateLabel}</strong>
+                            </span>
+                        )}
+                        {timeLabel && (
+                            <span className="nl-chip">
+                                <i className="fa-regular fa-clock"></i>
+                                {t("present.time")}: <strong>{timeLabel}</strong>
+                            </span>
+                        )}
+                    </div>
+                )}
+
+                {onOpen && (
+                    <button type="button" className="nl-cta" onClick={onOpen}>
+                        {t("present.cta")} <i className="fa-solid fa-arrow-right"></i>
+                    </button>
+                )}
             </div>
 
             <div
-                className={`middle-column card ${onOpen ? 'card-clickable' : ''}`}
+                className={`nl-course ${onOpen ? 'clickable' : ''}`}
                 onClick={onOpen}
                 onKeyDown={(e) => {
                     if (!onOpen) return;
@@ -68,42 +85,20 @@ export default function PresentLessonFE({ lesson, onOpen }: PresentLessonProps) 
                 <img
                     src={lesson.imageUrl || defaultCourseImage}
                     alt={lesson.courseName}
-                    className="card-image"
+                    className="nl-course-img"
                 />
-                <h3 className="card-title">
-                    Band {lesson.bandFrom} - {lesson.bandTo}: {lesson.courseName}
-                </h3>
-                <p className="card-subtitle">
-                    {lesson.description || t("common.sessions", { n: lesson.totalSessions ?? 0 })}
-                </p>
-                {(timeLabel || dateLabel) && (
-                    <p className="card-schedule">
-                        {dateLabel && `${t("present.date")}: ${dateLabel}`}
-                        {dateLabel && timeLabel && " · "}
-                        {timeLabel && `${t("present.time")}: ${timeLabel}`}
+                <div className="nl-course-body">
+                    <span className="nl-course-band">Band {lesson.bandFrom} - {lesson.bandTo}</span>
+                    <h3 className="nl-course-name">{lesson.courseName}</h3>
+                    <p className="nl-course-sub">
+                        {lesson.description || t("common.sessions", { n: lesson.totalSessions ?? 0 })}
                     </p>
-                )}
-                {onOpen && (
-                    <span className="card-cta">
-                        {t("present.cta")} <i className="fa-solid fa-arrow-right"></i>
-                    </span>
-                )}
-            </div>
-
-            <div className="right-column">
-                <div className="decorative-text">
-                    Better English <br /> Brighter Future
+                    {onOpen && (
+                        <span className="nl-course-link">
+                            {t("present.cta")} <i className="fa-solid fa-arrow-right"></i>
+                        </span>
+                    )}
                 </div>
-                <img
-                    src={bannerArrowImage}
-                    className="arrow-image"
-                    alt="Arrow styling"
-                />
-                <img
-                    src={bannerImage}
-                    alt={lesson.courseName}
-                    className="illustration-image"
-                />
             </div>
         </section>
     );

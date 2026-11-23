@@ -1,4 +1,4 @@
-import { useRef, useState, useMemo, type MouseEvent } from 'react';
+import { useState, useMemo } from 'react';
 import { mockCourses, mockEnrollments, mockClasses } from "../../../../data/StudentData/MainData";
 import type { Course, ClassItem, Enrollment } from "../../../../types/StudentTypes/MainTypes";
 import defaultCourseImage from "../../../../assets/images/next-lesson-mock.jpg";
@@ -12,64 +12,29 @@ interface CourseProps {
 
 export default function CourseFE({ courses }: CourseProps) {
     const { t, money } = useLang();
-    const scrollRef = useRef<HTMLDivElement>(null);
-    const didDragRef = useRef(false);
-    const [isDragging, setIsDragging] = useState(false);
-    const [startX, setStartX] = useState(0);
-    const [scrollLeft, setScrollLeft] = useState(0);
     const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
-
-    const handleMouseDown = (e: MouseEvent) => {
-        if (!scrollRef.current) return;
-        didDragRef.current = false;
-        setIsDragging(true);
-        setStartX(e.pageX - scrollRef.current.offsetLeft);
-        setScrollLeft(scrollRef.current.scrollLeft);
-    };
-
-    const handleMouseUpOrLeave = () => {
-        setIsDragging(false);
-    };
-
-    const handleMouseMove = (e: MouseEvent) => {
-        if (!isDragging || !scrollRef.current) return;
-        e.preventDefault();
-        const x = e.pageX - scrollRef.current.offsetLeft;
-        const walk = (x - startX) * 0.5;
-        if (Math.abs(walk) > 3) didDragRef.current = true;
-        scrollRef.current.scrollLeft = scrollLeft - walk;
-    };
-
-    const handleCardClick = (course: Course) => {
-        if (didDragRef.current) {
-            didDragRef.current = false;
-            return;
-        }
-        setSelectedCourse(course);
-    };
 
     // ID học viên đang đăng nhập (khớp với dữ liệu mẫu hệ thống)
     const currentStudentId = "std-01";
 
     // Có dữ liệu từ API thì dùng dữ liệu API (kể cả rỗng); chưa tải được thì dùng dữ liệu mẫu
-    const studentEnrolledCourses = useMemo(() => {
-        const list = courses ?? mockEnrollments
+    const list = useMemo(() => {
+        const source = courses ?? mockEnrollments
             .filter((enr: Enrollment) => enr.studentId === currentStudentId)
             .map((enr: Enrollment) => {
                 const classItem = mockClasses.find((c: ClassItem) => c.id === enr.classId);
-                const course = classItem ? mockCourses.find((co: Course) => co.id === classItem.courseId) : null;
-                return course;
+                return classItem ? mockCourses.find((co: Course) => co.id === classItem.courseId) : null;
             })
             .filter((course): course is Course => course !== null);
 
         // Một khóa có thể lặp lại khi học viên học nhiều lớp cùng khóa -> bỏ trùng để key React là duy nhất
-        return list.filter((course, i) => list.findIndex(c => c.id === course.id) === i);
-    }, [courses, currentStudentId]);
+        return source.filter((course, i) => source.findIndex(c => c.id === course.id) === i);
+    }, [courses]);
 
-    const list = studentEnrolledCourses;
+    const openCourse = (course: Course) => setSelectedCourse(course);
 
     return (
-        <section className="cf-continue-learning-section">
+        <section className="cf-section">
             <header className="cf-section-header">
                 <div className="cf-header-left">
                     <div className="cf-header-icon">
@@ -85,52 +50,57 @@ export default function CourseFE({ courses }: CourseProps) {
                 </a>
             </header>
 
-            <div
-                className={`cf-cards-grid cf-horizontal-scroll-wrapper ${isDragging ? 'cf-active-drag' : ''}`}
-                ref={scrollRef}
-                onMouseDown={handleMouseDown}
-                onMouseLeave={handleMouseUpOrLeave}
-                onMouseUp={handleMouseUpOrLeave}
-                onMouseMove={handleMouseMove}
-            >
-                {list.map((course) => (
-                    <div
-                        key={course.id}
-                        className="cf-course-card cf-scroll-item"
-                        style={{
-                            backgroundImage: `url("${course.imageUrl || defaultCourseImage}")`,
-                            cursor: 'pointer'
-                        }}
-                        onClick={() => handleCardClick(course)}
-                    >
-                        <div className="cf-course-content">
-                            <h3 className="cf-course-title">
-                                {course.name}
-                            </h3>
-                            <div className="cf-course-info">
-                                <div className="cf-course-meta">
-                                    <span className="cf-info-level">Band {course.bandFrom} - {course.bandTo}</span>
-                                    <span className="cf-meta-divider">•</span>
-                                    <span className="cf-info-time">{t("common.sessionsPerWeek", { n: course.sessionsPerWeek })}</span>
-                                </div>
+            {list.length > 0 ? (
+                <div className="cf-grid">
+                    {list.map((course) => (
+                        <article
+                            key={course.id}
+                            className="cf-card"
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => openCourse(course)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    openCourse(course);
+                                }
+                            }}
+                            aria-label={`${t("present.cta")}: ${course.name}`}
+                        >
+                            <div className="cf-card-media">
+                                <img src={course.imageUrl || defaultCourseImage} alt={course.name} loading="lazy" />
+                                <span className="cf-band">Band {course.bandFrom} - {course.bandTo}</span>
+                            </div>
 
-                                <div className="cf-info-skills">
-                                    <span className="cf-skill-tag">{t("common.sessions", { n: course.totalSessions })}</span>
-                                    <span className="cf-skill-tag">{money(course.tuition)}</span>
-                                    {course.discountPercent > 0 && (
-                                        <span className="cf-skill-tag cf-discount-tag">-{course.discountPercent}%</span>
-                                    )}
+                            <div className="cf-card-body">
+                                <h3 className="cf-card-title">{course.name}</h3>
+                                <p className="cf-card-desc">{course.description}</p>
+                                <div className="cf-card-meta">
+                                    <span><i className="fa-regular fa-clock"></i> {t("common.sessions", { n: course.totalSessions })}</span>
+                                    <span><i className="fa-solid fa-calendar-days"></i> {t("common.sessionsPerWeek", { n: course.sessionsPerWeek })}</span>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                ))}
-                {list.length === 0 && (
-                    <div className="cf-no-courses" style={{ padding: '20px', color: '#64748b' }}>
-                        {t("presentLessons.empty")}
-                    </div>
-                )}
-            </div>
+
+                            <div className="cf-card-footer">
+                                <div className="cf-price-box">
+                                    <span className="cf-price">{money(course.tuition)}</span>
+                                    {course.discountPercent > 0 && (
+                                        <span className="cf-chip discount">-{course.discountPercent}%</span>
+                                    )}
+                                </div>
+                                <span className="cf-view-link">
+                                    {t("present.cta")} <i className="fa-solid fa-arrow-right"></i>
+                                </span>
+                            </div>
+                        </article>
+                    ))}
+                </div>
+            ) : (
+                <div className="cf-empty">
+                    <i className="fa-solid fa-book-open"></i>
+                    <p>{t("presentLessons.empty")}</p>
+                </div>
+            )}
 
             {selectedCourse && (
                 <CourseDetailModal course={selectedCourse} onClose={() => setSelectedCourse(null)} />

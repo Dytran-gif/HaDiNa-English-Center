@@ -252,7 +252,20 @@ export const vi: Dict = {
     "payHistory.empty": "Chưa có lịch sử giao dịch nào.",
     "method.cash": "Tiền mặt",
     "method.banking": "Chuyển khoản",
-    "method.creditcard": "Thẻ tín dụng"
+    "method.creditcard": "Thẻ tín dụng",
+
+    // Dùng chung cho các trang redesign
+    "count.courses": "{n} khóa",
+    "dash.kpiCourses": "Khóa đang học",
+    "dash.kpiSessions": "Tổng số buổi",
+    "dash.kpiNext": "Buổi học tới",
+    "dash.kpiUnpaid": "Học phí chưa trả",
+    "dash.noUpcoming": "Chưa có lịch",
+
+    // Hộp thoại xác nhận đăng xuất
+    "logout.confirmTitle": "Đăng xuất tài khoản?",
+    "logout.confirmMsg": "Bạn có chắc muốn đăng xuất? Bạn sẽ cần đăng nhập lại để tiếp tục học.",
+    "logout.cancel": "Ở lại"
 };
 
 export const en: Dict = {
@@ -506,5 +519,18 @@ export const en: Dict = {
     "payHistory.empty": "No transactions yet.",
     "method.cash": "Cash",
     "method.banking": "Banking",
-    "method.creditcard": "Credit Card"
+    "method.creditcard": "Credit Card",
+
+    // Shared redesign keys
+    "count.courses": "{n} courses",
+    "dash.kpiCourses": "Active Courses",
+    "dash.kpiSessions": "Total Sessions",
+    "dash.kpiNext": "Next Lesson",
+    "dash.kpiUnpaid": "Unpaid Tuition",
+    "dash.noUpcoming": "No schedule",
+
+    // Logout confirmation dialog
+    "logout.confirmTitle": "Log out?",
+    "logout.confirmMsg": "Are you sure you want to log out? You will need to sign in again to continue.",
+    "logout.cancel": "Stay"
 };

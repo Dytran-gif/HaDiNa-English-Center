@@ -49,6 +49,7 @@ export default function QuickActionFE() {
                         <span className="qa-label">
                             {action.iconType === "calendar" ? t("quick.viewSchedule") : t("quick.checkCourses")}
                         </span>
+                        <i className="fa-solid fa-chevron-right qa-chevron"></i>
                     </button>
                 ))}
             </div>
