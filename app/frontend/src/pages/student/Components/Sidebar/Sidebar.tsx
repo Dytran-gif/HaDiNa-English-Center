@@ -3,10 +3,20 @@ import "./Sidebar.css";
 
 import { sidebarMenuItems } from "../../../../data/StudentData/SidebarData";
 import { useAuth } from "../../../../context/AuthContext";
+import { useLang } from "../../../../i18n/LanguageContext";
+
+const NAV_KEYS: Record<string, string> = {
+    "/student/dashboard": "nav.dashboard",
+    "/student/schedule": "nav.schedule",
+    "/student/courses": "nav.courses",
+    "/student/feedback": "nav.feedback",
+    "/student/tuition": "nav.tuition",
+};
 
 function Sidebar() {
     const { logout } = useAuth();
     const navigate = useNavigate();
+    const { t } = useLang();
 
     // Xóa phiên rồi về trang chủ công khai (replace để nút Back không quay lại trang student)
     const handleLogout = () => {
@@ -50,7 +60,7 @@ function Sidebar() {
                                 <i className={item.icon}></i>
                             </span>
 
-                            <span>{item.label}</span>
+                            <span>{t(NAV_KEYS[item.path] ?? item.label)}</span>
                         </NavLink>
                     ))}
 
@@ -67,7 +77,7 @@ function Sidebar() {
                         onClick={handleLogout}
                     >
                         <span className="sidebar-icon"><i className="fa-solid fa-arrow-right-from-bracket"></i></span>
-                        <span>Log out</span>
+                        <span>{t("nav.logout")}</span>
                     </button>
 
                 </div>

@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import type { StudentScheduleSession } from "../../../../services/student/useStudentApi";
+import { useLang } from "../../../../i18n/LanguageContext";
 import './ScheduleMain.css';
 
 const TIME_SLOTS = [
@@ -22,6 +23,8 @@ interface ScheduleGridProps {
 }
 
 export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWeek }: ScheduleGridProps) {
+    const { t, lang } = useLang();
+
     // Danh sách các ngày trong tuần hiện tại
     const daysOfWeek = useMemo(() => {
         return DAY_NAMES.map((name, idx) => {
@@ -34,12 +37,12 @@ export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWe
 
             return {
                 key: name,
-                label: name,
+                label: t(`day.${name.toLowerCase()}`),
                 dateStr: `${year}-${month}-${day}`,
                 displayDate: `${day}/${month}`
             };
         });
-    }, [weekStart]);
+    }, [weekStart, t]);
 
     const timeToMinutes = (timeStr: string) => {
         if (!timeStr) return 0;
@@ -65,7 +68,9 @@ export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWe
                 </button>
 
                 <span className="week-label">
-                    Week of {weekStart.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    {t("schedule.weekOf", {
+                        date: weekStart.toLocaleDateString(lang === 'vi' ? 'vi-VN' : 'en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+                    })}
                 </span>
 
                 <button className="nav-btn" onClick={onNextWeek}>
@@ -76,7 +81,7 @@ export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWe
             {/* LƯỚI THỜI KHÓA BIỂU */}
             <div className="grid-box">
                 <div className="grid-header">
-                    <div className="cell-time-head">Time</div>
+                    <div className="cell-time-head">{t("schedule.time")}</div>
                     {daysOfWeek.map((day) => (
                         <div key={day.key} className="cell-day-head">
                             <strong>{day.label}</strong>
@@ -113,10 +118,10 @@ export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWe
                                                     <div className="card-top-row">
                                                         <h4 className="title">{item.courseName}</h4>
                                                         {item.isCancelled ? (
-                                                            <span className="cancelled-badge">Cancelled</span>
+                                                            <span className="cancelled-badge">{t("schedule.cancelled")}</span>
                                                         ) : (
                                                             <span className="lesson-badge">
-                                                                Lesson {item.sessionNo}/{item.totalSessions}
+                                                                {t("schedule.lesson", { n: item.sessionNo, total: item.totalSessions })}
                                                             </span>
                                                         )}
                                                     </div>
@@ -129,10 +134,10 @@ export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWe
                                                 <div className="card-hover-popup">
                                                     <div className="popup-top">
                                                         <span className={`popup-level ${item.isCancelled ? 'popup-cancelled-tag' : ''}`}>
-                                                            {item.isCancelled ? 'Cancelled' : `Band ${item.bandFrom} - ${item.bandTo}`}
+                                                            {item.isCancelled ? t("schedule.cancelled") : `Band ${item.bandFrom} - ${item.bandTo}`}
                                                         </span>
                                                         <span className="popup-index">
-                                                            Session {item.sessionNo} of {item.totalSessions}
+                                                            {t("schedule.sessionOf", { n: item.sessionNo, total: item.totalSessions })}
                                                         </span>
                                                     </div>
 
@@ -140,7 +145,8 @@ export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWe
 
                                                     {item.isCancelled ? (
                                                         <p className="popup-cancel-reason">
-                                                            <i className="fa-solid fa-circle-exclamation"></i> Notice: Class cancelled ({item.cancelReason || "No reason provided"})
+                                                            <i className="fa-solid fa-circle-exclamation"></i>{" "}
+                                                            {t("schedule.cancelNotice", { reason: item.cancelReason || t("schedule.noReason") })}
                                                         </p>
                                                     ) : (
                                                         <p className="popup-desc">{item.description}</p>
@@ -148,19 +154,19 @@ export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWe
 
                                                     <div className="popup-info-grid">
                                                         <div>
-                                                            <i className="fa-solid fa-hashtag"></i> Class: <strong>{item.className}</strong>
+                                                            <i className="fa-solid fa-hashtag"></i> {t("schedule.class")} <strong>{item.className}</strong>
                                                         </div>
                                                         <div>
                                                             <i className="fa-regular fa-clock"></i> {item.startTime} - {item.endTime}
                                                         </div>
                                                         {item.teacherName && (
                                                             <div>
-                                                                <i className="fa-solid fa-chalkboard-user"></i> Teacher: <strong>{item.teacherName}</strong>
+                                                                <i className="fa-solid fa-chalkboard-user"></i> {t("schedule.teacher")} <strong>{item.teacherName}</strong>
                                                             </div>
                                                         )}
                                                         {item.roomName && (
                                                             <div>
-                                                                <i className="fa-solid fa-location-dot"></i> Room: <strong>{item.roomName}</strong>
+                                                                <i className="fa-solid fa-location-dot"></i> {t("schedule.room")} <strong>{item.roomName}</strong>
                                                             </div>
                                                         )}
                                                     </div>

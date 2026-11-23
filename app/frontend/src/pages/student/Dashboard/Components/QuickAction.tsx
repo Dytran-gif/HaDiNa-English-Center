@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { quickActionsData } from "../../../../data/StudentData/OtherData";
+import { useLang } from "../../../../i18n/LanguageContext";
 import "./QuickAction.css";
 
 // Hàm hỗ trợ render icon dựa vào iconType
@@ -20,19 +21,19 @@ const renderIcon = (iconType: string) => {
 
 export default function QuickActionFE() {
     const navigate = useNavigate();
+    const { t } = useLang();
 
-    const handleActionClick = (label: string) => {
-        const normalized = label.toLowerCase();
-        if (normalized.includes("course")) {
-            navigate("/student/courses");
-        } else if (normalized.includes("schedule")) {
+    const handleActionClick = (iconType: string) => {
+        if (iconType === "calendar") {
             navigate("/student/schedule");
+        } else {
+            navigate("/student/courses");
         }
     };
 
     return (
         <section className="quick-action-card">
-            <h2 className="qa-header-title">Quick Actions</h2>
+            <h2 className="qa-header-title">{t("quick.title")}</h2>
 
             <div className="qa-list">
                 {quickActionsData.map((action) => (
@@ -40,12 +41,14 @@ export default function QuickActionFE() {
                         key={action.id}
                         type="button"
                         className="qa-item-btn"
-                        onClick={() => handleActionClick(action.label)}
+                        onClick={() => handleActionClick(action.iconType)}
                     >
                         <div className="qa-icon-wrapper">
                             {renderIcon(action.iconType)}
                         </div>
-                        <span className="qa-label">{action.label}</span>
+                        <span className="qa-label">
+                            {action.iconType === "calendar" ? t("quick.viewSchedule") : t("quick.checkCourses")}
+                        </span>
                     </button>
                 ))}
             </div>

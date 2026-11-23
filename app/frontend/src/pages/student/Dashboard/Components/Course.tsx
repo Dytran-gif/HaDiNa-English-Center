@@ -2,6 +2,7 @@ import { useRef, useState, useMemo, type MouseEvent } from 'react';
 import { mockCourses, mockEnrollments, mockClasses } from "../../../../data/StudentData/MainData";
 import type { Course, ClassItem, Enrollment } from "../../../../types/StudentTypes/MainTypes";
 import defaultCourseImage from "../../../../assets/images/next-lesson-mock.jpg";
+import { useLang } from "../../../../i18n/LanguageContext";
 import CourseDetailModal from "./CourseDetailModal";
 import "./Course.css";
 
@@ -10,6 +11,7 @@ interface CourseProps {
 }
 
 export default function CourseFE({ courses }: CourseProps) {
+    const { t, money } = useLang();
     const scrollRef = useRef<HTMLDivElement>(null);
     const didDragRef = useRef(false);
     const [isDragging, setIsDragging] = useState(false);
@@ -74,12 +76,12 @@ export default function CourseFE({ courses }: CourseProps) {
                         <i className="fa-solid fa-book"></i>
                     </div>
                     <div className="cf-header-text">
-                        <h2 className="cf-section-title">Present Lessons</h2>
-                        <p className="cf-section-subtitle">Pick up where you left off</p>
+                        <h2 className="cf-section-title">{t("presentLessons.title")}</h2>
+                        <p className="cf-section-subtitle">{t("presentLessons.sub")}</p>
                     </div>
                 </div>
                 <a href="/student/courses" className="cf-view-all-link">
-                    View all courses <span>→</span>
+                    {t("presentLessons.viewAll")} <span>→</span>
                 </a>
             </header>
 
@@ -109,12 +111,12 @@ export default function CourseFE({ courses }: CourseProps) {
                                 <div className="cf-course-meta">
                                     <span className="cf-info-level">Band {course.bandFrom} - {course.bandTo}</span>
                                     <span className="cf-meta-divider">•</span>
-                                    <span className="cf-info-time">{course.sessionsPerWeek} sessions/wk</span>
+                                    <span className="cf-info-time">{t("common.sessionsPerWeek", { n: course.sessionsPerWeek })}</span>
                                 </div>
 
                                 <div className="cf-info-skills">
-                                    <span className="cf-skill-tag">{course.totalSessions} Sessions</span>
-                                    <span className="cf-skill-tag">{course.tuition.toLocaleString('vi-VN')} VND</span>
+                                    <span className="cf-skill-tag">{t("common.sessions", { n: course.totalSessions })}</span>
+                                    <span className="cf-skill-tag">{money(course.tuition)}</span>
                                     {course.discountPercent > 0 && (
                                         <span className="cf-skill-tag cf-discount-tag">-{course.discountPercent}%</span>
                                     )}
@@ -125,7 +127,7 @@ export default function CourseFE({ courses }: CourseProps) {
                 ))}
                 {list.length === 0 && (
                     <div className="cf-no-courses" style={{ padding: '20px', color: '#64748b' }}>
-                        Bạn chưa đăng ký khóa học nào.
+                        {t("presentLessons.empty")}
                     </div>
                 )}
             </div>

@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import type { Course } from "../../../../types/StudentTypes/MainTypes";
 import defaultCourseImage from "../../../../assets/images/next-lesson-mock.jpg";
+import { useLang } from "../../../../i18n/LanguageContext";
 import './CourseMain.css';
 
 interface CourseMainProps {
@@ -10,6 +11,7 @@ interface CourseMainProps {
 }
 
 export default function CourseMainFE({ courses, onRegisterCourse, registering }: CourseMainProps) {
+    const { t, money } = useLang();
     const [searchQuery, setSearchQuery] = useState('');
 
     const filteredCourses = useMemo(() => {
@@ -27,8 +29,8 @@ export default function CourseMainFE({ courses, onRegisterCourse, registering }:
             <div className="course-main-section">
                 {/* TIÊU ĐỀ */}
                 <header className="cm-header">
-                    <h1 className="cm-title">Find the Right Course for You</h1>
-                    <p className="cm-subtitle">Choose from a variety of English courses designed for your goals and level. Study offline at our center and build your future!</p>
+                    <h1 className="cm-title">{t("browse.title")}</h1>
+                    <p className="cm-subtitle">{t("browse.sub")}</p>
                 </header>
 
                 {/* THANH TÌM KIẾM */}
@@ -38,7 +40,7 @@ export default function CourseMainFE({ courses, onRegisterCourse, registering }:
                             <i className="fa-solid fa-search"></i>
                             <input
                                 type="text"
-                                placeholder="Tìm khóa học..."
+                                placeholder={t("browse.search")}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
@@ -46,14 +48,14 @@ export default function CourseMainFE({ courses, onRegisterCourse, registering }:
                                 <button
                                     className="cm-search-clear"
                                     onClick={() => setSearchQuery('')}
-                                    aria-label="Xóa tìm kiếm"
+                                    aria-label={t("browse.clear")}
                                 >
                                     ×
                                 </button>
                             )}
                         </div>
                         <span className="cm-result-count">
-                            {filteredCourses.length} of {courses.length} courses
+                            {t("browse.count", { a: filteredCourses.length, b: courses.length })}
                         </span>
                     </div>
                 </div>
@@ -79,8 +81,8 @@ export default function CourseMainFE({ courses, onRegisterCourse, registering }:
 
                                         {/* Thông tin khóa học thực tế từ DB */}
                                         <div className="cm-card-meta">
-                                            <span><i className="fa-regular fa-clock"></i> {course.totalSessions} sessions</span>
-                                            <span><i className="fa-solid fa-calendar-days"></i> {course.sessionsPerWeek} sessions/wk</span>
+                                            <span><i className="fa-regular fa-clock"></i> {t("common.sessions", { n: course.totalSessions })}</span>
+                                            <span><i className="fa-solid fa-calendar-days"></i> {t("common.sessionsPerWeek", { n: course.sessionsPerWeek })}</span>
                                             {course.teacherName && (
                                                 <span><i className="fa-solid fa-chalkboard-user"></i> {course.teacherName}</span>
                                             )}
@@ -88,7 +90,7 @@ export default function CourseMainFE({ courses, onRegisterCourse, registering }:
 
                                         {/* Tags Thông tin bổ sung */}
                                         <div className="cm-card-skills">
-                                            <span className="cm-skill-tag">{course.totalSessions} Sessions</span>
+                                            <span className="cm-skill-tag">{t("common.sessions", { n: course.totalSessions })}</span>
                                             <span className="cm-skill-tag">Band {course.bandFrom}-{course.bandTo}</span>
                                         </div>
                                     </div>
@@ -98,11 +100,11 @@ export default function CourseMainFE({ courses, onRegisterCourse, registering }:
                                         <div className="cm-price-box">
                                             {course.discountPercent > 0 && (
                                                 <span className="cm-price-original">
-                                                    {course.tuition.toLocaleString('vi-VN')} VND
+                                                    {money(course.tuition)}
                                                 </span>
                                             )}
                                             <span className="cm-price">
-                                                {finalPrice(course).toLocaleString('vi-VN')} VND
+                                                {money(finalPrice(course))}
                                                 {course.discountPercent > 0 && (
                                                     <span className="cm-discount-chip">-{course.discountPercent}%</span>
                                                 )}
@@ -115,14 +117,14 @@ export default function CourseMainFE({ courses, onRegisterCourse, registering }:
                                                 disabled={registering}
                                                 onClick={() => onRegisterCourse(course)}
                                             >
-                                                {registering ? 'Registering…' : 'Register'}
+                                                {registering ? t("browse.registering") : t("browse.register")}
                                             </button>
                                         </div>
                                     </div>
                                 </div>
                             ))
                         ) : (
-                            <div className="cm-no-results">No courses match your criteria. Please adjust your filters.</div>
+                            <div className="cm-no-results">{t("browse.noResults")}</div>
                         )}
                     </div>
                 </div>

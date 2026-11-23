@@ -1,6 +1,7 @@
 import bannerImage from "../../../../assets/images/Banner-dashboard.png";
 import bannerArrowImage from "../../../../assets/images/Banner-arrow-dashboard.png";
 import defaultCourseImage from "../../../../assets/images/next-lesson-mock.jpg";
+import { useLang } from "../../../../i18n/LanguageContext";
 import "./PresentLesson.css";
 
 interface PresentLessonProps {
@@ -19,6 +20,8 @@ interface PresentLessonProps {
 }
 
 export default function PresentLessonFE({ lesson, onOpen }: PresentLessonProps) {
+    const { t } = useLang();
+
     // Chỉ hiển thị khi có dữ liệu thật từ BE (không còn fallback dữ liệu mẫu)
     if (!lesson) return null;
 
@@ -36,15 +39,15 @@ export default function PresentLessonFE({ lesson, onOpen }: PresentLessonProps) 
 
             <div className="left-column">
                 <span className="badge">
-                    Next Lesson
+                    {t("present.badge")}
                 </span> 
 
                 <h2 className="title">
-                    Your next lesson is ready!
+                    {t("present.title")}
                 </h2>
 
                 <p className="description">
-                    Continue where you left off and make progress towards your goals.
+                    {t("present.desc")}
                 </p>
             </div>
 
@@ -60,7 +63,7 @@ export default function PresentLessonFE({ lesson, onOpen }: PresentLessonProps) 
                 }}
                 role={onOpen ? 'button' : undefined}
                 tabIndex={onOpen ? 0 : undefined}
-                aria-label={onOpen ? `Xem chi tiết khóa ${lesson.courseName}` : undefined}
+                aria-label={onOpen ? `${t("present.cta")}: ${lesson.courseName}` : undefined}
             >
                 <img
                     src={lesson.imageUrl || defaultCourseImage}
@@ -71,18 +74,18 @@ export default function PresentLessonFE({ lesson, onOpen }: PresentLessonProps) 
                     Band {lesson.bandFrom} - {lesson.bandTo}: {lesson.courseName}
                 </h3>
                 <p className="card-subtitle">
-                    {lesson.description || `${lesson.totalSessions ?? 0} Sessions`}
+                    {lesson.description || t("common.sessions", { n: lesson.totalSessions ?? 0 })}
                 </p>
                 {(timeLabel || dateLabel) && (
                     <p className="card-schedule">
-                        {dateLabel && `Ngày học: ${dateLabel}`}
+                        {dateLabel && `${t("present.date")}: ${dateLabel}`}
                         {dateLabel && timeLabel && " · "}
-                        {timeLabel && `Giờ học: ${timeLabel}`}
+                        {timeLabel && `${t("present.time")}: ${timeLabel}`}
                     </p>
                 )}
                 {onOpen && (
                     <span className="card-cta">
-                        Xem chi tiết khóa học <i className="fa-solid fa-arrow-right"></i>
+                        {t("present.cta")} <i className="fa-solid fa-arrow-right"></i>
                     </span>
                 )}
             </div>

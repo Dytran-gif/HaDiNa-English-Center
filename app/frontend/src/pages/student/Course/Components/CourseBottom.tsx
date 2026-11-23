@@ -1,6 +1,7 @@
 
 import type { StudentEnrollmentItem } from '../../../../services/student/useStudentApi';
 import defaultCourseImage from "../../../../assets/images/next-lesson-mock.jpg";
+import { useLang } from "../../../../i18n/LanguageContext";
 import './CourseBottom.css';
 
 interface CourseBottomProps {
@@ -11,6 +12,8 @@ interface CourseBottomProps {
 }
 
 export default function CourseBottomFE({ enrolledCourses, onDelete, onGoTuition, onBrowse }: CourseBottomProps) {
+    const { t, money } = useLang();
+
     // Chưa đăng ký khóa nào -> empty state kèm nút sang tab Browse Courses
     if (enrolledCourses.length === 0) {
         return (
@@ -18,16 +21,14 @@ export default function CourseBottomFE({ enrolledCourses, onDelete, onGoTuition,
                 <div className="cb-empty-icon">
                     <i className="fa-solid fa-book-open"></i>
                 </div>
-                <h3>Bạn chưa đăng ký khóa học nào</h3>
-                <p>Khám phá các chương trình của trung tâm và chọn khóa phù hợp với mục tiêu của bạn.</p>
+                <h3>{t("my.emptyTitle")}</h3>
+                <p>{t("my.emptyDesc")}</p>
                 <button className="cb-browse-btn" onClick={onBrowse}>
-                    <i className="fa-solid fa-compass"></i> Browse Courses
+                    <i className="fa-solid fa-compass"></i> {t("my.browse")}
                 </button>
             </div>
         );
     }
-
-    const fmt = (n: number) => n.toLocaleString('vi-VN') + ' VND';
 
     // Học phí lấy từ snapshot lúc ghi danh (BE trả về); nếu BE cũ thiếu field thì tính lại đúng như BE
     const round2 = (n: number) => Math.round(n * 100) / 100;
@@ -50,7 +51,7 @@ export default function CourseBottomFE({ enrolledCourses, onDelete, onGoTuition,
             <div className="cb-left-panel">
                 <h3 className="cb-panel-title">
                     <i className="fa-solid fa-book-bookmark"></i>
-                    Registered Courses ({enrolledCourses.length})
+                    {t("my.title", { n: enrolledCourses.length })}
                 </h3>
                 
                 {/* Danh sách có thanh trượt nếu quá 10 item */}
@@ -70,14 +71,14 @@ export default function CourseBottomFE({ enrolledCourses, onDelete, onGoTuition,
                                         Band {item.course.bandFrom} - {item.course.bandTo}
                                     </span>
                                     {item.isPaid && (
-                                        <span className="cb-paid-badge">Đã thanh toán</span>
+                                        <span className="cb-paid-badge">{t("my.paid")}</span>
                                     )}
                                     <h4 className="cb-title">{item.course.name}</h4>
                                     <div className="cb-meta">
-                                        <span><i className="fa-regular fa-clock"></i> {item.course.totalSessions} sessions</span>
+                                        <span><i className="fa-regular fa-clock"></i> {t("common.sessions", { n: item.course.totalSessions })}</span>
                                         <span className="cb-price-item">
-                                            {discFee(item) > 0 && <s className="cb-price-original">{fmt(baseFee(item))}</s>}
-                                            <span className="cb-price-final">{fmt(finalFee(item))}</span>
+                                            {discFee(item) > 0 && <s className="cb-price-original">{money(baseFee(item))}</s>}
+                                            <span className="cb-price-final">{money(finalFee(item))}</span>
                                             {discFee(item) > 0 && (
                                                 <span className="cb-discount-chip">-{pctOf(item)}%</span>
                                             )}
@@ -91,7 +92,7 @@ export default function CourseBottomFE({ enrolledCourses, onDelete, onGoTuition,
                                 <button 
                                     className="cb-delete-btn" 
                                     onClick={() => onDelete(item.enrollmentId)}
-                                    title="Remove this course"
+                                    title={t("my.remove")}
                                 >
                                     <i className="fa-regular fa-trash-can"></i>
                                 </button>
@@ -107,27 +108,27 @@ export default function CourseBottomFE({ enrolledCourses, onDelete, onGoTuition,
                     {totalDiscount > 0 && (
                         <div className="cb-summary-breakdown">
                             <div>
-                                <span>Học phí gốc</span>
-                                <strong>{fmt(totalBase)}</strong>
+                                <span>{t("my.original")}</span>
+                                <strong>{money(totalBase)}</strong>
                             </div>
                             <div className="cb-summary-discount-row">
-                                <span>Giảm giá</span>
-                                <strong>-{fmt(totalDiscount)}</strong>
+                                <span>{t("my.discount")}</span>
+                                <strong>-{money(totalDiscount)}</strong>
                             </div>
                         </div>
                     )}
-                    <span className="cb-summary-label">Cần thanh toán</span>
-                    <span className="cb-summary-price">{fmt(totalFinal)}</span>
+                    <span className="cb-summary-label">{t("my.due")}</span>
+                    <span className="cb-summary-price">{money(totalFinal)}</span>
                     {hasUnpaid ? (
                         <>
-                            <button className="cb-register-btn" onClick={onGoTuition}>Thanh toán ngay</button>
+                            <button className="cb-register-btn" onClick={onGoTuition}>{t("my.payNow")}</button>
                             <p className="cb-summary-note">
-                                You will be redirected to the tuition page to complete your payment.
+                                {t("my.payNote")}
                             </p>
                         </>
                     ) : (
                         <p className="cb-summary-note">
-                            All courses have been paid.
+                            {t("my.allPaid")}
                         </p>
                     )}
                 </div>

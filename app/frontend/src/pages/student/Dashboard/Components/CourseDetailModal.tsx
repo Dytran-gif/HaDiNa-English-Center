@@ -7,6 +7,7 @@ import {
     useStudentAttendance,
     type StudentAssignmentItem
 } from "../../../../services/student/useStudentApi";
+import { useLang } from "../../../../i18n/LanguageContext";
 import "./CourseDetailModal.css";
 
 interface Props {
@@ -14,33 +15,20 @@ interface Props {
     onClose: () => void;
 }
 
-const DAY_LABELS: Record<string, string> = {
-    Mon: "Thứ 2", Tue: "Thứ 3", Wed: "Thứ 4", Thu: "Thứ 5",
-    Fri: "Thứ 6", Sat: "Thứ 7", Sun: "Chủ nhật"
+const DAY_KEYS: Record<string, string> = {
+    Mon: "day.mon", Tue: "day.tue", Wed: "day.wed", Thu: "day.thu",
+    Fri: "day.fri", Sat: "day.sat", Sun: "day.sun"
 };
 
-const DOW_LABELS = ["Chủ nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
-
-const ATT_LABEL: Record<string, string> = {
-    Present: "Có mặt", Late: "Đi muộn", Absent: "Vắng", Excused: "Có phép"
-};
+// getDay(): 0 = Chủ nhật .. 6 = Thứ 7
+const DOW_KEYS = ["day.sun", "day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sat"];
 
 const ATT_ICON: Record<string, string> = {
     Present: "fa-circle-check", Late: "fa-clock", Absent: "fa-circle-xmark", Excused: "fa-circle-info"
 };
 
-function formatDate(d?: string) {
-    if (!d) return "—";
-    const parts = d.split("-");
-    return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : d;
-}
-
-function weekdayLabel(d: string) {
-    const dt = new Date(`${d}T00:00:00`);
-    return isNaN(dt.getTime()) ? "" : DOW_LABELS[dt.getDay()];
-}
-
 export default function CourseDetailModal({ course, onClose }: Props) {
+    const { t, money, date } = useLang();
     const [tab, setTab] = useState<'info' | 'assignments' | 'attendance'>('info');
     const [attPage, setAttPage] = useState(1);
     const { data: detail, loading: detailLoading } = useStudentCourseDetail(course.id);
@@ -49,13 +37,16 @@ export default function CourseDetailModal({ course, onClose }: Props) {
     const api = useStudentApi();
     const [busyId, setBusyId] = useState<number | null>(null);
 
-    const formatCurrency = (n: number) => n.toLocaleString('vi-VN') + ' VNĐ';
+    const weekdayLabel = (d: string) => {
+        const dt = new Date(`${d}T00:00:00`);
+        return isNaN(dt.getTime()) ? "" : t(DOW_KEYS[dt.getDay()]);
+    };
 
     const handleDownload = async (a: StudentAssignmentItem) => {
         try {
             await api.download(`assignments/${a.id}/download`, a.fileName);
         } catch (err) {
-            alert(err instanceof Error ? err.message : "Tải file thất bại.");
+            alert(err instanceof Error ? err.message : t("alerts.downloadFailed"));
         }
     };
 
@@ -63,7 +54,7 @@ export default function CourseDetailModal({ course, onClose }: Props) {
         try {
             await api.download(`assignments/${a.id}/my-submission/download`, a.mySubmission?.fileName);
         } catch (err) {
-            alert(err instanceof Error ? err.message : "Tải file thất bại.");
+            alert(err instanceof Error ? err.message : t("alerts.downloadFailed"));
         }
     };
 
@@ -73,10 +64,10 @@ export default function CourseDetailModal({ course, onClose }: Props) {
             const form = new FormData();
             form.append("file", file);
             const res = await api.upload<{ message?: string }>(`assignments/${a.id}/submit`, form);
-            alert(res.message ?? "Nộp bài thành công!");
+            alert(res.message ?? t("alerts.submitOk"));
             reload();
         } catch (err) {
-            alert(err instanceof Error ? err.message : "Nộp bài thất bại.");
+            alert(err instanceof Error ? err.message : t("alerts.submitFailed"));
         } finally {
             setBusyId(null);
         }
@@ -100,42 +91,42 @@ export default function CourseDetailModal({ course, onClose }: Props) {
                         className={`cdm-tab ${tab === 'info' ? 'active' : ''}`}
                         onClick={() => setTab('info')}
                     >
-                        Thông tin khóa học
+                        {t("modal.tabInfo")}
                     </button>
                     <button
                         className={`cdm-tab ${tab === 'assignments' ? 'active' : ''}`}
                         onClick={() => setTab('assignments')}
                     >
-                        Bài tập{assignments.length > 0 ? ` (${assignments.length})` : ""}
+                        {t("modal.tabAssignments")}{assignments.length > 0 ? ` (${assignments.length})` : ""}
                     </button>
                     <button
                         className={`cdm-tab ${tab === 'attendance' ? 'active' : ''}`}
                         onClick={() => setTab('attendance')}
                     >
-                        Điểm danh{attendance && attendance.totalItems > 0 ? ` (${attendance.totalItems})` : ""}
+                        {t("modal.tabAttendance")}{attendance && attendance.totalItems > 0 ? ` (${attendance.totalItems})` : ""}
                     </button>
                 </div>
 
                 <div className="cdm-body">
                     {tab === 'info' && (
                         <div className="cdm-info">
-                            {detailLoading && <p className="cdm-muted">Đang tải thông tin khóa học...</p>}
+                            {detailLoading && <p className="cdm-muted">{t("modal.loadingInfo")}</p>}
                             {detail && (
                                 <>
-                                    <p className="cdm-desc">{detail.description || "Chưa có mô tả."}</p>
+                                    <p className="cdm-desc">{detail.description || t("modal.noDesc")}</p>
 
                                     <div className="cdm-meta">
                                         <div><span>Band</span><strong>{detail.bandFrom} - {detail.bandTo}</strong></div>
-                                        <div><span>Tổng số buổi</span><strong>{detail.totalSessions}</strong></div>
-                                        <div><span>Buổi/tuần</span><strong>{detail.sessionsPerWeek}</strong></div>
-                                        <div><span>Học phí</span><strong>{formatCurrency(detail.tuition)}</strong></div>
+                                        <div><span>{t("modal.totalSessions")}</span><strong>{detail.totalSessions}</strong></div>
+                                        <div><span>{t("modal.perWeek")}</span><strong>{detail.sessionsPerWeek}</strong></div>
+                                        <div><span>{t("modal.tuition")}</span><strong>{money(detail.tuition)}</strong></div>
                                         {detail.discountPercent > 0 && (
                                             <>
-                                                <div><span>Giảm giá</span><strong>-{detail.discountPercent}%</strong></div>
+                                                <div><span>{t("modal.discount")}</span><strong>-{detail.discountPercent}%</strong></div>
                                                 <div className="cdm-meta-total">
-                                                    <span>Thành tiền</span>
+                                                    <span>{t("modal.finalPrice")}</span>
                                                     <strong>
-                                                        {formatCurrency(Math.round((detail.tuition - detail.tuition * detail.discountPercent / 100) * 100) / 100)}
+                                                        {money(Math.round((detail.tuition - detail.tuition * detail.discountPercent / 100) * 100) / 100)}
                                                     </strong>
                                                 </div>
                                             </>
@@ -143,7 +134,7 @@ export default function CourseDetailModal({ course, onClose }: Props) {
                                     </div>
 
                                     <section className="cdm-section">
-                                        <h3><i className="fa-solid fa-chalkboard-user"></i> Giáo viên</h3>
+                                        <h3><i className="fa-solid fa-chalkboard-user"></i> {t("modal.teachers")}</h3>
                                         {detail.teachers.length > 0 ? (
                                             detail.teachers.map((t, i) => (
                                                 <div key={i} className="cdm-teacher">
@@ -156,32 +147,32 @@ export default function CourseDetailModal({ course, onClose }: Props) {
                                                 </div>
                                             ))
                                         ) : (
-                                            <p className="cdm-muted">Chưa có thông tin giáo viên.</p>
+                                            <p className="cdm-muted">{t("modal.noTeachers")}</p>
                                         )}
                                     </section>
 
                                     <section className="cdm-section">
-                                        <h3><i className="fa-solid fa-users"></i> Lớp học & lịch học</h3>
+                                        <h3><i className="fa-solid fa-users"></i> {t("modal.classes")}</h3>
                                         {detail.classes.length > 0 ? (
                                             detail.classes.map((c) => (
                                                 <div key={c.id} className="cdm-class">
                                                     <div className="cdm-class-head">
                                                         <strong>{c.name}</strong>
-                                                        <span>GV: {c.teacherName}</span>
+                                                        <span>{t("modal.teacherPrefix")} {c.teacherName}</span>
                                                     </div>
                                                     <div className="cdm-class-meta">
-                                                        <span>{formatDate(c.startDate)} → {formatDate(c.endDate)}</span>
-                                                        <span>Tối đa {c.maxStudents} học viên</span>
+                                                        <span>{date(c.startDate)} → {date(c.endDate)}</span>
+                                                        <span>{t("modal.maxStudents", { n: c.maxStudents })}</span>
                                                     </div>
                                                     {c.schedules.length > 0 ? (
                                                         <table className="cdm-schedules">
                                                             <thead>
-                                                                <tr><th>Thứ</th><th>Giờ học</th><th>Phòng</th></tr>
+                                                                <tr><th>{t("modal.colDay")}</th><th>{t("modal.colTime")}</th><th>{t("modal.colRoom")}</th></tr>
                                                             </thead>
                                                             <tbody>
                                                                 {c.schedules.map((s, i) => (
                                                                     <tr key={i}>
-                                                                        <td>{DAY_LABELS[s.dayOfWeek] ?? s.dayOfWeek}</td>
+                                                                        <td>{t(DAY_KEYS[s.dayOfWeek] ?? "day.mon")}</td>
                                                                         <td>{s.startTime} - {s.endTime}</td>
                                                                         <td>{s.roomName ?? "—"}</td>
                                                                     </tr>
@@ -189,12 +180,12 @@ export default function CourseDetailModal({ course, onClose }: Props) {
                                                             </tbody>
                                                         </table>
                                                     ) : (
-                                                        <p className="cdm-muted">Chưa có lịch học.</p>
+                                                        <p className="cdm-muted">{t("modal.noSchedules")}</p>
                                                     )}
                                                 </div>
                                             ))
                                         ) : (
-                                            <p className="cdm-muted">Chưa có lớp học.</p>
+                                            <p className="cdm-muted">{t("modal.noClasses")}</p>
                                         )}
                                     </section>
                                 </>
@@ -204,9 +195,9 @@ export default function CourseDetailModal({ course, onClose }: Props) {
 
                     {tab === 'assignments' && (
                         <div className="cdm-assignments">
-                            {loading && <p className="cdm-muted">Đang tải bài tập...</p>}
+                            {loading && <p className="cdm-muted">{t("assignment.loading")}</p>}
                             {!loading && assignments.length === 0 && (
-                                <p className="cdm-muted">Chưa có bài tập.</p>
+                                <p className="cdm-muted">{t("assignment.empty")}</p>
                             )}
                             {assignments.map((a) => (
                                 <div key={a.id} className="cdm-assignment">
@@ -224,7 +215,7 @@ export default function CourseDetailModal({ course, onClose }: Props) {
                                                 <i className="fa-solid fa-download"></i> {a.fileName}
                                             </button>
                                         ) : (
-                                            <span className="cdm-muted">Không có file đính kèm</span>
+                                            <span className="cdm-muted">{t("assignment.noFile")}</span>
                                         )}
                                     </div>
 
@@ -232,17 +223,17 @@ export default function CourseDetailModal({ course, onClose }: Props) {
                                         {a.mySubmission ? (
                                             <div className="cdm-submitted">
                                                 <span className="cdm-ok">
-                                                    <i className="fa-solid fa-circle-check"></i> Đã nộp: {a.mySubmission.fileName}
+                                                    <i className="fa-solid fa-circle-check"></i> {t("assignment.submitted")} {a.mySubmission.fileName}
                                                 </span>
                                                 <button className="cdm-link" onClick={() => handleDownloadMy(a)}>
-                                                    <i className="fa-solid fa-download"></i> Tải bài đã nộp
+                                                    <i className="fa-solid fa-download"></i> {t("assignment.downloadMine")}
                                                 </button>
                                             </div>
                                         ) : (
                                             <div className="cdm-upload-row">
                                                 <label className="cdm-upload-btn">
                                                     <i className="fa-solid fa-cloud-arrow-up"></i>
-                                                    {busyId === a.id ? ' Đang nộp...' : ' Nộp bài'}
+                                                    {busyId === a.id ? ` ${t("assignment.submitting")}` : ` ${t("assignment.submit")}`}
                                                     <input
                                                         type="file"
                                                         accept=".pdf,.doc,.docx"
@@ -254,7 +245,7 @@ export default function CourseDetailModal({ course, onClose }: Props) {
                                                         }}
                                                     />
                                                 </label>
-                                                <span className="cdm-muted">PDF, DOC, DOCX · tối đa 15MB</span>
+                                                <span className="cdm-muted">{t("assignment.hint")}</span>
                                             </div>
                                         )}
                                     </div>
@@ -265,50 +256,50 @@ export default function CourseDetailModal({ course, onClose }: Props) {
 
                     {tab === 'attendance' && (
                         <div className="cdm-attendance">
-                            {attLoading && <p className="cdm-muted">Đang tải điểm danh...</p>}
+                            {attLoading && <p className="cdm-muted">{t("attendance.loading")}</p>}
                             {!attLoading && attError && <p className="cdm-error">{attError}</p>}
                             {!attLoading && !attError && attendance && attendance.totalItems === 0 && (
                                 <div className="cdm-att-empty">
                                     <i className="fa-solid fa-calendar-check"></i>
-                                    <p>Chưa có dữ liệu điểm danh cho khóa học này.</p>
+                                    <p>{t("attendance.empty")}</p>
                                 </div>
                             )}
                             {!attLoading && !attError && attendance && attendance.totalItems > 0 && (
                                 <>
                                     <div className="cdm-att-summary">
                                         <div className="cdm-att-chip total">
-                                            <span>Tổng buổi</span><strong>{attendance.totalItems}</strong>
+                                            <span>{t("attendance.total")}</span><strong>{attendance.totalItems}</strong>
                                         </div>
                                         <div className="cdm-att-chip present">
-                                            <span>Có mặt</span><strong>{attendance.summary.present}</strong>
+                                            <span>{t("status.present")}</span><strong>{attendance.summary.present}</strong>
                                         </div>
                                         <div className="cdm-att-chip late">
-                                            <span>Đi muộn</span><strong>{attendance.summary.late}</strong>
+                                            <span>{t("status.late")}</span><strong>{attendance.summary.late}</strong>
                                         </div>
                                         <div className="cdm-att-chip absent">
-                                            <span>Vắng</span><strong>{attendance.summary.absent}</strong>
+                                            <span>{t("status.absent")}</span><strong>{attendance.summary.absent}</strong>
                                         </div>
                                         <div className="cdm-att-chip excused">
-                                            <span>Có phép</span><strong>{attendance.summary.excused}</strong>
+                                            <span>{t("status.excused")}</span><strong>{attendance.summary.excused}</strong>
                                         </div>
                                     </div>
 
                                     <table className="cdm-att-table">
                                         <thead>
-                                            <tr><th>Số buổi</th><th>Ngày</th><th>Trạng thái</th></tr>
+                                            <tr><th>{t("attendance.colNo")}</th><th>{t("attendance.colDate")}</th><th>{t("attendance.colStatus")}</th></tr>
                                         </thead>
                                         <tbody>
                                             {attendance.items.map((a) => (
                                                 <tr key={a.id}>
-                                                    <td className="cdm-att-no">Buổi {a.sessionNumber}</td>
+                                                    <td className="cdm-att-no">{t("attendance.session", { n: a.sessionNumber })}</td>
                                                     <td>
-                                                        {formatDate(a.date)}
+                                                        {date(a.date)}
                                                         <span className="cdm-att-dow">{weekdayLabel(a.date)}</span>
                                                     </td>
                                                     <td>
                                                         <span className={`cdm-att-badge ${a.status.toLowerCase()}`}>
                                                             <i className={`fa-solid ${ATT_ICON[a.status] ?? 'fa-circle-info'}`}></i>
-                                                            {ATT_LABEL[a.status] ?? a.status}
+                                                            {t(`status.${a.status.toLowerCase()}`)}
                                                         </span>
                                                         {a.note && <span className="cdm-att-note">{a.note}</span>}
                                                     </td>
@@ -319,14 +310,19 @@ export default function CourseDetailModal({ course, onClose }: Props) {
 
                                     <div className="cdm-att-pager">
                                         <span className="cdm-att-range">
-                                            {attendance.items.length} / {attendance.totalItems} buổi · trang {attendance.page}/{Math.max(1, Math.ceil(attendance.totalItems / attendance.pageSize))}
+                                            {t("attendance.range", {
+                                                shown: attendance.items.length,
+                                                total: attendance.totalItems,
+                                                page: attendance.page,
+                                                pages: Math.max(1, Math.ceil(attendance.totalItems / attendance.pageSize))
+                                            })}
                                         </span>
                                         <div className="cdm-att-pages">
                                             <button
                                                 className="cdm-page-btn"
                                                 disabled={attendance.page <= 1}
                                                 onClick={() => setAttPage(p => p - 1)}
-                                                aria-label="Trang trước"
+                                                aria-label={t("attendance.prev")}
                                             >
                                                 <i className="fa-solid fa-chevron-left"></i>
                                             </button>
@@ -343,7 +339,7 @@ export default function CourseDetailModal({ course, onClose }: Props) {
                                                 className="cdm-page-btn"
                                                 disabled={attendance.page >= Math.ceil(attendance.totalItems / attendance.pageSize)}
                                                 onClick={() => setAttPage(p => p + 1)}
-                                                aria-label="Trang sau"
+                                                aria-label={t("attendance.next")}
                                             >
                                                 <i className="fa-solid fa-chevron-right"></i>
                                             </button>

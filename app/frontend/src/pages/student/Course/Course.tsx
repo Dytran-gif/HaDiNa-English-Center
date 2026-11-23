@@ -11,6 +11,7 @@ import {
 import CourseMainFE from "./Components/CourseMain";
 import CourseBottomFE from "./Components/CourseBottom";
 import CourseHistoryFE from "./Components/CourseHistory";
+import { useLang } from "../../../i18n/LanguageContext";
 
 import type { Course } from '../../../types/StudentTypes/MainTypes';
 
@@ -18,6 +19,7 @@ type TabKey = 'registered' | 'browse' | 'history';
 
 export default function StudentCourse() {
     const navigate = useNavigate();
+    const { t } = useLang();
 
     // Danh sách khóa học (catalog), ghi danh của học viên và lịch sử khóa học từ BE
     const { data: courses } = useStudentCourses();
@@ -36,11 +38,11 @@ export default function StudentCourse() {
         setRegistering(true);
         try {
             await api.send("POST", `courses/${course.id}/register`);
-            alert(`Đăng ký thành công khóa ${course.name}!`);
+            alert(t("alerts.registerOk", { name: course.name }));
             reloadEnrollments();
             setTab('registered');
         } catch (err) {
-            alert(err instanceof Error ? err.message : "Đăng ký thất bại.");
+            alert(err instanceof Error ? err.message : t("alerts.registerFailed"));
         } finally {
             setRegistering(false);
         }
@@ -52,7 +54,7 @@ export default function StudentCourse() {
             await api.send("DELETE", `enrollments/${enrollmentId}`);
             reloadEnrollments();
         } catch (err) {
-            alert(err instanceof Error ? err.message : "Không thể hủy đăng ký.");
+            alert(err instanceof Error ? err.message : t("alerts.unregisterFailed"));
         }
     };
 
@@ -60,9 +62,9 @@ export default function StudentCourse() {
     const handleGoTuition = () => navigate("/student/tuition");
 
     const tabs: { key: TabKey; label: string; icon: string; count: number }[] = [
-        { key: 'registered', label: 'My Courses', icon: 'fa-book-bookmark', count: activeEnrollments.length },
-        { key: 'browse', label: 'Browse Courses', icon: 'fa-compass', count: courses.length },
-        { key: 'history', label: 'Course History', icon: 'fa-clock-rotate-left', count: history.length }
+        { key: 'registered', label: t("courses.tabMine"), icon: 'fa-book-bookmark', count: activeEnrollments.length },
+        { key: 'browse', label: t("courses.tabBrowse"), icon: 'fa-compass', count: courses.length },
+        { key: 'history', label: t("courses.tabHistory"), icon: 'fa-clock-rotate-left', count: history.length }
     ];
 
     return (
@@ -76,10 +78,8 @@ export default function StudentCourse() {
                                 <i className="fa-solid fa-graduation-cap"></i>
                             </div>
                             <div>
-                                <h1 className="course-hero-title">Course Center</h1>
-                                <p className="course-hero-sub">
-                                    Quản lý khóa đã đăng ký, khám phá khóa mới và xem lại hành trình học của bạn.
-                                </p>
+                                <h1 className="course-hero-title">{t("courses.title")}</h1>
+                                <p className="course-hero-sub">{t("courses.sub")}</p>
                             </div>
                         </div>
 

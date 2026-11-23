@@ -1,4 +1,5 @@
 import type { StudentTuitionItem } from "../../../../services/student/useStudentApi";
+import { useLang } from "../../../../i18n/LanguageContext";
 import './PaymentHistory.css';
 
 interface PaymentHistoryProps {
@@ -6,10 +7,7 @@ interface PaymentHistoryProps {
 }
 
 const PaymentHistory = ({ items }: PaymentHistoryProps) => {
-    // Hàm format tiền tệ VNĐ
-    const formatCurrency = (amount: number) => {
-        return amount.toLocaleString('vi-VN') + ' VNĐ';
-    };
+    const { t, money } = useLang();
 
     return (
         <div className="payment-history-container">
@@ -18,22 +16,22 @@ const PaymentHistory = ({ items }: PaymentHistoryProps) => {
                 <div className="payment-header-section">
                     <div className="payment-icon-box"><i className="fa-solid fa-clock-rotate-left"></i></div>
                     <div className="payment-header-text">
-                        <h1>Payment History</h1>
-                        <p>Review your past tuition payments and transaction records.</p>
+                        <h1>{t("payHistory.title")}</h1>
+                        <p>{t("payHistory.sub")}</p>
                     </div>
                 </div>
 
-                <div className="payment-card-header">Transaction Records</div>
+                <div className="payment-card-header">{t("payHistory.records")}</div>
                 <div className="payment-table-responsive">
                     <table className="payment-custom-table">
                         <thead>
                             <tr>
-                                <th>Payment ID</th>
-                                <th>Course / Class</th>
-                                <th>Amount</th>
-                                <th>Method</th>
-                                <th>Paid Date</th>
-                                <th>Note</th>
+                                <th>{t("payHistory.colId")}</th>
+                                <th>{t("payHistory.colCourse")}</th>
+                                <th>{t("payHistory.colAmount")}</th>
+                                <th>{t("payHistory.colMethod")}</th>
+                                <th>{t("payHistory.colDate")}</th>
+                                <th>{t("payHistory.colNote")}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -44,20 +42,20 @@ const PaymentHistory = ({ items }: PaymentHistoryProps) => {
                                         <div className="payment-font-medium">{item.courseName}</div>
                                         <div className="payment-text-muted" style={{ fontSize: '12px' }}>{item.className}</div>
                                     </td>
-                                    <td className="payment-font-medium">{formatCurrency(item.paidAmount ?? 0)}</td>
+                                    <td className="payment-font-medium">{money(item.paidAmount ?? 0)}</td>
                                     <td>
                                         <span className={`payment-badge payment-${(item.method ?? 'cash').toLowerCase()}`}>
-                                            {item.method ?? 'N/A'}
+                                            {item.method ? t(`method.${item.method.toLowerCase()}`) : t("method.cash")}
                                         </span>
                                     </td>
-                                    <td className="payment-text-muted">{item.paidDate ?? 'N/A'}</td>
-                                    <td className="payment-text-muted">{item.note || 'N/A'}</td>
+                                    <td className="payment-text-muted">{item.paidDate ?? '—'}</td>
+                                    <td className="payment-text-muted">{item.note || '—'}</td>
                                 </tr>
                             ))}
                             {items.length === 0 && (
                                 <tr>
                                     <td colSpan={6} className="payment-text-center payment-text-muted" style={{ padding: '32px' }}>
-                                        Chưa có lịch sử giao dịch nào.
+                                        {t("payHistory.empty")}
                                     </td>
                                 </tr>
                             )}

@@ -4,19 +4,18 @@ import {
     useStudentFeedbackList,
     type StudentFeedbackClass
 } from "../../../../services/student/useStudentApi";
+import { useLang } from "../../../../i18n/LanguageContext";
 import './StudentCoursesFeedback.css';
 
 const StudentCoursesFeedback = () => {
+    const { t, money } = useLang();
+
     // 1. Danh sách lớp đang học (từ BE) + lớp đang mở modal
     const { data: enrolledClasses } = useStudentFeedbackClasses();
     const [selectedItem, setSelectedItem] = useState<StudentFeedbackClass | null>(null);
 
     // 2. Nhận xét giáo viên viết cho chính mình ở lớp đang chọn
     const { data: feedbacks } = useStudentFeedbackList(selectedItem?.classId ?? null);
-
-    const formatCurrency = (amount: number) => {
-        return amount.toLocaleString('vi-VN') + ' VNĐ';
-    };
 
     return (
         <div className="Feedback-container">
@@ -25,14 +24,14 @@ const StudentCoursesFeedback = () => {
                 <div className="Feedback-header-section">
                     <div className="Feedback-icon-box">💬</div>
                     <div className="Feedback-header-text">
-                        <h1>My Courses & Feedback</h1>
-                        <p>Click on a course to view detailed information and teacher feedback.</p>
+                        <h1>{t("feedback.title")}</h1>
+                        <p>{t("feedback.sub")}</p>
                     </div>
                 </div>
 
                 {/* Danh sách khóa học đã đăng ký của học viên */}
                 <div className="Feedback-courses-grid-section">
-                    <h3 className="Feedback-section-heading">Enrolled Courses</h3>
+                    <h3 className="Feedback-section-heading">{t("feedback.section")}</h3>
                     <div className="Feedback-courses-grid">
                         {enrolledClasses.map((item) => {
                             return (
@@ -43,19 +42,19 @@ const StudentCoursesFeedback = () => {
                                 >
                                     <div className="Feedback-card-top">
                                         <span className="Feedback-badge-level">Band {item.bandFrom} - {item.bandTo}</span>
-                                        <span className="Feedback-sessions-count">{item.totalSessions} Sessions</span>
+                                        <span className="Feedback-sessions-count">{t("common.sessions", { n: item.totalSessions })}</span>
                                     </div>
                                     <h4 className="Feedback-course-name">{item.courseName}</h4>
                                     <p className="Feedback-course-desc">{item.description}</p>
                                     <div className="Feedback-card-footer">
-                                        <span className="Feedback-tuition-price">{formatCurrency(item.tuition)}</span>
-                                        <span className="Feedback-view-detail-link">View Details →</span>
+                                        <span className="Feedback-tuition-price">{money(item.tuition)}</span>
+                                        <span className="Feedback-view-detail-link">{t("feedback.view")}</span>
                                     </div>
                                 </div>
                             );
                         })}
                         {enrolledClasses.length === 0 && (
-                            <p className="Feedback-no-courses">Bạn chưa đăng ký khóa học nào.</p>
+                            <p className="Feedback-no-courses">{t("feedback.noCourses")}</p>
                         )}
                     </div>
                 </div>
@@ -73,21 +72,21 @@ const StudentCoursesFeedback = () => {
                         <div className="Feedback-modal-body">
                             {/* Cột thông tin chi tiết */}
                             <div className="Feedback-modal-column">
-                                <h3>Course Information</h3>
+                                <h3>{t("feedback.info")}</h3>
                                 <ul className="Feedback-info-list">
-                                    <li><strong>Class Name:</strong> <span className="Feedback-text-blue">{selectedItem.className}</span></li>
-                                    <li><strong>Instructor:</strong> <span className="Feedback-teacher-name">{selectedItem.teacherName}</span></li>
-                                    <li><strong>Description:</strong> {selectedItem.description}</li>
-                                    <li><strong>Target Band:</strong> {selectedItem.bandFrom} - {selectedItem.bandTo}</li>
-                                    <li><strong>Total Sessions:</strong> {selectedItem.totalSessions} sessions</li>
-                                    <li><strong>Sessions / Week:</strong> {selectedItem.sessionsPerWeek} sessions/wk</li>
-                                    <li><strong>Tuition Fee:</strong> {formatCurrency(selectedItem.tuition)}</li>
+                                    <li><strong>{t("feedback.className")}:</strong> <span className="Feedback-text-blue">{selectedItem.className}</span></li>
+                                    <li><strong>{t("feedback.instructor")}:</strong> <span className="Feedback-teacher-name">{selectedItem.teacherName}</span></li>
+                                    <li><strong>{t("feedback.description")}:</strong> {selectedItem.description}</li>
+                                    <li><strong>{t("feedback.targetBand")}:</strong> {selectedItem.bandFrom} - {selectedItem.bandTo}</li>
+                                    <li><strong>{t("feedback.totalSessions")}:</strong> {t("common.sessions", { n: selectedItem.totalSessions })}</li>
+                                    <li><strong>{t("feedback.perWeek")}:</strong> {t("common.sessionsPerWeek", { n: selectedItem.sessionsPerWeek })}</li>
+                                    <li><strong>{t("feedback.tuition")}:</strong> {money(selectedItem.tuition)}</li>
                                 </ul>
                             </div>
 
                             {/* Cột nhận xét của giáo viên */}
                             <div className="Feedback-modal-column">
-                                <h3>Teacher Feedback</h3>
+                                <h3>{t("feedback.teacherFeedback")}</h3>
 
                                 <div className="Feedback-feedback-list">
                                     {feedbacks.length > 0 ? (
@@ -100,7 +99,7 @@ const StudentCoursesFeedback = () => {
                                             </div>
                                         ))
                                     ) : (
-                                        <p className="Feedback-no-feedback">Không có nhận xét</p>
+                                        <p className="Feedback-no-feedback">{t("feedback.none")}</p>
                                     )}
                                 </div>
                             </div>

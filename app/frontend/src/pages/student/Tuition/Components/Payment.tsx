@@ -1,5 +1,6 @@
 import { useState, useMemo, type ChangeEvent } from 'react';
 import type { StudentTuitionItem } from "../../../../services/student/useStudentApi";
+import { useLang } from "../../../../i18n/LanguageContext";
 import './Payment.css';
 
 interface PaymentProps {
@@ -8,6 +9,7 @@ interface PaymentProps {
 }
 
 const PaymentFE = ({ items, onPay }: PaymentProps) => {
+    const { t, money } = useLang();
     const [selectedEnrollmentIds, setSelectedEnrollmentIds] = useState<number[]>([]);
 
     const handleSelect = (enrollmentId: number) => {
@@ -30,10 +32,6 @@ const PaymentFE = ({ items, onPay }: PaymentProps) => {
             .reduce((sum, item) => sum + item.finalTuitionFee, 0);
     }, [items, selectedEnrollmentIds]);
 
-    const formatCurrency = (amount: number) => {
-        return amount.toLocaleString('vi-VN') + ' VNĐ';
-    };
-
     return (
         <div className="payment-container">
             {/* Unified Card: Tuition Title + My Courses Table */}
@@ -41,12 +39,12 @@ const PaymentFE = ({ items, onPay }: PaymentProps) => {
                 <div className="payment-header-section">
                     <div className="payment-icon-box"><i className="fa-solid fa-file-invoice-dollar"></i></div>
                     <div className="payment-header-text">
-                        <h1>Tuition</h1>
-                        <p>Select courses to review and pay your tuition fees.</p>
+                        <h1>{t("tuition.title")}</h1>
+                        <p>{t("tuition.sub")}</p>
                     </div>
                 </div>
 
-                <div className="payment-card-header">My Courses</div>
+                <div className="payment-card-header">{t("tuition.myCourses")}</div>
                 <div className="payment-table-responsive">
                     <table className="payment-custom-table">
                         <thead>
@@ -59,11 +57,11 @@ const PaymentFE = ({ items, onPay }: PaymentProps) => {
                                         onChange={handleSelectAll}
                                     />
                                 </th>
-                                <th>Course Name</th>
-                                <th>Class</th>
-                                <th>Level</th>
-                                <th>Duration</th>
-                                <th>Tuition Fee</th>
+                                <th>{t("tuition.colCourse")}</th>
+                                <th>{t("tuition.colClass")}</th>
+                                <th>{t("tuition.colLevel")}</th>
+                                <th>{t("tuition.colDuration")}</th>
+                                <th>{t("tuition.colFee")}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -80,14 +78,14 @@ const PaymentFE = ({ items, onPay }: PaymentProps) => {
                                     <td className="payment-font-medium">{item.courseName}</td>
                                     <td className="payment-text-muted">{item.className}</td>
                                     <td className="payment-text-muted">{item.bandFrom} - {item.bandTo}</td>
-                                    <td className="payment-text-muted">{item.totalSessions} sessions</td>
-                                    <td className="payment-font-medium">{formatCurrency(item.finalTuitionFee)}</td>
+                                    <td className="payment-text-muted">{t("common.sessions", { n: item.totalSessions })}</td>
+                                    <td className="payment-font-medium">{money(item.finalTuitionFee)}</td>
                                 </tr>
                             ))}
                             {items.length === 0 && (
                                 <tr>
                                     <td colSpan={6} className="payment-text-center payment-text-muted" style={{ padding: '32px' }}>
-                                        Không có khóa học nào cần thanh toán.
+                                        {t("tuition.none")}
                                     </td>
                                 </tr>
                             )}
@@ -100,20 +98,20 @@ const PaymentFE = ({ items, onPay }: PaymentProps) => {
             <div className="payment-summary-card">
                 <div className="payment-summary-left">
                     <div className="payment-icon-box-sm"><i className="fa-regular fa-rectangle-list"></i></div>
-                    <h2>Payment Summary</h2>
+                    <h2>{t("tuition.summary")}</h2>
                 </div>
 
                 <div className="payment-summary-right">
                     <div className="payment-summary-item">
-                        <span className="payment-summary-label">Selected Courses</span>
+                        <span className="payment-summary-label">{t("tuition.selected")}</span>
                         <span className="payment-summary-value">
-                            {selectedEnrollmentIds.length} course{selectedEnrollmentIds.length > 1 ? 's' : ''}
+                            {t("tuition.courseCount", { n: selectedEnrollmentIds.length })}
                         </span>
                     </div>
 
                     <div className="payment-summary-item">
-                        <span className="payment-summary-label">Total Amount</span>
-                        <span className="payment-summary-value payment-text-blue">{formatCurrency(totalAmount)}</span>
+                        <span className="payment-summary-label">{t("tuition.total")}</span>
+                        <span className="payment-summary-value payment-text-blue">{money(totalAmount)}</span>
                     </div>
 
                     <button
@@ -121,7 +119,7 @@ const PaymentFE = ({ items, onPay }: PaymentProps) => {
                         disabled={selectedEnrollmentIds.length === 0}
                         onClick={() => onPay(selectedEnrollmentIds)}
                     >
-                        Thanh toán ngay
+                        {t("my.payNow")}
                     </button>
                 </div>
             </div>
