@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import "../General.css";
 import { useStudentApi, useStudentCourses, useStudentEnrollments } from "../../../services/student/useStudentApi";
 import CourseMainFE from "./Components/CourseMain";
-import CourseSidebarFE from "./Components/CourseSidebar";
 import CourseBottomFE from "./Components/CourseBottom";
 
 import type { Course } from '../../../types/StudentTypes/MainTypes';
@@ -48,14 +47,12 @@ export default function StudentCourse() {
     return (
         <div className="container">
             <div className="row g-3">
-                <div className="col-9"> 
+                <div className="col-12"> 
                     {/* Truyền hàm xử lý đăng ký khóa học vào đây */}
                     <CourseMainFE courses={courses} onRegisterCourse={handleRegisterCourse} />
                 </div>
                 
-                <div className="col-3"> 
-                    <CourseSidebarFE />
-                </div>
+                
                 
                 <div className="col-12"> 
                     {/* Khối khóa đã đăng ký: đọc từ DB, xóa gọi API, thanh toán sang trang tuition */}

@@ -9,7 +9,7 @@ const TIME_SLOTS = [
     { start: '13:30', end: '14:30' }, { start: '14:30', end: '15:30' },
     { start: '15:30', end: '16:30' }, { start: '16:30', end: '17:30' },
     { start: '17:30', end: '18:30' }, { start: '18:30', end: '19:30' },
-    { start: '19:30', end: '20:30' }
+    { start: '19:30', end: '20:30' }, { start: '20:30', end: '21:30' },
 ];
 
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
