@@ -1,4 +1,5 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { NavLink } from "react-router-dom";
 import "./Sidebar.css";
 
 import { sidebarMenuItems } from "../../../../data/StudentData/SidebarData";
@@ -15,16 +16,28 @@ const NAV_KEYS: Record<string, string> = {
 
 function Sidebar() {
     const { logout } = useAuth();
-    const navigate = useNavigate();
     const { t } = useLang();
+    const [confirmLogout, setConfirmLogout] = useState(false);
 
-    // Xóa phiên rồi về trang chủ công khai (replace để nút Back không quay lại trang student)
+    // Xóa phiên rồi về trang chủ công khai. Dùng location.replace để guard của route
+    // /student không chen ngang điều hướng SPA (trước đây bị đẩy về /dang-nhap).
     const handleLogout = () => {
         logout();
-        navigate("/", { replace: true });
+        window.location.replace("/");
     };
 
+    // Esc để đóng hộp thoại xác nhận
+    useEffect(() => {
+        if (!confirmLogout) return;
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === "Escape") setConfirmLogout(false);
+        };
+        window.addEventListener("keydown", onKey);
+        return () => window.removeEventListener("keydown", onKey);
+    }, [confirmLogout]);
+
     return (
+        <>
         <aside className="student-sidebar">
 
             {/* =========================
@@ -74,7 +87,7 @@ function Sidebar() {
                     <button
                         type="button"
                         className="sidebar-item logout-button"
-                        onClick={handleLogout}
+                        onClick={() => setConfirmLogout(true)}
                     >
                         <span className="sidebar-icon"><i className="fa-solid fa-arrow-right-from-bracket"></i></span>
                         <span>{t("nav.logout")}</span>
@@ -85,6 +98,43 @@ function Sidebar() {
             </div>
 
         </aside>
+
+        {/* Hộp thoại xác nhận đăng xuất */}
+        {confirmLogout && (
+            <div className="logout-modal-overlay" onClick={() => setConfirmLogout(false)}>
+                <div
+                    className="logout-modal"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="logout-modal-title"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <div className="logout-modal-icon">
+                        <i className="fa-solid fa-arrow-right-from-bracket"></i>
+                    </div>
+                    <h3 id="logout-modal-title">{t("logout.confirmTitle")}</h3>
+                    <p>{t("logout.confirmMsg")}</p>
+                    <div className="logout-modal-actions">
+                        <button
+                            type="button"
+                            className="logout-modal-btn ghost"
+                            onClick={() => setConfirmLogout(false)}
+                            autoFocus
+                        >
+                            {t("logout.cancel")}
+                        </button>
+                        <button
+                            type="button"
+                            className="logout-modal-btn danger"
+                            onClick={handleLogout}
+                        >
+                            {t("nav.logout")}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
+        </>
     );
 }
 
