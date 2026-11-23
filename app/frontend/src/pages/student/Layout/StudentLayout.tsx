@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Outlet } from "react-router-dom";
 
 import Header from "../Components/Header/Header";
@@ -7,13 +8,23 @@ import { LanguageProvider } from "../../../i18n/LanguageContext";
 import "./StudentLayout.css";
 
 function StudentLayout() {
+    const [menuOpen, setMenuOpen] = useState(false);
+
     return (
         <LanguageProvider>
             <div className="student-layout">
-                <Sidebar />
+                <Sidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
+
+                {menuOpen && (
+                    <div
+                        className="sidebar-overlay"
+                        onClick={() => setMenuOpen(false)}
+                        aria-hidden="true"
+                    ></div>
+                )}
 
                 <div className="student-main">
-                    <Header />
+                    <Header onOpenMenu={() => setMenuOpen(true)} />
 
                     <main className="student-content">
                         <Outlet />

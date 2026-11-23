@@ -32,6 +32,36 @@
     box-sizing: border-box;
 
     z-index: 1000;
+
+    transition: transform 0.25s ease;
+}
+
+
+/* =========================================================
+   MOBILE DRAWER HELPERS
+========================================================= */
+
+.sidebar-close-btn {
+    display: none;
+}
+
+.sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(15, 23, 42, 0.45);
+    z-index: 1200;
+    animation: sidebarFade 0.2s ease-out;
+}
+
+@keyframes sidebarFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@media (min-width: 901px) {
+    .sidebar-overlay {
+        display: none;
+    }
 }
 
 
@@ -370,34 +400,60 @@
 
 
 /* =========================================================
-   RESPONSIVE
+   RESPONSIVE — mobile: sidebar thành drawer trượt
 ========================================================= */
 
 @media (max-width: 900px) {
 
     .student-sidebar {
-        width: 230px;
+        width: 272px;
+        z-index: 1300;
+        transform: translateX(-100%);
+        box-shadow: none;
     }
 
+    .student-sidebar.open {
+        transform: translateX(0);
+        box-shadow: 0 0 40px rgba(15, 23, 42, 0.28);
+    }
+
+    .sidebar-close-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 34px;
+        height: 34px;
+        border: none;
+        border-radius: 8px;
+        background-color: #f1f5f9;
+        color: #475569;
+        font-size: 20px;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .sidebar-close-btn:hover {
+        background-color: #e2e8f0;
+        color: #0f172a;
+    }
 
     .sidebar-logo {
-        padding-left: 25px;
-
-        padding-right: 25px;
+        padding-left: 20px;
+        padding-right: 20px;
+        margin-top: 10px;
     }
-
 
     .sidebar-logo h1 {
-        font-size: 30px;
+        font-size: 26px;
     }
-
 
     .sidebar-scroll {
-        padding-left: 15px;
-
-        padding-right: 15px;
+        padding-left: 12px;
+        padding-right: 12px;
     }
-
 
     .sidebar-item {
         padding: 0 14px;

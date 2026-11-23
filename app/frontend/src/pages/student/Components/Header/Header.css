@@ -568,3 +568,118 @@
     outline: 2px solid #2563eb;
     outline-offset: 1px;
 }
+
+
+/* =====================================================
+   MOBILE (<=900px): hamburger + header gọn + modal sheet
+===================================================== */
+
+.header-menu-btn {
+    display: none;
+}
+
+@media (max-width: 900px) {
+    .student-header {
+        height: 60px;
+        padding: 0 12px;
+        gap: 10px;
+        justify-content: flex-start;
+    }
+
+    .header-menu-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        flex-shrink: 0;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        background-color: #ffffff;
+        color: #334155;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    .header-menu-btn:hover {
+        background-color: #f8fafc;
+    }
+
+    .header-menu-btn:focus-visible {
+        outline: 2px solid #2563eb;
+        outline-offset: 2px;
+    }
+
+    .header-title {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .header-title h1 {
+        font-size: 17px;
+    }
+
+    .header-title p {
+        font-size: 11px;
+        margin-top: 3px;
+    }
+
+    .header-right {
+        gap: 8px;
+        margin-left: auto;
+    }
+
+    .header-user {
+        padding: 3px;
+    }
+
+    .user-info {
+        display: none;
+    }
+
+    .user-arrow {
+        display: none;
+    }
+
+    .lang-switch {
+        padding: 2px;
+    }
+
+    .lang-option {
+        width: 32px;
+        height: 24px;
+        font-size: 10.5px;
+    }
+
+    /* Modal hồ sơ: dạng bottom sheet cho dễ bấm */
+    .header-modal-overlay {
+        align-items: flex-end;
+        padding: 0;
+    }
+
+    .header-modal-content {
+        max-width: 100%;
+        border-radius: 16px 16px 0 0;
+        max-height: 92vh;
+        animation: modalSlideUp 0.22s ease-out;
+    }
+
+    @keyframes modalSlideUp {
+        from { transform: translateY(24px); opacity: 0.6; }
+        to { transform: none; opacity: 1; }
+    }
+
+    .header-modal-body {
+        padding: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-title h1 {
+        font-size: 15.5px;
+    }
+
+    .header-title p {
+        font-size: 10.5px;
+    }
+}

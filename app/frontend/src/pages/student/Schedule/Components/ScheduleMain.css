@@ -320,3 +320,34 @@
     padding: 6px 8px;
     border-radius: 6px;
 }
+
+/* =========================================
+   MOBILE (<=900px): giữ lưới 7 ngày, cuộn ngang
+========================================= */
+
+@media (max-width: 900px) {
+    .schedule-clean-container {
+        padding: 12px;
+    }
+
+    .schedule-header-simple {
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .week-label {
+        font-size: 13px;
+    }
+
+    .grid-box {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 #f1f5f9;
+    }
+
+    .grid-header,
+    .grid-body {
+        min-width: 720px;
+    }
+}

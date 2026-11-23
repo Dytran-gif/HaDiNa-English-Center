@@ -294,7 +294,7 @@
     scrollbar-color: #cbd5e1 #f1f5f9;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     .Feedback-modal-body {
         grid-template-columns: 1fr;
     }

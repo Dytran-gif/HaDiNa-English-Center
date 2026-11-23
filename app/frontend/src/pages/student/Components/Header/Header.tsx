@@ -7,7 +7,11 @@ import { useLang } from "../../../../i18n/LanguageContext";
 import LanguageSwitch from "./LanguageSwitch";
 import "./Header.css";
 
-function Header() {
+interface HeaderProps {
+    onOpenMenu?: () => void; // mobile: mở drawer sidebar
+}
+
+function Header({ onOpenMenu }: HeaderProps) {
     const location = useLocation();
     const { t } = useLang();
 
@@ -123,6 +127,15 @@ function Header() {
     return (
         <>
             <header className="student-header">
+                <button
+                    type="button"
+                    className="header-menu-btn"
+                    onClick={onOpenMenu}
+                    aria-label="Open menu"
+                >
+                    <i className="fa-solid fa-bars"></i>
+                </button>
+
                 <div className="header-title">
                     <h1>{title}</h1>
                     <p>

@@ -17,29 +17,22 @@
 .student-content {
     flex: 1;
 
-    padding-top:15px;
+    padding-top: 15px;
 
     box-sizing: border-box;
 }
 
 
 /* =========================================
-   RESPONSIVE
+   RESPONSIVE — 1 mobile breakpoint (<=900px)
 ========================================= */
 
 @media (max-width: 900px) {
-    .student-main {
-        margin-left: 230px;
-    }
-}
-
-
-@media (max-width: 768px) {
     .student-main {
         margin-left: 0;
     }
 
     .student-content {
-        padding: 20px 16px;
+        padding: 12px 4px 28px;
     }
 }

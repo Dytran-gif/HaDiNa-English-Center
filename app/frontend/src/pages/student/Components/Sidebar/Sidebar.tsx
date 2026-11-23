@@ -14,7 +14,12 @@ const NAV_KEYS: Record<string, string> = {
     "/student/tuition": "nav.tuition",
 };
 
-function Sidebar() {
+interface SidebarProps {
+    open?: boolean;      // mobile: drawer đang mở
+    onClose?: () => void; // mobile: đóng drawer (bấm nền/khi chọn menu)
+}
+
+function Sidebar({ open = false, onClose }: SidebarProps) {
     const { logout } = useAuth();
     const { t } = useLang();
     const [confirmLogout, setConfirmLogout] = useState(false);
@@ -38,7 +43,17 @@ function Sidebar() {
 
     return (
         <>
-        <aside className="student-sidebar">
+        <aside className={`student-sidebar ${open ? "open" : ""}`}>
+
+            {/* Nút đóng drawer (chỉ hiện trên mobile) */}
+            <button
+                type="button"
+                className="sidebar-close-btn"
+                onClick={onClose}
+                aria-label="Close menu"
+            >
+                ×
+            </button>
 
             {/* =========================
                 LOGO
@@ -63,6 +78,7 @@ function Sidebar() {
                         <NavLink
                             key={item.path}
                             to={item.path}
+                            onClick={onClose}
                             className={({ isActive }) =>
                                 isActive
                                     ? "sidebar-item active"

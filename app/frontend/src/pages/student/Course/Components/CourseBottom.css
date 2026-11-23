@@ -347,7 +347,7 @@
     box-shadow: 0 4px 10px rgba(37, 99, 235, 0.28);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     .cb-right-panel {
         width: 100%;
     }
