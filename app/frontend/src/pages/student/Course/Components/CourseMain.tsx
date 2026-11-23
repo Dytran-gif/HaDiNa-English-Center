@@ -6,9 +6,10 @@ import './CourseMain.css';
 interface CourseMainProps {
     courses: Course[];
     onRegisterCourse: (course: Course) => void;
+    registering?: boolean;
 }
 
-export default function CourseMainFE({ courses, onRegisterCourse }: CourseMainProps) {
+export default function CourseMainFE({ courses, onRegisterCourse, registering }: CourseMainProps) {
     const [searchQuery, setSearchQuery] = useState('');
 
     const filteredCourses = useMemo(() => {
@@ -38,6 +39,9 @@ export default function CourseMainFE({ courses, onRegisterCourse }: CourseMainPr
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
+                        <span className="cm-result-count">
+                            {filteredCourses.length} of {courses.length} courses
+                        </span>
                     </div>
                 </div>
 
@@ -88,9 +92,10 @@ export default function CourseMainFE({ courses, onRegisterCourse }: CourseMainPr
                                         <div className="cm-card-actions">
                                             <button
                                                 className="cm-register-btn"
+                                                disabled={registering}
                                                 onClick={() => onRegisterCourse(course)}
                                             >
-                                                Register
+                                                {registering ? 'Registering…' : 'Register'}
                                             </button>
                                         </div>
                                     </div>

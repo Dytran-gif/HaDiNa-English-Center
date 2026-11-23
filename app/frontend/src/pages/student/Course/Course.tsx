@@ -1,22 +1,36 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../General.css";
-import { useStudentApi, useStudentCourses, useStudentEnrollments } from "../../../services/student/useStudentApi";
+import "./Course.css";
+import {
+    useStudentApi,
+    useStudentCourses,
+    useStudentEnrollments,
+    useStudentScheduleHistory
+} from "../../../services/student/useStudentApi";
 import CourseMainFE from "./Components/CourseMain";
 import CourseBottomFE from "./Components/CourseBottom";
+import CourseHistoryFE from "./Components/CourseHistory";
 
 import type { Course } from '../../../types/StudentTypes/MainTypes';
+
+type TabKey = 'registered' | 'browse' | 'history';
 
 export default function StudentCourse() {
     const navigate = useNavigate();
 
-    // 1. Danh sách khóa học (catalog) + danh sách ghi danh của học viên từ BE
+    // Danh sách khóa học (catalog), ghi danh của học viên và lịch sử khóa học từ BE
     const { data: courses } = useStudentCourses();
     const { data: enrollments, reload: reloadEnrollments } = useStudentEnrollments();
+    const { data: history } = useStudentScheduleHistory();
     const api = useStudentApi();
     const [registering, setRegistering] = useState(false);
+    const [tab, setTab] = useState<TabKey>('registered');
 
-    // 2. Bấm Register trên thẻ khóa -> lưu thẳng ghi danh xuống DB (BE chặn đăng ký trùng)
+    // Tab "My Courses" chỉ gồm khóa đang học (Active); khóa đã qua (OnHold/Dropped) nằm ở tab Course History
+    const activeEnrollments = enrollments.filter(e => e.status === 'Active');
+
+    // Bấm Register trên thẻ khóa -> lưu thẳng ghi danh xuống DB (BE chặn đăng ký trùng)
     const handleRegisterCourse = async (course: Course) => {
         if (registering) return;
         setRegistering(true);
@@ -24,6 +38,7 @@ export default function StudentCourse() {
             await api.send("POST", `courses/${course.id}/register`);
             alert(`Đăng ký thành công khóa ${course.name}!`);
             reloadEnrollments();
+            setTab('registered');
         } catch (err) {
             alert(err instanceof Error ? err.message : "Đăng ký thất bại.");
         } finally {
@@ -31,7 +46,7 @@ export default function StudentCourse() {
         }
     };
 
-    // 3. Bấm nút xóa ở khối dưới -> xóa ghi danh trong DB
+    // Bấm nút xóa ở danh sách đã đăng ký -> xóa ghi danh trong DB
     const handleDeleteEnrollment = async (enrollmentId: number) => {
         try {
             await api.send("DELETE", `enrollments/${enrollmentId}`);
@@ -41,26 +56,74 @@ export default function StudentCourse() {
         }
     };
 
-    // 4. Nút Payment Now -> sang trang học phí
+    // Nút Payment Now -> sang trang học phí
     const handleGoTuition = () => navigate("/student/tuition");
+
+    const tabs: { key: TabKey; label: string; icon: string; count: number }[] = [
+        { key: 'registered', label: 'My Courses', icon: 'fa-book-bookmark', count: activeEnrollments.length },
+        { key: 'browse', label: 'Browse Courses', icon: 'fa-compass', count: courses.length },
+        { key: 'history', label: 'Course History', icon: 'fa-clock-rotate-left', count: history.length }
+    ];
 
     return (
         <div className="container">
             <div className="row g-3">
-                <div className="col-12"> 
-                    {/* Truyền hàm xử lý đăng ký khóa học vào đây */}
-                    <CourseMainFE courses={courses} onRegisterCourse={handleRegisterCourse} />
+                <div className="col-12">
+                    {/* Hero: tiêu đề + 3 tab */}
+                    <section className="course-hero">
+                        <div className="course-hero-head">
+                            <div className="course-hero-icon">
+                                <i className="fa-solid fa-graduation-cap"></i>
+                            </div>
+                            <div>
+                                <h1 className="course-hero-title">Course Center</h1>
+                                <p className="course-hero-sub">
+                                    Quản lý khóa đã đăng ký, khám phá khóa mới và xem lại hành trình học của bạn.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="course-tabs" role="tablist" aria-label="Course sections">
+                            {tabs.map((t) => (
+                                <button
+                                    key={t.key}
+                                    role="tab"
+                                    aria-selected={tab === t.key}
+                                    className={`course-tab ${tab === t.key ? 'active' : ''}`}
+                                    onClick={() => setTab(t.key)}
+                                >
+                                    <i className={`fa-solid ${t.icon}`}></i>
+                                    <span>{t.label}</span>
+                                    {t.count > 0 && <span className="course-tab-count">{t.count}</span>}
+                                </button>
+                            ))}
+                        </div>
+                    </section>
                 </div>
-                
-                
-                
-                <div className="col-12"> 
-                    {/* Khối khóa đã đăng ký: đọc từ DB, xóa gọi API, thanh toán sang trang tuition */}
-                    <CourseBottomFE 
-                        enrolledCourses={enrollments} 
-                        onDelete={handleDeleteEnrollment} 
-                        onGoTuition={handleGoTuition}
-                    />
+
+                <div className="col-12">
+                    <div className="course-panel" key={tab}>
+                        {tab === 'registered' && (
+                            <CourseBottomFE
+                                enrolledCourses={activeEnrollments}
+                                onDelete={handleDeleteEnrollment}
+                                onGoTuition={handleGoTuition}
+                                onBrowse={() => setTab('browse')}
+                            />
+                        )}
+
+                        {tab === 'browse' && (
+                            <CourseMainFE
+                                courses={courses}
+                                onRegisterCourse={handleRegisterCourse}
+                                registering={registering}
+                            />
+                        )}
+
+                        {tab === 'history' && (
+                            <CourseHistoryFE items={history} />
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

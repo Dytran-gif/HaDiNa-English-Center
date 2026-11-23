@@ -7,11 +7,25 @@ interface CourseBottomProps {
     enrolledCourses: StudentEnrollmentItem[]; // Các khóa học viên đã đăng ký (đọc từ DB)
     onDelete: (enrollmentId: number) => void; // Hàm hủy ghi danh (xóa trong DB)
     onGoTuition: () => void; // Hàm điều hướng sang trang học phí
+    onBrowse: () => void; // Chuyển sang tab Browse Courses khi chưa có khóa nào
 }
 
-export default function CourseBottomFE({ enrolledCourses, onDelete, onGoTuition }: CourseBottomProps) {
-    // Nếu chưa đăng ký khóa nào thì ẩn khu vực này
-    if (enrolledCourses.length === 0) return null;
+export default function CourseBottomFE({ enrolledCourses, onDelete, onGoTuition, onBrowse }: CourseBottomProps) {
+    // Chưa đăng ký khóa nào -> empty state kèm nút sang tab Browse Courses
+    if (enrolledCourses.length === 0) {
+        return (
+            <div className="cb-empty">
+                <div className="cb-empty-icon">
+                    <i className="fa-solid fa-book-open"></i>
+                </div>
+                <h3>Bạn chưa đăng ký khóa học nào</h3>
+                <p>Khám phá các chương trình của trung tâm và chọn khóa phù hợp với mục tiêu của bạn.</p>
+                <button className="cb-browse-btn" onClick={onBrowse}>
+                    <i className="fa-solid fa-compass"></i> Browse Courses
+                </button>
+            </div>
+        );
+    }
 
     // Tổng tiền chỉ tính các khóa CHƯA thanh toán (khóa đã đóng tiền không cộng nữa)
     const totalPrice = enrolledCourses
@@ -24,7 +38,10 @@ export default function CourseBottomFE({ enrolledCourses, onDelete, onGoTuition 
         <section className="course-bottom-section">
             {/* Cột trái: Danh sách các khóa học đã đăng ký */}
             <div className="cb-left-panel">
-                <h3 className="cb-panel-title">Registered Courses ({enrolledCourses.length})</h3>
+                <h3 className="cb-panel-title">
+                    <i className="fa-solid fa-book-bookmark"></i>
+                    Registered Courses ({enrolledCourses.length})
+                </h3>
                 
                 {/* Danh sách có thanh trượt nếu quá 10 item */}
                 <div className="cb-list-wrapper">

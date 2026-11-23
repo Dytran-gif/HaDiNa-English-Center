@@ -3,9 +3,8 @@ import "../General.css"
 // Components
 import ScheduleGridFE from "./Components/ScheduleMain";
 import ScheduleNoticeFE from "./Components/ScheduleNotice"; 
-import ScheduleHistoryFE from "./Components/ScheduleHistory";
 // API
-import { useStudentSchedule, useStudentScheduleHistory } from "../../../services/student/useStudentApi";
+import { useStudentSchedule } from "../../../services/student/useStudentApi";
 
 // Thứ 2 đầu tuần của một ngày bất kỳ
 function startOfWeekMonday(d: Date): Date {
@@ -29,7 +28,6 @@ export default function StudentSchedule() {
     const [weekStart, setWeekStart] = useState<Date>(() => startOfWeekMonday(new Date()));
 
     const { data: schedule } = useStudentSchedule(formatDateStr(weekStart));
-    const { data: history } = useStudentScheduleHistory();
 
     const handlePrevWeek = () => {
         const prev = new Date(weekStart);
@@ -46,7 +44,7 @@ export default function StudentSchedule() {
     return (
         <div className="container">
             <div className="row g-3">
-                <div className="col-9">
+                <div className="col-12">
                     <ScheduleGridFE 
                         weekStart={weekStart} 
                         sessions={schedule?.sessions ?? []} 
@@ -54,10 +52,7 @@ export default function StudentSchedule() {
                         onNextWeek={handleNextWeek} 
                     />
                 </div>
-                <div className="col-3">
-                    <ScheduleHistoryFE items={history ?? []} />
-                </div>
-                <div className="col-9">
+                <div className="col-12">
                     <ScheduleNoticeFE notices={schedule?.notices ?? []} />
                 </div>
             </div>

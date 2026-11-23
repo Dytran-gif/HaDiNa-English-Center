@@ -1,0 +1,241 @@
+/* Course History — tab thứ 3 của trang Courses (chuyển từ trang Schedule) */
+
+.ch-section {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+    padding: 20px 24px 22px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.ch-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.ch-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ch-header-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background-color: #eff6ff;
+    color: #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.ch-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.ch-subtitle {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: #64748b;
+}
+
+.ch-total {
+    background-color: #f1f5f9;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.ch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 16px;
+}
+
+.ch-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 14px 16px;
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ch-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.ch-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.ch-card-title {
+    min-width: 0;
+}
+
+.ch-course {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.35;
+}
+
+.ch-class {
+    display: block;
+    margin-top: 3px;
+    font-size: 11.5px;
+    color: #94a3b8;
+}
+
+.ch-status {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.ch-status.status-completed { background-color: #dcfce7; color: #15803d; }
+.ch-status.status-cancelled { background-color: #fee2e2; color: #b91c1c; }
+.ch-status.status-onhold { background-color: #fef3c7; color: #92400e; }
+.ch-status.status-dropped { background-color: #fee2e2; color: #991b1b; }
+.ch-status.status-active { background-color: #dbeafe; color: #1d4ed8; }
+
+.ch-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ch-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #475569;
+}
+
+.ch-row i {
+    width: 14px;
+    text-align: center;
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+.ch-row strong {
+    color: #1f2937;
+    font-weight: 600;
+}
+
+.ch-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 2px;
+}
+
+.ch-tag {
+    background-color: #f1f5f9;
+    color: #475569;
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 999px;
+}
+
+.ch-tag.band {
+    background-color: #eff6ff;
+    color: #2563eb;
+}
+
+.ch-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.ch-page-info {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.ch-pages {
+    display: flex;
+    gap: 6px;
+}
+
+.ch-page-btn {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ch-page-btn:hover:not(:disabled) {
+    border-color: #2563eb;
+    color: #2563eb;
+}
+
+.ch-page-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.ch-empty {
+    text-align: center;
+    padding: 36px 0 30px;
+}
+
+.ch-empty i {
+    font-size: 34px;
+    color: #cbd5e1;
+}
+
+.ch-empty p {
+    margin: 10px 0 4px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #475569;
+}
+
+.ch-empty span {
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+@media (max-width: 576px) {
+    .ch-section { padding: 16px; }
+    .ch-grid { grid-template-columns: 1fr; }
+}
