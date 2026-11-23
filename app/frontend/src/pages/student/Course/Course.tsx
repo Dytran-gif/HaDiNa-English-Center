@@ -58,8 +58,8 @@ export default function StudentCourse() {
         }
     };
 
-    // Nút Payment Now -> sang trang học phí
-    const handleGoTuition = () => navigate("/student/tuition");
+    // Nút Payment Now -> sang trang học phí, kèm cờ tự tích tất cả khóa cần thanh toán
+    const handleGoTuition = () => navigate("/student/tuition", { state: { payAll: true } });
 
     const tabs: { key: TabKey; label: string; icon: string; count: number }[] = [
         { key: 'registered', label: t("courses.tabMine"), icon: 'fa-book-bookmark', count: activeEnrollments.length },

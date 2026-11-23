@@ -26,10 +26,12 @@ public class CoursesController : ControllerBase
     }
 
     // GET api/student/courses
+    // Chỉ trả khóa ĐÃ CÓ lớp học — khóa chưa mở lớp thì không hiện ở trang Browse Courses.
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
         var rows = await _db.Courses.AsNoTracking()
+            .Where(c => c.Classes.Any())
             .OrderBy(c => c.Name)
             .Select(c => new
             {

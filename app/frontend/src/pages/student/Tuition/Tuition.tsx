@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 import "../General.css";
 import "./Tuition.css";
 import { useStudentApi, useStudentTuition } from "../../../services/student/useStudentApi";
@@ -10,7 +11,11 @@ export default function StudentTuition() {
     const { data: tuitionItems, reload: reloadTuition } = useStudentTuition();
     const api = useStudentApi();
     const { t } = useLang();
+    const location = useLocation();
     const [paying, setPaying] = useState(false);
+
+    // Từ trang Courses bấm "Thanh toán ngay" -> tự tích tất cả khóa chưa thanh toán
+    const autoSelectAll = Boolean((location.state as { payAll?: boolean } | null)?.payAll);
 
     // Khoản chưa thanh toán -> bảng chọn thanh toán; đã thanh toán -> lịch sử
     const unpaid = tuitionItems.filter(item => !item.isPaid);
@@ -47,7 +52,7 @@ export default function StudentTuition() {
 
             <div className="row g-3">
                 <div className="col-12"> 
-                    <PaymentFE items={unpaid} onPay={handlePay} />
+                    <PaymentFE items={unpaid} onPay={handlePay} autoSelectAll={autoSelectAll} />
                 </div>
 
                 <div className="col-12">

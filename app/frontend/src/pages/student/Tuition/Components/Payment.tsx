@@ -1,4 +1,4 @@
-import { useState, useMemo, type ChangeEvent } from 'react';
+import { useState, useMemo, useEffect, useRef, type ChangeEvent } from 'react';
 import type { StudentTuitionItem } from "../../../../services/student/useStudentApi";
 import { useLang } from "../../../../i18n/LanguageContext";
 import './Payment.css';
@@ -6,11 +6,20 @@ import './Payment.css';
 interface PaymentProps {
     items: StudentTuitionItem[]; // Các ghi danh chưa thanh toán (đọc từ BE)
     onPay: (enrollmentIds: number[]) => void; // Hàm thanh toán (gọi BE, lưu phiếu thu xuống DB)
+    autoSelectAll?: boolean; // Từ trang Courses: tự tích tất cả khóa khi danh sách tải xong
 }
 
-const PaymentFE = ({ items, onPay }: PaymentProps) => {
+const PaymentFE = ({ items, onPay, autoSelectAll }: PaymentProps) => {
     const { t, money } = useLang();
     const [selectedEnrollmentIds, setSelectedEnrollmentIds] = useState<number[]>([]);
+    const autoSelectedRef = useRef(false);
+
+    // Chỉ tự tích một lần sau khi danh sách khóa chưa thanh toán tải xong
+    useEffect(() => {
+        if (!autoSelectAll || autoSelectedRef.current || items.length === 0) return;
+        autoSelectedRef.current = true;
+        setSelectedEnrollmentIds(items.map(item => item.enrollmentId));
+    }, [autoSelectAll, items]);
 
     const handleSelect = (enrollmentId: number) => {
         setSelectedEnrollmentIds(prev =>
