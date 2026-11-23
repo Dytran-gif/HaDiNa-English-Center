@@ -130,7 +130,15 @@ export default function CourseDetailModal({ course, onClose }: Props) {
                                         <div><span>Buổi/tuần</span><strong>{detail.sessionsPerWeek}</strong></div>
                                         <div><span>Học phí</span><strong>{formatCurrency(detail.tuition)}</strong></div>
                                         {detail.discountPercent > 0 && (
-                                            <div><span>Giảm giá</span><strong>-{detail.discountPercent}%</strong></div>
+                                            <>
+                                                <div><span>Giảm giá</span><strong>-{detail.discountPercent}%</strong></div>
+                                                <div className="cdm-meta-total">
+                                                    <span>Thành tiền</span>
+                                                    <strong>
+                                                        {formatCurrency(Math.round((detail.tuition - detail.tuition * detail.discountPercent / 100) * 100) / 100)}
+                                                    </strong>
+                                                </div>
+                                            </>
                                         )}
                                     </div>
 

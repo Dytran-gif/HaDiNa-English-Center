@@ -18,6 +18,10 @@ export default function CourseMainFE({ courses, onRegisterCourse, registering }:
         });
     }, [courses, searchQuery]);
 
+    // Giá thực trả sau giảm giá (cùng công thức với BE: làm tròn 2 chữ số)
+    const finalPrice = (c: Course) =>
+        Math.round((c.tuition - c.tuition * c.discountPercent / 100) * 100) / 100;
+
     return (
         <div className="course-main-card">
             <div className="course-main-section">
@@ -34,10 +38,19 @@ export default function CourseMainFE({ courses, onRegisterCourse, registering }:
                             <i className="fa-solid fa-search"></i>
                             <input
                                 type="text"
-                                placeholder="Search ..."
+                                placeholder="Tìm khóa học..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
+                            {searchQuery && (
+                                <button
+                                    className="cm-search-clear"
+                                    onClick={() => setSearchQuery('')}
+                                    aria-label="Xóa tìm kiếm"
+                                >
+                                    ×
+                                </button>
+                            )}
                         </div>
                         <span className="cm-result-count">
                             {filteredCourses.length} of {courses.length} courses
@@ -77,17 +90,24 @@ export default function CourseMainFE({ courses, onRegisterCourse, registering }:
                                         <div className="cm-card-skills">
                                             <span className="cm-skill-tag">{course.totalSessions} Sessions</span>
                                             <span className="cm-skill-tag">Band {course.bandFrom}-{course.bandTo}</span>
-                                            {course.discountPercent > 0 && (
-                                                <span className="cm-skill-tag discount-tag">-{course.discountPercent}%</span>
-                                            )}
                                         </div>
                                     </div>
 
-                                    {/* Giá và Nút */}
+                                    {/* Giá (sau giảm) và Nút */}
                                     <div className="cm-card-footer">
-                                        <span className="cm-price">
-                                            {course.tuition.toLocaleString('vi-VN')} VND
-                                        </span>
+                                        <div className="cm-price-box">
+                                            {course.discountPercent > 0 && (
+                                                <span className="cm-price-original">
+                                                    {course.tuition.toLocaleString('vi-VN')} VND
+                                                </span>
+                                            )}
+                                            <span className="cm-price">
+                                                {finalPrice(course).toLocaleString('vi-VN')} VND
+                                                {course.discountPercent > 0 && (
+                                                    <span className="cm-discount-chip">-{course.discountPercent}%</span>
+                                                )}
+                                            </span>
+                                        </div>
 
                                         <div className="cm-card-actions">
                                             <button

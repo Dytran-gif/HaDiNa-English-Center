@@ -27,12 +27,22 @@ export default function CourseBottomFE({ enrolledCourses, onDelete, onGoTuition,
         );
     }
 
-    // Tổng tiền chỉ tính các khóa CHƯA thanh toán (khóa đã đóng tiền không cộng nữa)
-    const totalPrice = enrolledCourses
-        .filter(item => !item.isPaid)
-        .reduce((sum, item) => sum + item.course.tuition, 0);
+    const fmt = (n: number) => n.toLocaleString('vi-VN') + ' VND';
 
-    const hasUnpaid = enrolledCourses.some(item => !item.isPaid);
+    // Học phí lấy từ snapshot lúc ghi danh (BE trả về); nếu BE cũ thiếu field thì tính lại đúng như BE
+    const round2 = (n: number) => Math.round(n * 100) / 100;
+    const baseFee = (item: StudentEnrollmentItem) => item.tuitionFee ?? item.course.tuition;
+    const pctOf = (item: StudentEnrollmentItem) => item.discountPercent ?? item.course.discountPercent;
+    const discFee = (item: StudentEnrollmentItem) =>
+        item.discountAmount ?? round2(baseFee(item) * pctOf(item) / 100);
+    const finalFee = (item: StudentEnrollmentItem) => item.finalTuitionFee ?? baseFee(item) - discFee(item);
+
+    // Tổng tiền chỉ tính các khóa CHƯA thanh toán (khóa đã đóng tiền không cộng nữa)
+    const unpaidCourses = enrolledCourses.filter(item => !item.isPaid);
+    const totalBase = unpaidCourses.reduce((sum, item) => sum + baseFee(item), 0);
+    const totalDiscount = unpaidCourses.reduce((sum, item) => sum + discFee(item), 0);
+    const totalFinal = unpaidCourses.reduce((sum, item) => sum + finalFee(item), 0);
+    const hasUnpaid = unpaidCourses.length > 0;
 
     return (
         <section className="course-bottom-section">
@@ -65,7 +75,13 @@ export default function CourseBottomFE({ enrolledCourses, onDelete, onGoTuition,
                                     <h4 className="cb-title">{item.course.name}</h4>
                                     <div className="cb-meta">
                                         <span><i className="fa-regular fa-clock"></i> {item.course.totalSessions} sessions</span>
-                                        <span className="cb-price-item">{item.course.tuition.toLocaleString('vi-VN')} VND</span>
+                                        <span className="cb-price-item">
+                                            {discFee(item) > 0 && <s className="cb-price-original">{fmt(baseFee(item))}</s>}
+                                            <span className="cb-price-final">{fmt(finalFee(item))}</span>
+                                            {discFee(item) > 0 && (
+                                                <span className="cb-discount-chip">-{pctOf(item)}%</span>
+                                            )}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -88,11 +104,23 @@ export default function CourseBottomFE({ enrolledCourses, onDelete, onGoTuition,
             {/* Cột phải: Tổng tiền và Nút thanh toán */}
             <div className="cb-right-panel">
                 <div className="cb-summary-card">
-                    <span className="cb-summary-label">Total Price (chưa thanh toán)</span>
-                    <span className="cb-summary-price">{totalPrice.toLocaleString('vi-VN')} VND</span>
+                    {totalDiscount > 0 && (
+                        <div className="cb-summary-breakdown">
+                            <div>
+                                <span>Học phí gốc</span>
+                                <strong>{fmt(totalBase)}</strong>
+                            </div>
+                            <div className="cb-summary-discount-row">
+                                <span>Giảm giá</span>
+                                <strong>-{fmt(totalDiscount)}</strong>
+                            </div>
+                        </div>
+                    )}
+                    <span className="cb-summary-label">Cần thanh toán</span>
+                    <span className="cb-summary-price">{fmt(totalFinal)}</span>
                     {hasUnpaid ? (
                         <>
-                            <button className="cb-register-btn" onClick={onGoTuition}>Payment Now</button>
+                            <button className="cb-register-btn" onClick={onGoTuition}>Thanh toán ngay</button>
                             <p className="cb-summary-note">
                                 You will be redirected to the tuition page to complete your payment.
                             </p>

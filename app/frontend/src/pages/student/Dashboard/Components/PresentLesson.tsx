@@ -15,9 +15,10 @@ interface PresentLessonProps {
         startTime?: string;  // "HH:mm:ss"
         endTime?: string;
     };
+    onOpen?: () => void; // bấm vào card -> mở popup chi tiết khóa (giống Present Lessons)
 }
 
-export default function PresentLessonFE({ lesson }: PresentLessonProps) {
+export default function PresentLessonFE({ lesson, onOpen }: PresentLessonProps) {
     // Chỉ hiển thị khi có dữ liệu thật từ BE (không còn fallback dữ liệu mẫu)
     if (!lesson) return null;
 
@@ -47,7 +48,20 @@ export default function PresentLessonFE({ lesson }: PresentLessonProps) {
                 </p>
             </div>
 
-            <div className="middle-column card">
+            <div
+                className={`middle-column card ${onOpen ? 'card-clickable' : ''}`}
+                onClick={onOpen}
+                onKeyDown={(e) => {
+                    if (!onOpen) return;
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onOpen();
+                    }
+                }}
+                role={onOpen ? 'button' : undefined}
+                tabIndex={onOpen ? 0 : undefined}
+                aria-label={onOpen ? `Xem chi tiết khóa ${lesson.courseName}` : undefined}
+            >
                 <img
                     src={lesson.imageUrl || defaultCourseImage}
                     alt={lesson.courseName}
@@ -65,6 +79,11 @@ export default function PresentLessonFE({ lesson }: PresentLessonProps) {
                         {dateLabel && timeLabel && " · "}
                         {timeLabel && `Giờ học: ${timeLabel}`}
                     </p>
+                )}
+                {onOpen && (
+                    <span className="card-cta">
+                        Xem chi tiết khóa học <i className="fa-solid fa-arrow-right"></i>
+                    </span>
                 )}
             </div>
 

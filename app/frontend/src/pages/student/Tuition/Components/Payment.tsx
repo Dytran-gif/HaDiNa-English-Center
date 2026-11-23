@@ -121,7 +121,7 @@ const PaymentFE = ({ items, onPay }: PaymentProps) => {
                         disabled={selectedEnrollmentIds.length === 0}
                         onClick={() => onPay(selectedEnrollmentIds)}
                     >
-                        Payment Now
+                        Thanh toán ngay
                     </button>
                 </div>
             </div>

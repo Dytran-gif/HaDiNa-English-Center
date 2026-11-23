@@ -26,6 +26,7 @@ public class StudentInfoDto
 // Khối "Your next lesson" (PresentLesson) - buổi học sắp tới gần nhất theo lịch tuần
 public class NextLessonInfoDto
 {
+    public int CourseId { get; set; }   // để FE mở popup chi tiết đúng khóa
     public string CourseName { get; set; } = "";
     public string BandFrom { get; set; } = "";
     public string BandTo { get; set; } = "";

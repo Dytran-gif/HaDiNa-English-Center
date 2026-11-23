@@ -117,6 +117,7 @@ public class DashboardController : ControllerBase
                     bestStart = s.StartTime;
                     nextLesson = new NextLessonInfoDto
                     {
+                        CourseId = e.CourseId,
                         CourseName = e.CourseName,
                         BandFrom = e.BandFrom.ToString("0.#"),
                         BandTo = e.BandTo.ToString("0.#"),
@@ -137,6 +138,7 @@ public class DashboardController : ControllerBase
             var first = courses[0];
             nextLesson = new NextLessonInfoDto
             {
+                CourseId = enrollments[0].CourseId,
                 CourseName = first.Name,
                 BandFrom = first.BandFrom,
                 BandTo = first.BandTo,
