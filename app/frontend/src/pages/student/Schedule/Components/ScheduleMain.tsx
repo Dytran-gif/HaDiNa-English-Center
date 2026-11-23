@@ -25,6 +25,10 @@ interface ScheduleGridProps {
 export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWeek }: ScheduleGridProps) {
     const { t, lang } = useLang();
 
+    // Ngày hôm nay (yyyy-mm-dd) để đánh dấu trong agenda mobile
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
     // Danh sách các ngày trong tuần hiện tại
     const daysOfWeek = useMemo(() => {
         return DAY_NAMES.map((name, idx) => {
@@ -78,7 +82,8 @@ export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWe
                 </button>
             </div>
 
-            {/* LƯỚI THỜI KHÓA BIỂU */}
+            {/* LƯỚI THỜI KHÓA BIỂU (desktop) */}
+            <div className="schedule-grid-desktop">
             <div className="grid-box">
                 <div className="grid-header">
                     <div className="cell-time-head">{t("schedule.time")}</div>
@@ -179,6 +184,69 @@ export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWe
                         })}
                     </div>
                 </div>
+            </div>
+            </div>
+
+            {/* AGENDA DỌC CHO MOBILE: mỗi ngày một nhóm buổi học */}
+            <div className="schedule-agenda">
+                {daysOfWeek.map((day) => {
+                    const sessionsToday = sessions.filter(s => s.dateStr === day.dateStr);
+                    const isToday = day.dateStr === todayStr;
+
+                    return (
+                        <section key={day.key} className={`agenda-day ${isToday ? 'is-today' : ''}`}>
+                            <header className="agenda-day-head">
+                                <span className="agenda-day-name">{day.label}</span>
+                                <span className="agenda-day-date">{day.displayDate}</span>
+                                {isToday && <span className="agenda-today-chip">{t("schedule.today")}</span>}
+                            </header>
+
+                            {sessionsToday.length > 0 ? (
+                                <div className="agenda-cards">
+                                    {sessionsToday.map((item) => (
+                                        <article
+                                            key={`${item.classId}-${item.dateStr}-${item.startTime}`}
+                                            className={`agenda-card ${item.isCancelled ? 'is-cancelled' : ''}`}
+                                        >
+                                            <div className="agenda-card-top">
+                                                <h4 className="agenda-course">{item.courseName}</h4>
+                                                {item.isCancelled ? (
+                                                    <span className="agenda-badge cancelled">{t("schedule.cancelled")}</span>
+                                                ) : (
+                                                    <span className="agenda-badge">
+                                                        {t("schedule.lesson", { n: item.sessionNo, total: item.totalSessions })}
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            <p className="agenda-time">
+                                                <i className="fa-regular fa-clock"></i> {item.startTime} - {item.endTime}
+                                            </p>
+
+                                            <div className="agenda-meta">
+                                                <span><i className="fa-solid fa-hashtag"></i> {item.className}</span>
+                                                {item.teacherName && (
+                                                    <span><i className="fa-solid fa-chalkboard-user"></i> {item.teacherName}</span>
+                                                )}
+                                                {item.roomName && (
+                                                    <span><i className="fa-solid fa-location-dot"></i> {item.roomName}</span>
+                                                )}
+                                            </div>
+
+                                            {item.isCancelled && (
+                                                <p className="agenda-cancel-reason">
+                                                    {item.cancelReason || t("schedule.noReason")}
+                                                </p>
+                                            )}
+                                        </article>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="agenda-empty">{t("schedule.freeDay")}</p>
+                            )}
+                        </section>
+                    );
+                })}
             </div>
         </div>
     );
