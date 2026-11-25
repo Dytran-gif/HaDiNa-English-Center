@@ -41,7 +41,7 @@ export default function Dashboard() {
                       <li key={i}>
                         <div>
                           <strong>{fmtTime(e.startTime)}–{fmtTime(e.endTime)}</strong>{" "}
-                          <Link className="t-link" to={`/teacher/classes/${e.classId}`}>{e.className}</Link>
+                          <Link className="t-link" to={`/teacher/classes/${e.classId}`}><span className="t-code">{e.classCode}</span> {e.className}</Link>
                           <div className="t-muted t-small">{e.courseName} · Phòng {e.roomName}</div>
                         </div>
                         <div className="t-row" style={{ gap: 10 }}>
@@ -62,7 +62,7 @@ export default function Dashboard() {
                       <li key={`${e.classId}-${e.date}`}>
                         <div>
                           <strong>{fmtDate(e.date)}</strong> {fmtTime(e.startTime)}–{fmtTime(e.endTime)}
-                          <div className="t-muted t-small">{e.className}</div>
+                          <div className="t-muted t-small">{e.classCode} · {e.className}</div>
                         </div>
                         <Link className="t-link t-small" to={`/teacher/attendance?class=${e.classId}&date=${e.date}`}>Điểm danh</Link>
                       </li>

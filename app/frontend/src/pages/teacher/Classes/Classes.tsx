@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "../teacher-shared.css";
 import Card from "../../../components/ui/Card";
-import { useTeacherQuery } from "../../../services/teacher/teacherApi";
+import { query, useTeacherQuery } from "../../../services/teacher/teacherApi";
 import type { TeacherClass } from "../../../types/teacherApi";
 import { Empty, QueryState, StatusTag } from "../Components/Common/Feedback";
 import { classStatusLabel, dayNames, fmtDate, fmtTime } from "../Components/Common/format";
@@ -16,7 +16,11 @@ const filters = [
 
 export default function Classes() {
   const [status, setStatus] = useState("");
-  const { data, loading, error, reload } = useTeacherQuery<TeacherClass[]>(`classes${status ? `?status=${status}` : ""}`);
+  const [search, setSearch] = useState("");
+  const [q, setQ] = useState("");
+  useEffect(() => { const t = setTimeout(() => setQ(search.trim()), 300); return () => clearTimeout(t); }, [search]);
+  // Tìm theo mã lớp (vd IE65-2612), tên lớp hoặc tên khóa — cùng mã lớp hiển thị ở Admin và Học viên
+  const { data, loading, error, reload } = useTeacherQuery<TeacherClass[]>(`classes${query({ status, q })}`);
 
   return (
     <div className="t-page">
@@ -26,9 +30,11 @@ export default function Classes() {
             {f.label}
           </button>
         ))}
+        <input className="t-input" style={{ marginLeft: "auto", minWidth: 220 }} type="search" aria-label="Tìm lớp"
+          placeholder="Tìm mã lớp, tên lớp, khóa" value={search} onChange={e => setSearch(e.target.value)} />
       </div>
       <QueryState loading={loading} error={error} onRetry={reload}>
-        {data && data.length === 0 && <Empty>Chưa có lớp nào. Lớp do Admin tạo và phân công cho giáo viên.</Empty>}
+        {data && data.length === 0 && <Empty>{q ? `Không có lớp khớp "${q}".` : "Chưa có lớp nào. Lớp do Admin tạo và phân công cho giáo viên."}</Empty>}
         <div className="t-grid">
           {data?.map(c => <ClassCard key={c.id} c={c} />)}
         </div>
@@ -41,7 +47,7 @@ function ClassCard({ c }: { c: TeacherClass }) {
   return (
     <Card>
       <div className="t-row t-row--between" style={{ marginBottom: 8 }}>
-        <StatusTag status={c.status} labels={classStatusLabel} />
+        <span className="t-row" style={{ gap: 6 }}><span className="t-code">{c.code}</span><StatusTag status={c.status} labels={classStatusLabel} /></span>
         <span className="t-muted">{c.enrolledCount}/{c.maxStudents} học viên</span>
       </div>
       <h3 style={{ margin: "0 0 4px" }}><Link className="t-link" to={`/teacher/classes/${c.id}`}>{c.name}</Link></h3>
@@ -54,7 +60,7 @@ function ClassCard({ c }: { c: TeacherClass }) {
       <div className="t-row" style={{ marginTop: 14 }}>
         <Link className="t-link t-small" to={`/teacher/classes/${c.id}`}>Chi tiết lớp</Link>
         <Link className="t-link t-small" to={`/teacher/attendance?class=${c.id}`}>Điểm danh</Link>
-        <Link className="t-link t-small" to={`/teacher/assignments?course=${c.courseId}`}>Bài tập</Link>
+        <Link className="t-link t-small" to={`/teacher/assignments?class=${c.id}`}>Bài tập</Link>
         {c.meetingUrl && <a className="t-link t-small" href={c.meetingUrl} target="_blank" rel="noreferrer">Link học online</a>}
       </div>
     </Card>

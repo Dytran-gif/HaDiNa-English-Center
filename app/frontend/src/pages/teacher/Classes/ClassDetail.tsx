@@ -24,11 +24,11 @@ export default function ClassDetail() {
           <>
             <Card>
               <div className="t-row t-row--between">
-                <h2 style={{ margin: 0 }}>{c.name}</h2>
+                <h2 style={{ margin: 0 }}><span className="t-code" style={{ verticalAlign: "middle" }}>{c.code}</span> {c.name}</h2>
                 <StatusTag status={c.status} labels={classStatusLabel} />
               </div>
               <dl className="t-kv" style={{ marginTop: 12 }}>
-                <dt>Khóa học</dt><dd>{c.courseName} ({c.totalSessions} buổi)</dd>
+                <dt>Khóa học</dt><dd>{c.courseName} · đã dạy {c.sessionsDone}/{c.totalSessions} buổi</dd>
                 <dt>Thời gian</dt><dd>{fmtDate(c.startDate)} – {fmtDate(c.endDate)}</dd>
                 <dt>Sĩ số</dt><dd>{c.enrolledCount}/{c.maxStudents}</dd>
                 <dt>Lịch học</dt>
@@ -39,7 +39,7 @@ export default function ClassDetail() {
               </dl>
               <div className="t-row" style={{ marginTop: 12 }}>
                 <Link className="t-link t-small" to={`/teacher/attendance?class=${c.id}`}>Điểm danh</Link>
-                <Link className="t-link t-small" to={`/teacher/assignments?course=${c.courseId}`}>Bài tập của khóa</Link>
+                <Link className="t-link t-small" to={`/teacher/assignments?class=${c.id}`}>Bài tập của lớp</Link>
               </div>
             </Card>
 

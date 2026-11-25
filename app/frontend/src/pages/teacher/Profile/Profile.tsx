@@ -8,6 +8,7 @@ import { errorMessage, useTeacherApi, useTeacherQuery } from "../../../services/
 import type { TeacherProfile } from "../../../types/teacherApi";
 import { Notice, QueryState } from "../Components/Common/Feedback";
 import { fmtDate } from "../Components/Common/format";
+import { MyReviewsCard, PublicProfileCard } from "./PublicProfileCard";
 
 type NoticeState = { text: string; tone: "ok" | "error" };
 
@@ -77,6 +78,9 @@ export default function Profile() {
                 </div>
               </div>
             </Card>
+
+            <PublicProfileCard />
+            <MyReviewsCard />
           </div>
         )}
       </QueryState>

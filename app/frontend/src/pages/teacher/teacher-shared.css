@@ -228,3 +228,15 @@ textarea.t-input { resize: vertical; min-height: 80px; }
 .t-attendance .teacher-table td:last-child { min-width: 160px; }
 .t-session__tag { white-space: nowrap; flex-shrink: 0; }
 .t-session__date { white-space: nowrap; }
+
+/* Mã lớp: cùng kiểu hiển thị ở Admin / Giáo viên / Học viên */
+.t-code {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #eef3ff;
+  color: #1e3a8a;
+  font: 700 12px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
+  white-space: nowrap;
+}
