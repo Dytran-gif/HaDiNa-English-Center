@@ -9,6 +9,10 @@ public class StudentDashboardDto
     public NextLessonInfoDto? NextLesson { get; set; }
     public List<CourseItemDto> Courses { get; set; } = new();
 
+    // Lịch tuần của các khóa đang học: FE dùng đồng hồ máy học viên tự tính buổi kế tiếp.
+    // NextLesson ở trên chỉ đúng tại thời điểm tải trang.
+    public List<LessonSlotDto> LessonSlots { get; set; } = new();
+
     // ⚠️ DB chưa có bảng thông báo (xem type AppNotification trong GeneralTypes.ts) -> luôn rỗng.
     // KHI CÓ BẢNG: truy vấn thông báo rồi gán vào đây trong DashboardController.
     public List<NotificationItemDto> Notifications { get; set; } = new();
@@ -36,6 +40,15 @@ public class NextLessonInfoDto
     public DateOnly? NextDate { get; set; }
     public TimeOnly? StartTime { get; set; }
     public TimeOnly? EndTime { get; set; }
+}
+
+// Một ca học trong tuần của khóa (DayOfWeek 1=Thứ 2 .. 7=Chủ nhật)
+public class LessonSlotDto
+{
+    public int CourseId { get; set; }
+    public int DayOfWeek { get; set; }
+    public TimeOnly StartTime { get; set; }
+    public TimeOnly EndTime { get; set; }
 }
 
 // Khớp type Course trong GeneralTypes.ts
