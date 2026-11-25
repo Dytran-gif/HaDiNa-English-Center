@@ -53,32 +53,32 @@
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.16);
     border: 1px solid rgba(255, 255, 255, 0.35);
-    font-size: 11.5px;
+    font-size: 10.5px;
     font-weight: 700;
-    letter-spacing: 0.4px;
+    letter-spacing: 0.6px;
     text-transform: uppercase;
     color: #ffffff;
 }
 
 .nl-badge i {
-    font-size: 10px;
+    font-size: 9.5px;
     color: #fde68a;
 }
 
 .nl-title {
-    margin: 14px 0 6px;
-    font-size: 24px;
-    line-height: 1.25;
+    margin: 12px 0 5px;
+    font-size: 20px;
+    line-height: 1.3;
     font-weight: 800;
     color: #ffffff;
 }
 
 .nl-desc {
     margin: 0 0 14px;
-    font-size: 13px;
+    font-size: 12.5px;
     line-height: 1.55;
-    color: rgba(255, 255, 255, 0.82);
-    max-width: 46ch;
+    color: rgba(255, 255, 255, 0.8);
+    max-width: 50ch;
 }
 
 .nl-chips {
@@ -95,7 +95,7 @@
     padding: 6px 12px;
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.14);
-    font-size: 12px;
+    font-size: 11.5px;
     color: rgba(255, 255, 255, 0.9);
 }
 
@@ -113,7 +113,7 @@
     border-radius: 10px;
     background: #ffffff;
     color: #1d4ed8;
-    font-size: 13px;
+    font-size: 12.5px;
     font-weight: 700;
     cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -189,7 +189,7 @@
 
 .nl-course-name {
     margin: 0;
-    font-size: 14px;
+    font-size: 13.5px;
     font-weight: 800;
     color: #0f172a;
     line-height: 1.35;
@@ -235,7 +235,7 @@
     }
 
     .nl-title {
-        font-size: 20px;
+        font-size: 18px;
     }
 
     .nl-course {
