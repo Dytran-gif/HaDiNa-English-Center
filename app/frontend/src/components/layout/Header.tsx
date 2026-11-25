@@ -2,10 +2,18 @@ import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { siteName, primaryNav, footerCoursesNav } from "../../data/siteConfig";
 import Button from "../ui/Button";
+import { teachers } from "../../data/teachers";
+import usePublicPosts from "../../services/usePublicPosts";
 import "./Header.css";
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const posts = usePublicPosts();
+  const submenus: Record<string, { label: string; to: string }[]> = {
+    "/khoa-hoc": footerCoursesNav,
+    "/giao-vien": teachers.map(teacher => ({ label: teacher.full_name, to: `/giao-vien/${teacher.slug}` })),
+    "/blog": Array.from(new Set(posts.map(post => post.category))).map(category => ({ label: category, to: `/blog?category=${encodeURIComponent(category)}` })),
+  };
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
@@ -24,13 +32,13 @@ export default function Header() {
         <nav className="site-header__nav" aria-label="Điều hướng chính">
           <ul>
             {primaryNav.map((link) => (
-              <li key={link.to} className={link.label === "Khoá học" ? "has-dropdown" : ""}>
+              <li key={link.to} className={submenus[link.to]?.length ? "has-dropdown" : ""}>
                 <NavLink to={link.to} end={link.to === "/"}>
                   {link.label}
                 </NavLink>
-                {link.label === "Khoá học" && (
-                  <ul className="dropdown">
-                    {footerCoursesNav.map((course) => (
+                {Boolean(submenus[link.to]?.length) && (
+                  <ul className="dropdown" aria-label={`Mục con ${link.label}`}>
+                    {submenus[link.to].map((course) => (
                       <li key={course.to}>
                         <NavLink to={course.to}>{course.label}</NavLink>
                       </li>
