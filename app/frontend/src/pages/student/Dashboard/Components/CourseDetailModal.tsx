@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Course } from "../../../../types/StudentTypes/MainTypes";
 import {
     useStudentApi,
@@ -36,6 +36,22 @@ export default function CourseDetailModal({ course, onClose }: Props) {
     const { data: attendance, loading: attLoading, error: attError } = useStudentAttendance(course.id, attPage);
     const api = useStudentApi();
     const [busyId, setBusyId] = useState<number | null>(null);
+
+    // Khoá cuộn trang nền khi popup mở: lăn hết nội dung popup sẽ không lăn lan ra dashboard.
+    // Bù khoảng trống thanh cuộn để layout không bị giật khi ẩn scrollbar.
+    useEffect(() => {
+        const prevOverflow = document.body.style.overflow;
+        const prevPaddingRight = document.body.style.paddingRight;
+        const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+
+        document.body.style.overflow = "hidden";
+        if (scrollbarWidth > 0) document.body.style.paddingRight = `${scrollbarWidth}px`;
+
+        return () => {
+            document.body.style.overflow = prevOverflow;
+            document.body.style.paddingRight = prevPaddingRight;
+        };
+    }, []);
 
     const weekdayLabel = (d: string) => {
         const dt = new Date(`${d}T00:00:00`);

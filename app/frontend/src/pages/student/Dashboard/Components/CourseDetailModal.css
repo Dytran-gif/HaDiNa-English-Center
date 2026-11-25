@@ -102,6 +102,7 @@
 .cdm-body {
     padding: 18px;
     overflow-y: auto;
+    overscroll-behavior: contain;
     scrollbar-width: thin;
     scrollbar-color: #cbd5e1 #f1f5f9;
 }

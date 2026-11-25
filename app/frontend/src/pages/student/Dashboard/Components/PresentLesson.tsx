@@ -61,11 +61,6 @@ export default function PresentLessonFE({ lesson, onOpen }: PresentLessonProps) 
                     </div>
                 )}
 
-                {onOpen && (
-                    <button type="button" className="nl-cta" onClick={onOpen}>
-                        {t("present.cta")} <i className="fa-solid fa-arrow-right"></i>
-                    </button>
-                )}
             </div>
 
             <div
