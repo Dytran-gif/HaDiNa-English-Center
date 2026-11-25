@@ -43,8 +43,10 @@ Migration `TeacherFeatures` và `StudentFeedbackAndSubmissionFile` **đã bỏ**
 |---|---|
 | Tài khoản | `Users` (email, mật khẩu BCrypt, `Role` admin/teacher/student, `TokenVersion`) · `Teachers` · `Students` (1 user ↔ 1 hồ sơ) |
 | Khóa & lớp | `Courses` · `Classes` (khóa, giáo viên, ngày, sĩ số) · `ClassSchedules` (thứ, giờ, phòng) · `Rooms` |
-| Ghi danh & học phí | `Enrollments` · `Payments` |
-| Học tập | `Assignments`: `FileType='Teacher'` = file bài GV giao (`StudentId` NULL), `FileType='Student'` = bài HV nộp (`AssignmentId` = bài gốc), `CourseId` = khóa · `StudentFeedbacks` (GV nhận xét HV theo lớp) |
+| Ghi danh & học phí | `Enrollments` (+ `ExtraDiscountAmount`, `DiscountNote`) · `Payments` — **nhiều phiếu / ghi danh**, `Kind` Payment/Refund, `Status` Pending/Confirmed/Rejected/Cancelled, `ReceiptNo` unique, `ConfirmedByUserId/ConfirmedAt` |
+| Mã | `Courses.Code/Slug` unique, `Classes.Code` unique (`IE65-2612-A`) |
+| Đánh giá | `TeacherReviews` (HV · lớp · GV, 1–5 sao, `IsPublished` do Admin duyệt) · `PublicTeacherProfiles.TeacherId` liên kết hồ sơ web ↔ GV |
+| Học tập | `Assignments`: `FileType='Teacher'` = file bài GV giao (`StudentId` NULL), `FileType='Student'` = bài HV nộp (`AssignmentId` = bài gốc), `CourseId` = khóa, `ClassId` = lớp nhận bài (NULL = mọi lớp của GV trong khóa) · `StudentFeedbacks` (GV nhận xét HV theo lớp) |
 | Điểm danh | `Attendances`: 1 dòng = 1 học viên · 1 lớp · 1 ngày học (unique `ClassId, StudentId, Date`), `Status` Present/Late/Absent/Excused, `Note`. Ngày học tính từ `ClassSchedules`, không có bảng buổi học. Xóa lớp/học viên thì xóa theo |
 | Trang công khai | `Posts` · `HomepageImages` · `CenterSettings` (1 dòng, `Id = 1`) |
 
@@ -64,3 +66,8 @@ DB của Hải còn 2 bảng `Notifications`, `Announcements` tạo tay, **chưa
 | Tạo migration khi đổi entity (1 người) | `dotnet ef migrations add <Ten>` rồi commit `Migrations/` |
 | Kiểm tra code và snapshot khớp nhau | `dotnet ef migrations has-pending-model-changes` (phải *No changes*) |
 | Chạy mà không đụng DB | `dotnet run -- --Database:AutoSetup=false` |
+
+
+## 6. Migration 25/11/2026 `ClassCodesPaymentsReviews`
+Viết tay (máy làm không tải được NuGet). Backfill: mã khóa `KH{Id}`, slug `khoa-hoc-{Id}`, mã lớp từ mã khóa + YYMM + chữ cái; phiếu do HV tự bấm "đã đóng" → `Pending`, còn lại → `Confirmed` + số phiếu `PT-YYMM-0001`. Có `Down`.
+Trước khi merge: `dotnet build` → `dotnet ef migrations has-pending-model-changes` (phải *No changes*; nếu báo lệch thì sửa snapshot, không tạo migration mới) → backup DB → `dotnet ef database update`.

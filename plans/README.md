@@ -49,6 +49,7 @@ Việc mới thì lấy số trống tiếp theo trong dải của vùng, ví d�
 | 41 | [FE Public: nối trang public vào API](./41-fe-public-noi-api.md) | Public | Hoàng | 01, 40 | ⬜ |
 | 90 | [Project test xUnit cho service thuần](./90-be-project-test.md) | Chung | — | — | ⬜ |
 | 91 | [Dọn dẹp file thừa / cấu hình trùng](./91-don-dep.md) | Chung | — | — | ⬜ |
+| 92 | Rà soát 25/11: mã lớp, học phí nhiều phiếu, đăng ký theo lớp, đánh giá GV ([báo cáo](../reports/2026-11-25-ra-soat-va-sua.md)) | Chung (cả 4 vùng) | Duy + Claude | — | 🟡 FE build xanh; BE + migration viết tay chờ `dotnet build` / `database update` |
 
 ## Thứ tự gợi ý
 

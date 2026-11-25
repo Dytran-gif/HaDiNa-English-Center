@@ -72,3 +72,7 @@ HV nộp → `FileType = 'Student'`, `AssignmentId` = bài gốc. File ở `wwwr
 
 Bảng buổi học riêng (buổi bù / hủy), khóa điểm danh 48 giờ, giáo án, tài liệu theo buổi, bài Writing/Speaking/Quiz trên web, chấm IELTS, bài kiểm tra, sổ điểm,
 nhận xét định kỳ nhiều tiêu chí, yêu cầu học viên, lịch rảnh / 1 kèm 1, thông báo (chuông). Các bảng tương ứng không còn.
+
+
+## Cập nhật 2026-11-25
+Xem [CAP-NHAT-2026-11-25.md](CAP-NHAT-2026-11-25.md) — mã lớp, học phí nhiều phiếu/xác nhận, đăng ký theo lớp, đánh giá GV. Các mục cũ mâu thuẫn với file đó coi như đã thay.

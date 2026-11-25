@@ -17,3 +17,7 @@
 **Cần chốt (plan 40):** FE đang dùng route theo **slug** (`/khoa-hoc/:slug`, `/giao-vien/:slug`, `/blog/:slug`), DB chưa có cột `Slug`.
 - (a) Thêm cột `Slug` cho `Course`, `Teacher`, `Post` + migration, hoặc
 - (b) Đổi route FE sang `:id`.
+
+
+## Cập nhật 2026-11-25
+Xem [CAP-NHAT-2026-11-25.md](CAP-NHAT-2026-11-25.md) — mã lớp, học phí nhiều phiếu/xác nhận, đăng ký theo lớp, đánh giá GV. Các mục cũ mâu thuẫn với file đó coi như đã thay.

@@ -23,3 +23,7 @@ Frontend /dang-ky now submits to the API through services/registerStudent.ts; re
 - Two concurrent registrations succeeded with distinct codes.
 - SQL verification:3test Users,3linked Students, BCrypt password hashes; exact QA profiles/accounts removed afterward, remaining test users0.
 - BE restarted at localhost5220 with Database:AutoSetup=false. No browser visual acceptance claimed.
+
+
+## Cập nhật 2026-11-25
+Xem [CAP-NHAT-2026-11-25.md](CAP-NHAT-2026-11-25.md) — mã lớp, học phí nhiều phiếu/xác nhận, đăng ký theo lớp, đánh giá GV. Các mục cũ mâu thuẫn với file đó coi như đã thay.

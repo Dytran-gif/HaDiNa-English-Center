@@ -170,3 +170,6 @@ FE Dashboard và Reports gọi chung hai API này qua useAdminQuery; lỗi hiể
 - Tạo/reset tài khoản và đổi mật khẩu Admin yêu cầu tối thiểu8 ký tự. Đăng nhập tài khoản demo cũ vẫn chấp nhận mật khẩu đang có; không đổi dữ liệu/hash của tài khoản cũ. Đổi mật khẩu trùng mật khẩu hiện tại bị400 với errors.NewPassword.
 - AppTime dùng UTC+7 cố định, trả DateTime Unspecified, không phụ thuộc timezone server; không cập nhật hồi tố dữ liệu thời gian cũ.
 - Request thủ công: `app/backend/EnglishCenter.Api/EnglishCenter.Api/Admin.http`. Chưa chạy API/DB vì Program tự migrate/seed khi khởi động.
+
+## Cập nhật 2026-11-25
+Xem [CAP-NHAT-2026-11-25.md](CAP-NHAT-2026-11-25.md) — mã lớp, học phí nhiều phiếu/xác nhận, đăng ký theo lớp, đánh giá GV. Các mục cũ mâu thuẫn với file đó coi như đã thay.

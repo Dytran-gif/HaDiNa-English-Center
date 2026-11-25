@@ -15,3 +15,7 @@ Run `powershell -File tools/db/public-teachers/install.ps1` from the repository 
 The script applies migrations, copies the bundled images to backend `wwwroot/uploads/public-teachers`, then imports the five existing website profiles in a transaction. Existing slugs are not overwritten; conflicting IDs abort. It never creates login accounts or changes operational Teachers. Migration, import script and source images must travel together.
 
 Updating Admin Teachers does not yet edit these editorial profiles; no profile-management UI is included in this change.
+
+
+## Cập nhật 2026-11-25
+Xem [CAP-NHAT-2026-11-25.md](CAP-NHAT-2026-11-25.md) — mã lớp, học phí nhiều phiếu/xác nhận, đăng ký theo lớp, đánh giá GV. Các mục cũ mâu thuẫn với file đó coi như đã thay.

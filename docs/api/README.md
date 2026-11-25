@@ -6,9 +6,10 @@ Thư mục này là **nguồn sự thật** cho giao tiếp FE ↔ BE.
 
 | File | Prefix | Trạng thái |
 |---|---|---|
-| [ADMIN_API.md](./ADMIN_API.md) | `api/admin` | Đã code một phần (thiếu học phí, blog, báo cáo) |
+| [ADMIN_API.md](./ADMIN_API.md) | `api/admin` | Đã code (thiếu blog) |
+| [CAP-NHAT-2026-11-25.md](./CAP-NHAT-2026-11-25.md) | mọi prefix | Thay đổi 25/11: mã lớp, học phí, đăng ký theo lớp, đánh giá |
 | [TEACHER_API.md](./TEACHER_API.md) | `api/teacher` | Đã code đầy đủ |
-| [STUDENT_API.md](./STUDENT_API.md) | `api/student` | **Spec, chưa code** |
+| [STUDENT_API.md](./STUDENT_API.md) | `api/student` | Đã code |
 | [PUBLIC_API.md](./PUBLIC_API.md) | `api/public` | **Spec, chưa code** |
 
 ## Môi trường

@@ -1,4 +1,12 @@
 # Nhật ký bàn giao
+## [2026-11-25] Rà soát FE/BE/DB: mã lớp, học phí nhiều phiếu, đăng ký theo lớp, đánh giá GV
+
+- Chi tiết: `reports/2026-11-25-ra-soat-va-sua.md`, API: `docs/api/CAP-NHAT-2026-11-25.md`, DB: `docs/DATABASE.md` mục 6.
+- **Sửa ngoài vùng Teacher** (báo Hoàng, Nam): Public (Header, Register, Login, Auth.css, trang GV/khóa/testimonials), Student (Course, Dashboard, Schedule, Tuition, Feedback, useStudentApi), Admin (Payments, Classes, ClassProfile, AccountProfile, ResourcePage, Reviews), file dùng chung `AppDbContext*.cs`, `Program.cs`, entities, migration.
+- Migration viết tay vì máy làm không tải được NuGet; **chưa build/chạy thật**. Người merge chạy `dotnet build`, `has-pending-model-changes`, backup rồi `database update`.
+- FE: typecheck + build đạt, lint còn 2 cảnh báo cũ (AuthContext, LanguageContext).
+- Bỏ `POST api/student/tuition/pay` và endpoint đăng ký theo khóa cũ của Student; FE đã chuyển sang API mới.
+
 ## [2026-11-25] Cài đặt trung tâm đồng bộ ra website public
 
 - Admin đã lưu CenterSettings nhưng Public trước đó dùng siteConfig tĩnh. Thêm GET /api/public/center và useCenterSettings store dùng chung; save Admin publish bản lưu, đồng bộ tab khác/focus.

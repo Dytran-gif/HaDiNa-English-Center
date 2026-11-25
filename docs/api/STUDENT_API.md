@@ -131,3 +131,7 @@ Quiz `answers`: `{ "12": "B", "13": "photosynthesis" }` (key = id câu hỏi).
 | GET | `/api/student/notifications/unread-count` | Số trên chuông |
 | POST | `/api/student/notifications/{id}/read` · `/read-all` | Đánh dấu đã đọc |
 | GET | `/api/student/announcements?classId=` | Thông báo GV gửi lớp mình |
+
+
+## Cập nhật 2026-11-25
+Xem [CAP-NHAT-2026-11-25.md](CAP-NHAT-2026-11-25.md) — mã lớp, học phí nhiều phiếu/xác nhận, đăng ký theo lớp, đánh giá GV. Các mục cũ mâu thuẫn với file đó coi như đã thay.
