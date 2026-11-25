@@ -19,3 +19,10 @@
 .page-shell .hero__roadmap h3 { font-size: 1rem; margin: 0 0 4px; }
 .page-shell .hero__roadmap li p { margin: 0; color: var(--muted); font-size: .875rem; line-height: 1.6; }
 .page-shell .hero__roadmap-note { border-top: 1px solid #e3e9f3; padding-top: 16px; margin: 24px 0 0; color: var(--blue-dark); font-size: .875rem; }
+@media (max-width: 859px) {
+  .page-shell .hero { padding-block: 32px; }
+  .page-shell .hero__grid { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+  .page-shell .hero__title { font-size: clamp(2rem, 6vw, 2.75rem); line-height: 1.25; }
+  .page-shell .hero__roadmap { min-width: 0; padding: 24px; }
+  .page-shell .hero__roadmap li > div { min-width: 0; }
+}

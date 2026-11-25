@@ -1,4 +1,12 @@
 # Nhật ký bàn giao
+## [2026-11-25] Font và bố cục homepage trên mobile
+
+- Tìm thấy font-family toàn cục trong3CSS Student: Payment, PaymentHistory, StudentCoursesFeedback. Selector `*` tác động cả public khi CSS được tải vào. Đã scope thành `.student-layout *`, giữ style bên Student.
+- Public dùng Plus Jakarta Sans variable400–800 tự host, bộ Latin/Vietnamese/Latin-ext trong public/fonts kèm OFL. Preload Latin/Vietnamese từ HTML, font-display optional tránh đổi font muộn. Token chỉ override trong page-shell; không đổi root/Admin/Teacher.
+- text-size-adjust100%, input mobile16px; Hero và FAQ về1cột dưới860px, thống kê1cột dưới360px để tránh overflow gây autosizing.
+- Chrome headless giả lập320/390/768/1366, chặn Google Fonts: font thực render Plus Jakarta Sans custom, viewport không tràn ngang, Hero/FAQ1cột ở mobile và2cột desktop. Đã xem screenshot390px. Chưa test thiết bị thật/iOS.
+- FE build/typecheck đạt, lint chỉ warning AuthContext cũ; bundle-size warning cũ còn. Mobile Admin vẫn hoãn; thay đổi này chỉ xử lý homepage/public theo yêu cầu mới.
+
 ## [2026-11-25] Đăng ký học viên public lưu DB thật
 
 - /dang-ky trước chỉ báo thành công demo. Nay gọi POST /api/auth/register, tạo Users + Students trong cùng transaction, hash BCrypt, email duy nhất, role student cố định; không tự ghi danh lớp/thu học phí.
