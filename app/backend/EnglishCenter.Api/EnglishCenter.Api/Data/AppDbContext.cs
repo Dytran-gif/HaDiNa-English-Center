@@ -30,6 +30,8 @@ public partial class AppDbContext : DbContext
         b.Entity<User>(e =>
         {
             e.Property(x => x.Email).HasMaxLength(255).IsRequired();
+            e.Property(x => x.FullName).HasMaxLength(150);
+            e.Property(x => x.Phone).HasMaxLength(20);
             e.HasIndex(x => x.Email).IsUnique();
             e.Property(x => x.PasswordHash).HasMaxLength(500).IsRequired();
             e.Property(x => x.Role).HasMaxLength(20).IsRequired();

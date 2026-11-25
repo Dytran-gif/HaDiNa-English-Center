@@ -7,7 +7,6 @@ import { useAuth } from "../../../context/AuthContext";
 import { assetUrl } from "../../../services/apiClient";
 import { useAdminApi, useAdminQuery } from "../../../services/admin/useAdminApi";
 import type { CenterResponse } from "../../../types/adminApi";
-import PasswordCard from "../Profile/PasswordCard";
 import { Feedback } from "../Components/Api/AdminUi";
 
 function CenterForm({ center, enabled }: { center: CenterResponse; enabled: boolean }) {
@@ -45,7 +44,7 @@ function CenterForm({ center, enabled }: { center: CenterResponse; enabled: bool
 export default function Settings() {
   const center = useAdminQuery<CenterResponse>("settings/center");
   const { token } = useAuth();
-  return <div className="admin-settings-panels">
+  return <div className="admin-settings-panels admin-settings-center">
     <SectionCard title="Thông tin trung tâm">
       {token && center.loading && <p className="admin-api-muted" role="status">Đang tải thông tin trung tâm…</p>}
       {token && center.error && <div className="admin-panel-feedback"><Notice tone="error" title="Không tải được thông tin trung tâm" action={<Button onClick={center.reload} icon="refresh" loading={center.loading}>Thử lại</Button>}>{center.error}</Notice></div>}
@@ -53,6 +52,5 @@ export default function Settings() {
         <CenterForm key={center.data ? "loaded" : "empty"} enabled={Boolean(token && center.data && !center.loading)} center={center.data ?? { name: "", logoUrl: null, address: null, phone: null }}/>
       </fieldset>
     </SectionCard>
-    <PasswordCard/>
   </div>;
 }

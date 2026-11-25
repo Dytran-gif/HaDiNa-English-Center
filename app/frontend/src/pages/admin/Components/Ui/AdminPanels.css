@@ -8,6 +8,7 @@
 .admin-layout .admin-kpi-card:hover { box-shadow: var(--admin-shadow-2); border-color: var(--admin-primary); }
 .admin-layout .admin-kpi-icon { display: grid; place-items: center; width: var(--admin-space-10); height: var(--admin-space-10); margin-block-end: var(--admin-space-2); border-radius: var(--admin-radius-icon); background: var(--admin-primary-soft); color: var(--admin-primary); }
 .admin-layout .admin-kpi-value { font-size: var(--admin-font-stat); line-height: 1.25; font-weight: 700; }
+.admin-layout .admin-kpi-currency { font-size: var(--admin-font-sm); font-weight: 500; white-space: nowrap; }
 .admin-layout .admin-kpi-label { color: var(--admin-muted); font-size: var(--admin-font-sm); }
 .admin-layout .admin-section-card { display: flex; flex-direction: column; min-width: 0; padding: var(--admin-space-6); border: 1px solid var(--admin-border); border-radius: var(--admin-radius-panel); background: var(--admin-surface); box-shadow: var(--admin-shadow-1); }
 .admin-layout .admin-section-card-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--admin-space-3); margin-block-end: var(--admin-space-4); }
@@ -20,6 +21,7 @@
 .admin-layout .admin-summary-list li:last-child { border-bottom: 0; }
 .admin-layout .admin-summary-list li:hover { background: var(--admin-canvas); }
 .admin-layout .admin-settings-panels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; gap: var(--admin-space-6); }
+.admin-layout .admin-settings-center { grid-template-columns: minmax(0, 1fr); }
 .admin-layout .admin-settings-panels .field__control { height: var(--admin-control-height); border-radius: var(--admin-radius-input); }
 .admin-layout .admin-panel-form { display: flex; flex-direction: column; gap: var(--admin-space-4); flex: 1; min-width: 0; }
 .admin-layout .admin-panel-fieldset { display: flex; flex-direction: column; flex: 1; min-width: 0; margin: 0; padding: 0; border: 0; }

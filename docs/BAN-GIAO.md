@@ -1,4 +1,11 @@
 # Nhật ký bàn giao
+## [2026-11-25] Hồ sơ Admin chỉnh sửa và lưu DB
+
+- Trước đó Users chưa có họ tên/điện thoại; FE chỉ hiện tên thay thế. Thêm hai cột nullable FullName/Phone bằng migration AdminUserProfile, đã backup và áp dụng DB local.
+- GET/PUT /api/admin/profile lấy đúng userId từ JWT, role admin; sửa tên/điện thoại, không sửa email/role. Form có tải/lỗi/thử lại, Lưu/Hủy, field errors; đồng bộ tên header/AuthContext sau lưu và tải lại từ DB.
+- BE/FE build đạt, EF không lệch model, lint còn2warning cũ. API thật kiểm tra persist/reload, validate400, anon401, chặn đổi account/email/role từ payload. Đã khôi phục tên/điện thoại QA vềNULL để người dùng nhập thật.
+- BE chạy5220 AutoSetup=false. Chi tiết docs/api/ADMIN-PROFILE.md. Máy khác pull migration/snapshot rồi update DB.
+
 ## [2026-11-25] Font và bố cục homepage trên mobile
 
 - Tìm thấy font-family toàn cục trong3CSS Student: Payment, PaymentHistory, StudentCoursesFeedback. Selector `*` tác động cả public khi CSS được tải vào. Đã scope thành `.student-layout *`, giữ style bên Student.

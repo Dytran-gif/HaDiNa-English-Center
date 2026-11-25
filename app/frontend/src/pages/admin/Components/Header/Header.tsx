@@ -3,8 +3,13 @@ import { adminPageTitles } from "../../../../data/AdminData/pageTitles";
 import { useAuth } from "../../../../context/AuthContext";
 import Button, { IconButton } from "../Ui/Button";
 import "./Header.css";
+import { useEffect } from "react";
+import { useAdminQuery } from "../../../../services/admin/useAdminApi";
+import type { AdminProfile } from "../../Profile/profileTypes";
 export default function Header({ menuOpen, onOpenMenu }: { menuOpen: boolean; onOpenMenu: () => void }) {
-  const { pathname } = useLocation(); const { user, logout } = useAuth();
+  const { pathname } = useLocation(); const { user, logout, updateProfile } = useAuth();
+  const profile = useAdminQuery<AdminProfile>("profile");
+  useEffect(() => { if (profile.data) updateProfile(profile.data.userId, profile.data); }, [profile.data, updateProfile]);
   const navigate = useNavigate();
   const page = adminPageTitles[pathname] ?? adminPageTitles[pathname.replace(/\/\d+$/, "")] ?? { title: "Quản trị", subtitle: "Quản lý hoạt động trung tâm." };
   const name = user?.full_name || user?.email || "Quản trị viên";

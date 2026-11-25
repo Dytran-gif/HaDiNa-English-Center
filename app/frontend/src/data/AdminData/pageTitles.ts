@@ -6,7 +6,7 @@ export const adminPageTitles: Record<string, PageTitle> = {
     "/admin/teachers": { title: "Quản lý giáo viên", subtitle: "Hồ sơ, lớp phụ trách và tài khoản giáo viên." },
     "/admin/students": { title: "Quản lý học viên", subtitle: "Hồ sơ, ghi danh và lịch sử học phí." },
     "/admin/classes": { title: "Quản lý lớp học", subtitle: "Lịch học, giáo viên, phòng và sĩ số từng lớp." },
-    "/admin/settings": { title: "Cài đặt chung", subtitle: "Thông tin trung tâm và bảo mật tài khoản." },
+    "/admin/settings": { title: "Cài đặt chung", subtitle: "Quản lý thông tin trung tâm." },
     "/admin/dashboard": {
         title: "Dashboard",
         subtitle: "Tổng quan hoạt động trung tâm.",

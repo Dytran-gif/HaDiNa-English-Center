@@ -3,7 +3,6 @@ import Icon from "../../Components/Ui/Icon";
 import type { IconName } from "../../Components/Ui/types";
 import Button from "../../Components/Ui/Button";
 import Notice from "../../Components/Ui/Notice";
-import { money } from "../../Components/Api/adminFormat";
 import { useAdminQuery } from "../../../../services/admin/useAdminApi";
 import type { DashboardKpisResponse } from "../../../../types/adminApi";
 
@@ -20,7 +19,7 @@ export default function StatsOverview() {
     <div className="admin-kpi-grid" aria-label="Tổng quan trung tâm" aria-busy={loading}>
       {items.map(item => <Link className="admin-kpi-card" to={item.to} key={item.to}>
         <span className="admin-kpi-icon"><Icon name={item.icon}/></span>
-        <strong className="admin-kpi-value">{loading ? <span className="admin-skeleton-line" aria-label="Đang tải"/> : item.value === undefined ? "--" : item.currency ? money(item.value) : item.value.toLocaleString("vi-VN")}</strong>
+        <strong className="admin-kpi-value">{loading ? <span className="admin-skeleton-line" aria-label="Đang tải"/> : item.value === undefined ? "--" : item.currency ? <>{item.value.toLocaleString("vi-VN", { maximumFractionDigits: 0 })}{" "}<span className="admin-kpi-currency">đồng</span></> : item.value.toLocaleString("vi-VN")}</strong>
         <span className="admin-kpi-label">{item.label}</span>
       </Link>)}
     </div>

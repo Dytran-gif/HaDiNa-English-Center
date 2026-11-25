@@ -53,13 +53,6 @@ h4 {
   color: var(--blue);
 }
 
-.kicker::before {
-  content: "";
-  width: 1.4em;
-  height: 3px;
-  border-radius: var(--radius-pill);
-  background: var(--blue);
-}
 
 /* ---- page shell ---- */
 
