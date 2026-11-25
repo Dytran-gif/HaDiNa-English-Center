@@ -1,4 +1,11 @@
 # Nhật ký bàn giao
+## [2026-11-26] Pull về là chạy
+
+- `chay-du-an.bat` (gốc repo): double-click mở backend + frontend + trình duyệt.
+- `npm run dev`/`build` tự `npm ci` khi `package-lock.json` đổi (`scripts/ensure-deps.mjs`, ghi băm vào `node_modules/.deps-hash`); dùng `npm ci` để không sửa package-lock trên máy khác.
+- `DatabaseBootstrapper`: DB đã có + có migration mới -> tự BACKUP (COPY_ONLY) trước khi migrate; backup lỗi thì chỉ cảnh báo. Tắt: `Database:BackupBeforeMigrate=false`.
+- File dùng chung: `DatabaseBootstrapper.cs`, `package.json`, `.gitattributes` (`*.bat` giữ CRLF).
+
 ## [2026-11-25] Rà soát FE/BE/DB: mã lớp, học phí nhiều phiếu, đăng ký theo lớp, đánh giá GV
 
 - Chi tiết: `reports/2026-11-25-ra-soat-va-sua.md`, API: `docs/api/CAP-NHAT-2026-11-25.md`, DB: `docs/DATABASE.md` mục 6.

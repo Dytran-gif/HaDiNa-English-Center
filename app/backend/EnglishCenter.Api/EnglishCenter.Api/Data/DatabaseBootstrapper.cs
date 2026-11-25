@@ -11,7 +11,8 @@ namespace EnglishCenter.Api.Data;
 //   1. Máy CHƯA có DB: restore từ tools/db/EnglishCenterDb.bak (DB chung của nhóm, có sẵn dữ liệu).
 //      Restore không được (SQL Server cũ hơn bản tạo backup, không có quyền đọc file...) thì để EF tạo DB trống.
 //   2. Sửa DB cũ để EF không lỗi (DB tạo tay chưa ghi migration; bảng Assignments/Attendances kiểu Teacher cũ)
-//   3. Áp các migration còn thiếu (chỉ THÊM bảng/cột, không xóa dữ liệu)
+//   3. Áp các migration còn thiếu (chỉ THÊM bảng/cột, không xóa dữ liệu).
+//      DB đã có từ trước thì tự BACKUP (COPY_ONLY) vào thư mục Backup mặc định của SQL Server trước khi áp.
 //   4. DB chưa có user nào thì seed tài khoản demo (admin/teacher/student@demo.com, mật khẩu 123456)
 //
 // Cấu hình (appsettings / dòng lệnh):
@@ -39,7 +40,8 @@ public static class DatabaseBootstrapper
 
         try
         {
-            if (!await db.Database.CanConnectAsync())
+            var existedBefore = await db.Database.CanConnectAsync();
+            if (!existedBefore)
                 await TryRestoreBackupAsync(db, app.Environment, cfg["Database:BackupFile"], log);
 
             await RepairLegacyAsync(db, log);
@@ -48,6 +50,8 @@ public static class DatabaseBootstrapper
             if (pending.Count > 0)
             {
                 log.LogInformation("Database: áp {n} migration còn thiếu: {list}", pending.Count, string.Join(", ", pending));
+                if (existedBefore && cfg.GetValue("Database:BackupBeforeMigrate", true))
+                    await BackupBeforeMigrateAsync(db, pending[0], log);
                 await db.Database.MigrateAsync();
             }
 
@@ -59,6 +63,27 @@ public static class DatabaseBootstrapper
             log.LogError(ex,
                 "Không tự dựng được database. Kiểm tra SQL Server đang chạy và ConnectionStrings:Default trong appsettings.json.");
             throw;
+        }
+    }
+
+    // ---------- 0. Backup trước khi áp migration (không chặn khởi động nếu lỗi) ----------
+    private static async Task BackupBeforeMigrateAsync(AppDbContext db, string firstPending, ILogger log)
+    {
+        var name = db.Database.GetDbConnection().Database;
+        var file = $"{name}-truoc-{firstPending.Split('_')[0]}-{DateTime.Now:yyyyMMdd-HHmmss}.bak";
+        try
+        {
+            // Chỉ tên file -> SQL Server ghi vào thư mục Backup mặc định (service SQL luôn có quyền ghi ở đó)
+            var sql = "BACKUP DATABASE [" + name.Replace("]", "]]") + "] TO DISK = N'" + file.Replace("'", "''") + "' WITH COPY_ONLY, INIT";
+            db.Database.SetCommandTimeout(600);
+            await db.Database.ExecuteSqlRawAsync(sql);
+            db.Database.SetCommandTimeout(null);
+            var dir = await ScalarAsync(db, "SELECT CAST(SERVERPROPERTY('InstanceDefaultBackupPath') AS nvarchar(400));");
+            log.LogInformation("Database: đã backup trước khi migrate -> {dir}\\{file}", dir, file);
+        }
+        catch (Exception ex)
+        {
+            log.LogWarning("Database: không backup được trước khi migrate ({msg}). Vẫn tiếp tục áp migration.", ex.Message);
         }
     }
 

@@ -15,20 +15,23 @@ Repo dùng khung **harness** cho Claude Code: luật + context + quy trình **Pl
 
 **Yêu cầu:** Node 20+, .NET SDK 10, SQL Server, Python 3 (cho hooks), Claude Code (tùy chọn).
 
+**Cách nhanh nhất:** `git pull` rồi double-click **`chay-du-an.bat`** ở thư mục gốc. File này mở 2 cửa sổ (backend + frontend) và tự mở trình duyệt. Không cần chạy `dotnet ef`, `npm install` hay script DB.
+
+Hoặc chạy tay:
+
 ```powershell
 # 1. Backend
 cd app\backend\EnglishCenter.Api\EnglishCenter.Api
-dotnet run                                    # http://localhost:5220 — tự tạo/cập nhật DB
+dotnet run                                    # http://localhost:5220 — tự tạo/cập nhật DB (tự backup trước khi migrate)
 
 # 2. Frontend (terminal khác)
 cd app\frontend
-npm install
-npm run dev                                   # http://localhost:5173
+npm run dev                                   # http://localhost:5173 — tự npm ci khi package-lock đổi
 ```
 
 Tài khoản demo, mật khẩu `123456`: `admin@demo.com` · `teacher@demo.com` · `student@demo.com`
 
-> **Database tự dựng, không cần migration/script.** Máy chưa có DB thì lần đầu `dotnet run` tự restore DB chung của nhóm (`tools/db/EnglishCenterDb.bak`, cần SQL Server 2025); không restore được thì tạo DB trống + tài khoản demo. Máy đã có DB thì chỉ bổ sung phần thiếu. Xem [`docs/DATABASE.md`](./docs/DATABASE.md).
+> **Database tự dựng, không cần migration/script.** Máy chưa có DB thì lần đầu `dotnet run` tự restore DB chung của nhóm (`tools/db/EnglishCenterDb.bak`, cần SQL Server 2025); không restore được thì tạo DB trống + tài khoản demo. Máy đã có DB thì chỉ bổ sung phần thiếu; trước khi áp migration mới, backend tự `BACKUP DATABASE` (COPY_ONLY) vào thư mục Backup mặc định của SQL Server, tên `EnglishCenterDb-truoc-<migration>-<thời gian>.bak`. Tắt bằng `--Database:BackupBeforeMigrate=false`. Xem [`docs/DATABASE.md`](./docs/DATABASE.md).
 
 ---
 
