@@ -23,6 +23,9 @@ export default function TeacherCard({ teacher }: TeacherCardProps) {
       <div className="teacher-card__body">
         <h3 className="teacher-card__name">{teacher.full_name}</h3>
         <p className="teacher-card__title">{teacher.title}</p>
+        {teacher.rating != null && (
+          <p className="teacher-card__rating">★ {teacher.rating.toFixed(1)} · {teacher.review_count} đánh giá</p>
+        )}
         <Button to={`/giao-vien/${teacher.slug}`} variant="ghost">
           Xem hồ sơ →
         </Button>

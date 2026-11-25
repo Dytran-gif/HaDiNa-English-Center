@@ -1,4 +1,5 @@
 import PageShell from "../components/layout/PageShell";
+import useBrandName from "../services/useBrandName";
 import PageBanner from "../components/ui/PageBanner";
 import SectionHeading from "../components/ui/SectionHeading";
 import StatBlock from "../components/ui/StatBlock";
@@ -10,6 +11,7 @@ import TeacherLoadState from "../components/ui/TeacherLoadState";
 import "./About.css";
 
 export default function About() {
+  const brand = useBrandName();
   const { teachers, loading, error, reload } = usePublicTeachers();
   return (
     <PageShell>
@@ -30,7 +32,7 @@ export default function About() {
       <section className="about-values container">
         <SectionHeading
           kicker="Giá trị cốt lõi"
-          title="Điều làm nên một Happy IELTS khác biệt"
+          title={`Điều làm nên một ${brand} khác biệt`}
         />
         <div className="about-values__grid">
           {whyDifferentItems.map((item, i) => (

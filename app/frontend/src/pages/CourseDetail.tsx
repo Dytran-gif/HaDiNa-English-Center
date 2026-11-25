@@ -6,6 +6,7 @@ import TeacherCard from "../components/ui/TeacherCard";
 import { getCourseBySlug, formatPrice } from "../data/courses";
 import { getCategoryById } from "../data/categories";
 import usePublicTeachers from "../services/usePublicTeachers";
+import usePublicCourse from "../services/usePublicCourse";
 import NotFound from "./NotFound";
 import "./CourseDetail.css";
 
@@ -13,6 +14,7 @@ export default function CourseDetail() {
   const { slug = "" } = useParams();
   const course = getCourseBySlug(slug);
   const { teachers } = usePublicTeachers();
+  const { course: live } = usePublicCourse(slug);
 
   if (!course) {
     return <NotFound />;
@@ -37,7 +39,7 @@ export default function CourseDetail() {
         <p className="course-detail__desc">{course.description}</p>
 
         <div className="course-summary">
-          <span className="course-summary__price">{formatPrice(course.price)}</span>
+          <span className="course-summary__price">{formatPrice(live?.final_price ?? course.price)}</span>
           <dl>
             <div>
               <dt>Thời lượng</dt>
@@ -61,6 +63,36 @@ export default function CourseDetail() {
             </Button>
           </div>
         </div>
+
+        {/* Lớp thật đang mở của khóa (DB, Admin quản lý); khóa chưa gắn slug thì không hiện mục này */}
+        {live && (
+          <section className="course-classes" aria-labelledby="open-classes">
+            <h2 id="open-classes">Lớp đang mở</h2>
+            {live.open_classes.length === 0 ? (
+              <p>Hiện chưa có lớp mới. Để lại thông tin để trung tâm báo khi mở lớp.</p>
+            ) : (
+              <div className="course-classes__list">
+                {live.open_classes.map(c => (
+                  <article key={c.code} className="course-classes__item">
+                    <div>
+                      <span className="course-classes__code">{c.code}</span>
+                      <h3>{c.name}</h3>
+                      <p>{c.schedule}</p>
+                    </div>
+                    <dl>
+                      <div><dt>Khai giảng</dt><dd>{new Date(c.start_date).toLocaleDateString("vi-VN")}</dd></div>
+                      <div><dt>Giáo viên</dt><dd>{c.teacher_slug ? <Button to={`/giao-vien/${c.teacher_slug}`} variant="ghost">{c.teacher_name}</Button> : c.teacher_name}</dd></div>
+                      <div><dt>Còn chỗ</dt><dd>{c.seats_left > 0 ? `${c.seats_left} chỗ` : "Đã đủ"}</dd></div>
+                    </dl>
+                    <Button to={c.seats_left > 0 ? "/dang-ky" : undefined} variant={c.seats_left > 0 ? "primary" : "outline"} disabled={c.seats_left === 0}>
+                      {c.seats_left > 0 ? "Đăng ký lớp này" : "Hết chỗ"}
+                    </Button>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
 
         <h2>Nội dung khoá học</h2>
         <ul className="course-detail__outline">

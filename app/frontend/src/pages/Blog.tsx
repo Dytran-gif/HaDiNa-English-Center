@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import PageShell from "../components/layout/PageShell";
+import useBrandName from "../services/useBrandName";
 import PageBanner from "../components/ui/PageBanner";
 import BlogCard from "../components/ui/BlogCard";
 import MiniCta from "../components/ui/MiniCta";
@@ -8,6 +9,7 @@ import usePublicPosts from "../services/usePublicPosts";
 import "./Blog.css";
 
 export default function Blog() {
+  const brand = useBrandName();
   const blogPosts = usePublicPosts();
   const blogCategories = useMemo(
     () => Array.from(new Set(blogPosts.map((p) => p.category))),
@@ -33,7 +35,7 @@ export default function Blog() {
     <PageShell>
       <PageBanner
         kicker="Tin tức"
-        title="Blog Happy IELTS"
+        title={`Blog ${brand}`}
         description="Tips luyện thi, kinh nghiệm học tiếng Anh và cập nhật từ đội ngũ giảng dạy."
       />
       <div className="container blog-list">

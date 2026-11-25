@@ -4,7 +4,8 @@ import Button from "../components/ui/Button";
 import InitialsBlock from "../components/ui/InitialsBlock";
 import usePublicTeachers from "../services/usePublicTeachers";
 import TeacherLoadState from "../components/ui/TeacherLoadState";
-import { getCoursesByTeacher, formatPrice } from "../data/courses";
+import TestimonialCard from "../components/ui/TestimonialCard";
+import usePublicReviews from "../services/usePublicReviews";
 import NotFound from "./NotFound";
 import "./TeacherDetail.css";
 
@@ -12,13 +13,15 @@ export default function TeacherDetail() {
   const { slug = "" } = useParams();
   const { teachers, loading, error, reload } = usePublicTeachers();
   const teacher = teachers.find(t => t.slug === slug);
+  const { reviews } = usePublicReviews(slug, 20);
   if (loading || error) return <PageShell><div className="container teacher-detail"><TeacherLoadState loading={loading} error={error} empty={false} reload={reload}/></div></PageShell>;
 
   if (!teacher) {
     return <NotFound />;
   }
 
-  const taughtCourses = getCoursesByTeacher(teacher.teacher_id);
+  // Khóa phụ trách lấy từ lớp thật của giáo viên (cùng dữ liệu với cổng Giáo viên), không còn danh sách cứng
+  const taughtCourses = teacher.courses ?? [];
 
   return (
     <PageShell>
@@ -41,6 +44,11 @@ export default function TeacherDetail() {
           <div>
             <h1>{teacher.full_name}</h1>
             <p className="teacher-detail__title">{teacher.title}</p>
+            {teacher.rating != null && (
+              <p className="teacher-detail__rating" aria-label={`Điểm đánh giá ${teacher.rating} trên 5`}>
+                <span aria-hidden="true">★</span> {teacher.rating.toFixed(1)} · {teacher.review_count} đánh giá của học viên
+              </p>
+            )}
           </div>
         </div>
 
@@ -61,11 +69,20 @@ export default function TeacherDetail() {
             {taughtCourses.map((c) => (
               <div className="teacher-courses__item" key={c.course_id}>
                 <Button to={`/khoa-hoc/${c.slug}`} variant="ghost">
-                  {c.course_name}
+                  {c.name}
                 </Button>
-                <span>{formatPrice(c.price)}</span>
+                <span>{c.has_open_class ? "Đang mở lớp" : "Chưa có lớp mới"}</span>
               </div>
             ))}
+          </div>
+        )}
+
+        <h2>Học viên đánh giá</h2>
+        {reviews.length === 0 ? (
+          <p>Chưa có đánh giá nào được duyệt.</p>
+        ) : (
+          <div className="teacher-detail__reviews">
+            {reviews.map(r => <TestimonialCard key={r.review_id} review={r} />)}
           </div>
         )}
       </div>

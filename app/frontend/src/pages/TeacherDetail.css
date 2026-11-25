@@ -100,3 +100,22 @@
   flex-shrink: 0;
   display: block;
 }
+
+.teacher-detail__rating {
+  margin-top: 6px;
+  font-weight: 600;
+  color: var(--blue-dark);
+}
+
+.teacher-detail__rating span {
+  color: #f0a020;
+}
+
+.teacher-detail__reviews {
+  display: grid;
+  gap: 16px;
+}
+
+.teacher-detail__reviews .testimonial-card {
+  width: auto;
+}

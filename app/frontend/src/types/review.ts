@@ -3,8 +3,13 @@ export interface Review {
   author_name: string;
   teacher_id?: number;
   course_id?: number;
-  band_score: string;
+  band_score?: string;
   rating: number;
   comment: string;
   created_at: string;
+  // Đánh giá thật từ API (/api/public/reviews)
+  class_code?: string;
+  course_name?: string;
+  teacher_name?: string;
+  teacher_slug?: string | null;
 }

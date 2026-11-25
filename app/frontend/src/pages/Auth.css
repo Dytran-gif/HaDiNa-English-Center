@@ -1,5 +1,5 @@
 .auth-page {
-  padding-block: var(--section-y);
+  padding-block: clamp(24px, 6vw, 72px);
   display: flex;
   justify-content: center;
 }
@@ -12,26 +12,117 @@
   gap: 18px;
 }
 
+.auth-card--wide {
+  max-width: 560px;
+}
+
+/* Tiêu đề co theo màn hình: trước đây cố định 2rem nên rất to trên điện thoại */
 .auth-card h1 {
-  font-size: 2rem;
+  font-size: clamp(1.5rem, 6vw, 2rem);
+  line-height: 1.15;
 }
 
 .auth-card form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
-.page-shell .auth-fields { display: grid; gap: 16px; padding: 0; margin: 0; border: 0; min-width: 0; }
+
+.page-shell .auth-fields { display: grid; gap: 4px; padding: 0; margin: 0; border: 0; min-width: 0; }
+
+.auth-legend {
+  padding: 0;
+  margin-bottom: 2px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--blue-dark);
+}
+
+.auth-grid {
+  display: grid;
+  gap: 4px 14px;
+}
+
+@media (min-width: 560px) {
+  .auth-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* Giữ chỗ cho dòng lỗi dưới mỗi ô và lỗi chung để form không giật khi lỗi hiện/ẩn */
+.auth-card .field { gap: 6px; }
+.auth-card .field__error { min-height: 1.1em; margin: 0; }
+.auth-card .field:not(:has(.field__error))::after { content: ""; display: block; min-height: 1.1em; }
+
+.auth-hint {
+  margin-top: -16px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.auth-more {
+  align-self: flex-start;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--blue);
+  padding: 4px 0;
+}
 
 .auth-error {
+  min-height: 1.3em;
+  margin: 0;
   font-size: 0.88rem;
   color: #d92d20;
 }
 
 .auth-success {
+  display: grid;
+  gap: 14px;
   font-size: 1rem;
   color: #0f7a44;
   font-weight: 600;
+}
+
+.auth-submit {
+  justify-content: center;
+  width: 100%;
+}
+
+.auth-steps {
+  display: flex;
+  gap: 6px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  font-size: 0.8rem;
+  color: var(--muted);
+  flex-wrap: wrap;
+}
+
+.auth-steps li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px 6px 6px;
+  border-radius: 999px;
+  background: var(--blue-light);
+}
+
+.auth-steps b {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  font-size: 0.75rem;
+}
+
+.auth-steps li.is-active {
+  color: #fff;
+  background: var(--blue);
+}
+
+.auth-steps li.is-active b {
+  color: var(--blue);
 }
 
 .auth-switch {
@@ -43,4 +134,11 @@
 .auth-switch .btn--ghost {
   padding: 0;
   display: inline;
+}
+
+/* Điện thoại: card phẳng, ít viền/padding để form không bị chật và chữ không bị phóng to */
+@media (max-width: 480px) {
+  .page-shell .auth-page.container { padding-inline: 12px; }
+  .page-shell .auth-card.card { gap: 14px; padding: 20px 16px; box-shadow: none; }
+  .auth-steps { font-size: 0.78rem; }
 }

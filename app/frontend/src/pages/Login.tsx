@@ -5,6 +5,8 @@ import PageShell from "../components/layout/PageShell";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import { InputField } from "../components/ui/FormField";
+import useCenterSettings from "../services/useCenterSettings";
+import { siteName } from "../data/siteConfig";
 import "./Auth.css";
 
 export default function Login() {
@@ -15,6 +17,7 @@ export default function Login() {
   const [busy, setBusy] = useState(false);
 
   const { loginApi } = useAuth();
+  const { center } = useCenterSettings();
   const navigate = useNavigate();
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -37,14 +40,16 @@ export default function Login() {
     <PageShell>
       <div className="auth-page container">
         <Card className="auth-card">
-          <span className="kicker">HaDiNa English Center</span>
+          <span className="kicker">{center?.name ?? siteName}</span>
           <h1>Đăng nhập</h1>
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} noValidate>
             <InputField
               label="Email"
               id="login-email"
               type="email"
+              inputMode="email"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -52,11 +57,12 @@ export default function Login() {
               label="Mật khẩu"
               id="login-password"
               type="password"
+              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            {error && <p className="auth-error" role="alert">{error}</p>}
-            <Button type="submit" variant="primary" disabled={busy}>
+            <p className="auth-error" role="alert">{error}</p>
+            <Button type="submit" variant="primary" disabled={busy} className="auth-submit">
               {busy ? "Đang đăng nhập…" : "Đăng nhập"}
             </Button>
           </form>

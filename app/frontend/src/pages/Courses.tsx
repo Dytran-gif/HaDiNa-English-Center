@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import PageShell from "../components/layout/PageShell";
+import useBrandName from "../services/useBrandName";
 import PageBanner from "../components/ui/PageBanner";
 import CourseCard from "../components/ui/CourseCard";
 import MiniCta from "../components/ui/MiniCta";
@@ -8,6 +9,7 @@ import { categories } from "../data/categories";
 import "./Courses.css";
 
 export default function Courses() {
+  const brand = useBrandName();
   const [activeCategory, setActiveCategory] = useState<number | "all">("all");
 
   const filtered = useMemo(() => {
@@ -19,7 +21,7 @@ export default function Courses() {
     <PageShell>
       <PageBanner
         kicker="Chương trình đào tạo"
-        title="Khoá học tại Happy IELTS"
+        title={`Khoá học tại ${brand}`}
         description="Từ nền tảng đến nâng cao, mỗi lộ trình đều được thiết kế riêng theo mục tiêu đầu ra của học viên."
       />
 

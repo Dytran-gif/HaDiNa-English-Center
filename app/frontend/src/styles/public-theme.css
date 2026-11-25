@@ -75,3 +75,9 @@
     transition: none;
   }
 }
+
+/* iOS: không tự phóng to chữ khi xoay ngang (đặt ở html vì Safari đọc thuộc tính này từ gốc) */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}

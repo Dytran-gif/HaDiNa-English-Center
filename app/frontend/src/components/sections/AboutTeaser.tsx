@@ -1,3 +1,4 @@
+import useBrandName from "../../services/useBrandName";
 import Button from "../ui/Button";
 import { siteAbout } from "../../data/siteConfig";
 import AbouTeaser1 from "../../assets/images/AbouTeaser1.jpg";
@@ -14,6 +15,7 @@ const visualItems = [
 ];
 
 export default function AboutTeaser() {
+  const brand = useBrandName();
   return (
     <section className="about-teaser">
       <div className="container about-teaser__grid">
@@ -25,7 +27,7 @@ export default function AboutTeaser() {
             >
               <img
                 src={item.img}
-                alt={`Học tập tại Hadi IELTS ${item.id}`}
+                alt={`Học tập tại ${brand} ${item.id}`}
                 style={{
                   width: "100%",
                   height: "100%",
@@ -42,7 +44,7 @@ export default function AboutTeaser() {
           <h2>Môi trường học tập năng động — chuẩn quốc tế</h2>
           <p>{siteAbout}</p>
           <Button to="/ve-chung-toi" variant="outline">
-            Tìm hiểu về Hadi IELTS →
+            Tìm hiểu về {brand} →
           </Button>
         </div>
       </div>

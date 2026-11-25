@@ -54,3 +54,9 @@
   background-color: #2c3e8c;
   display: block;
 }
+
+.teacher-card__rating {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--blue-dark);
+}

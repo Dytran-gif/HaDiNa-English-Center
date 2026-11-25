@@ -51,3 +51,18 @@
   padding-top: 8px;
   border-top: 1px solid var(--line);
 }
+
+.testimonial-card__stars-off {
+  color: var(--line);
+}
+
+.testimonial-card__author {
+  display: grid;
+  gap: 2px;
+}
+
+.testimonial-card__meta {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--muted);
+}
