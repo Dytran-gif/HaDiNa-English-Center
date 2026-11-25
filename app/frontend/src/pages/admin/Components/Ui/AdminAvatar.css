@@ -1,0 +1,8 @@
+.admin-layout .admin-avatar-image { display: block; width: 100%; height: 100%; border-radius: inherit; object-fit: cover; }
+.admin-layout .admin-avatar-trigger { display: inline-flex; flex-shrink: 0; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
+.admin-layout .admin-avatar-trigger:disabled { cursor: wait; opacity: .65; }
+.admin-layout .admin-avatar-trigger:hover { box-shadow: 0 0 0 4px var(--admin-primary-soft); }
+.admin-layout .admin-avatar-options { --admin-dialog-width: 360px; }
+.admin-layout .admin-avatar-options-list { display: grid; gap: var(--admin-space-3); margin-block: var(--admin-space-3); }
+.admin-layout .admin-avatar-help { color: var(--admin-muted); font-size: var(--admin-font-sm); }
+.admin-layout .admin-avatar-full { display: block; width: 100%; max-height: 70dvh; object-fit: contain; border-radius: var(--admin-radius-control); }

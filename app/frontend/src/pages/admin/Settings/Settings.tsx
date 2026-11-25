@@ -7,8 +7,8 @@ import { useAuth } from "../../../context/AuthContext";
 import { assetUrl } from "../../../services/apiClient";
 import { useAdminApi, useAdminQuery } from "../../../services/admin/useAdminApi";
 import type { CenterResponse } from "../../../types/adminApi";
-import PasswordCard from "../Profile/PasswordCard";
 import { Feedback } from "../Components/Api/AdminUi";
+import { publishCenterSettings } from "../../../services/useCenterSettings";
 
 function CenterForm({ center, enabled }: { center: CenterResponse; enabled: boolean }) {
   const api = useAdminApi();
@@ -25,6 +25,7 @@ function CenterForm({ center, enabled }: { center: CenterResponse; enabled: bool
     setBusy(true); setError(""); setMessage("");
     try {
       const value = await api.send<CenterResponse>("PUT", "settings/center", { name: form.name, address: form.address, phone: form.phone });
+      publishCenterSettings(value);
       setForm(value); setSaved(value); setMessage("Đã lưu thông tin trung tâm.");
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Không lưu được thông tin.");
@@ -32,6 +33,7 @@ function CenterForm({ center, enabled }: { center: CenterResponse; enabled: bool
   }
 
   return <form className="admin-panel-form" onSubmit={save}>
+    <p className="admin-api-muted">Tên trung tâm hiển thị trên header/footer; địa chỉ và điện thoại hiển thị ở footer và trang Liên hệ sau khi lưu.</p>
     <Feedback error={error} message={message}/>
     {assetUrl(form.logoUrl) && <img className="admin-api-logo" src={assetUrl(form.logoUrl)} alt="Logo trung tâm"/>}
     <InputField label="Tên trung tâm" placeholder="Nhập tên trung tâm" required maxLength={150} value={form.name} disabled={!enabled || busy} onChange={event => setForm({ ...form, name: event.target.value })}/>
@@ -45,7 +47,7 @@ function CenterForm({ center, enabled }: { center: CenterResponse; enabled: bool
 export default function Settings() {
   const center = useAdminQuery<CenterResponse>("settings/center");
   const { token } = useAuth();
-  return <div className="admin-settings-panels">
+  return <div className="admin-settings-panels admin-settings-center">
     <SectionCard title="Thông tin trung tâm">
       {token && center.loading && <p className="admin-api-muted" role="status">Đang tải thông tin trung tâm…</p>}
       {token && center.error && <div className="admin-panel-feedback"><Notice tone="error" title="Không tải được thông tin trung tâm" action={<Button onClick={center.reload} icon="refresh" loading={center.loading}>Thử lại</Button>}>{center.error}</Notice></div>}
@@ -53,6 +55,5 @@ export default function Settings() {
         <CenterForm key={center.data ? "loaded" : "empty"} enabled={Boolean(token && center.data && !center.loading)} center={center.data ?? { name: "", logoUrl: null, address: null, phone: null }}/>
       </fieldset>
     </SectionCard>
-    <PasswordCard/>
   </div>;
 }

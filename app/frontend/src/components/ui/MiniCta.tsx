@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Button from "./Button";
-import { contactEmail, contactPhone } from "../../data/siteConfig";
+import { contactEmail } from "../../data/siteConfig";
+import useCenterSettings from "../../services/useCenterSettings";
 import "./MiniCta.css";
 
 interface MiniCtaProps {
@@ -10,8 +11,9 @@ interface MiniCtaProps {
 
 export default function MiniCta({
   title = "Cần tư vấn lộ trình?",
-  description = "Để lại thông tin, Happy IELTS sẽ liên hệ tư vấn miễn phí trong 24 giờ.",
+  description = "Để lại thông tin để trung tâm liên hệ tư vấn lộ trình phù hợp.",
 }: MiniCtaProps) {
+  const { center } = useCenterSettings();
   return (
     <div className="mini-cta">
       <h3>{title}</h3>
@@ -20,7 +22,7 @@ export default function MiniCta({
         Đăng ký tư vấn
       </Button>
       <div className="mini-cta__contact">
-        <a href={`tel:${contactPhone.replace(/\s/g, "")}`}>{contactPhone}</a>
+        {center?.phone && <a href={`tel:${center.phone.replace(/[^+\d]/g, "")}`}>{center.phone}</a>}
         <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
       </div>
     </div>

@@ -15,6 +15,11 @@ export function useAdminApi() {
       try { return await request<T>(`/api/admin/${path}`, token, { method, body: body === undefined ? undefined : JSON.stringify(body) }); }
       catch (error) { if (error instanceof ApiError && error.status === 401) logout(); throw error; }
     },
+    async upload<T>(path: string, body: FormData) {
+      if (!token) throw new ApiError(401, "Vui lòng đăng nhập để tải ảnh lên.");
+      try { return await request<T>(`/api/admin/${path}`, token, { method: "POST", body }); }
+      catch (error) { if (error instanceof ApiError && error.status === 401) logout(); throw error; }
+    },
   }), [token, logout]);
 }
 
