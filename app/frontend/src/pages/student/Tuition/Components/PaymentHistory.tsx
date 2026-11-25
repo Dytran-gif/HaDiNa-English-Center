@@ -12,15 +12,11 @@ const PaymentHistory = ({ items }: PaymentHistoryProps) => {
     return (
         <div className="payment-history-container">
             <div className="payment-table-card">
-                <div className="payment-card-header">
-                    {t("payHistory.records")}
-                    <span className="payment-card-count">{items.length}</span>
-                </div>
+                <div className="payment-card-header">{t("payHistory.records")}</div>
                 <div className="payment-table-responsive">
                     <table className="payment-custom-table">
                         <thead>
                             <tr>
-                                <th>{t("payHistory.colId")}</th>
                                 <th>{t("payHistory.colCourse")}</th>
                                 <th>{t("payHistory.colAmount")}</th>
                                 <th>{t("payHistory.colMethod")}</th>
@@ -31,7 +27,6 @@ const PaymentHistory = ({ items }: PaymentHistoryProps) => {
                         <tbody>
                             {items.map((item) => (
                                 <tr key={item.paymentId}>
-                                    <td className="payment-font-medium payment-text-blue">{item.paymentId}</td>
                                     <td>
                                         <div className="payment-font-medium">{item.courseName}</div>
                                         <div className="payment-text-muted" style={{ fontSize: '12px' }}>{item.className}</div>
@@ -48,7 +43,7 @@ const PaymentHistory = ({ items }: PaymentHistoryProps) => {
                             ))}
                             {items.length === 0 && (
                                 <tr>
-                                    <td colSpan={6} className="payment-text-center payment-text-muted" style={{ padding: '32px' }}>
+                                    <td colSpan={5} className="payment-text-center payment-text-muted" style={{ padding: '32px' }}>
                                         {t("payHistory.empty")}
                                     </td>
                                 </tr>

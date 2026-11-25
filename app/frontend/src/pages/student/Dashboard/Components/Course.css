@@ -45,13 +45,13 @@
 }
 
 .cf-section-subtitle {
-    font-size: 11.5px;
+    font-size: 8px;
     color: #64748b;
     margin: 2px 0 0 0;
 }
 
 .cf-view-all-link {
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 700;
     color: #2563eb;
     text-decoration: none;
@@ -140,7 +140,7 @@
 
 .cf-card-title {
     margin: 0 0 5px;
-    font-size: 13.5px;
+    font-size: 14px;
     font-weight: 800;
     color: #0f172a;
     line-height: 1.35;
@@ -152,7 +152,7 @@
 
 .cf-card-desc {
     margin: 0 0 8px;
-    font-size: 11.5px;
+    font-size: 9px;
     color: #64748b;
     line-height: 1.45;
     display: -webkit-box;
@@ -165,7 +165,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 4px 12px;
-    font-size: 11px;
+    font-size: 9px;
     color: #475569;
     margin-top: auto;
 }
@@ -210,8 +210,8 @@
 .cf-view-link {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    font-size: 11px;
+    gap: 2px;
+    font-size:9px;
     font-weight: 700;
     color: #2563eb;
     white-space: nowrap;

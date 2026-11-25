@@ -3,15 +3,22 @@ import type { StudentScheduleSession } from "../../../../services/student/useStu
 import { useLang } from "../../../../i18n/LanguageContext";
 import './ScheduleMain.css';
 
-const TIME_SLOTS = [
-    { start: '07:30', end: '08:30' }, { start: '08:30', end: '09:30' },
-    { start: '09:30', end: '10:30' }, { start: '10:30', end: '11:30' },
-    { start: '11:30', end: '12:30' }, { start: '12:30', end: '13:30' },
-    { start: '13:30', end: '14:30' }, { start: '14:30', end: '15:30' },
-    { start: '15:30', end: '16:30' }, { start: '16:30', end: '17:30' },
-    { start: '17:30', end: '18:30' }, { start: '18:30', end: '19:30' },
-    { start: '19:30', end: '20:30' }, { start: '20:30', end: '21:30' },
-];
+// Lưới 07:30–21:30, mỗi ô 30 phút
+const SLOT_MIN = 30;
+// Chiều cao mỗi ô 30 phút — đổi thì sửa cả height của .time-slot/.day-col/.line-bg trong CSS
+const SLOT_PX = 40;
+
+const fmtMin = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+
+const TIME_SLOTS = Array.from({ length: 28 }, (_, i) => {
+    const start = 7 * 60 + 30 + i * SLOT_MIN;
+    return {
+        start: fmtMin(start),
+        end: fmtMin(start + SLOT_MIN),
+        onHour: start % 60 === 0, // nhãn đậm hơn ở đầu giờ
+        lineStrong: (start + SLOT_MIN) % 60 === 0 // kẻ chân đậm ở ranh giới giờ
+    };
+});
 
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -58,8 +65,8 @@ export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWe
         const startMin = timeToMinutes(startTime) - timeToMinutes('07:30');
         const durationMin = timeToMinutes(endTime) - timeToMinutes(startTime);
         return {
-            top: `${(startMin / 60) * 54}px`,
-            height: `${(durationMin / 60) * 54}px`
+            top: `${(startMin / SLOT_MIN) * SLOT_PX}px`,
+            height: `${(durationMin / SLOT_MIN) * SLOT_PX}px`
         };
     };
 
@@ -88,7 +95,7 @@ export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWe
                 <div className="grid-header">
                     <div className="cell-time-head">{t("schedule.time")}</div>
                     {daysOfWeek.map((day) => (
-                        <div key={day.key} className="cell-day-head">
+                        <div key={day.key} className={`cell-day-head ${day.dateStr === todayStr ? 'is-today' : ''}`}>
                             <strong>{day.label}</strong>
                             <span>{day.displayDate}</span>
                         </div>
@@ -98,8 +105,8 @@ export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWe
                 <div className="grid-body">
                     <div className="time-col">
                         {TIME_SLOTS.map(slot => (
-                            <div key={slot.start} className="time-slot">
-                                {slot.start} - {slot.end}
+                            <div key={slot.start} className={`time-slot ${slot.onHour ? 'on-hour' : ''}`}>
+                                {slot.start}
                             </div>
                         ))}
                     </div>
@@ -109,8 +116,8 @@ export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWe
                             const sessionsToday = sessions.filter(s => s.dateStr === day.dateStr);
 
                             return (
-                                <div key={day.key} className="day-col">
-                                    {TIME_SLOTS.map(slot => <div key={slot.start} className="line-bg"></div>)}
+                                <div key={day.key} className={`day-col ${day.dateStr === todayStr ? 'is-today' : ''}`}>
+                                    {TIME_SLOTS.map(slot => <div key={slot.start} className={`line-bg ${slot.lineStrong ? 'strong' : ''}`}></div>)}
 
                                     {sessionsToday.map((item) => {
                                         return (
@@ -133,48 +140,27 @@ export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWe
                                                     <p className="time">
                                                         <i className="fa-regular fa-clock"></i> {item.startTime} - {item.endTime}
                                                     </p>
-                                                </div>
-
-                                                {/* HOVER POPUP CHI TIẾT */}
-                                                <div className="card-hover-popup">
-                                                    <div className="popup-top">
-                                                        <span className={`popup-level ${item.isCancelled ? 'popup-cancelled-tag' : ''}`}>
-                                                            {item.isCancelled ? t("schedule.cancelled") : `Band ${item.bandFrom} - ${item.bandTo}`}
-                                                        </span>
-                                                        <span className="popup-index">
-                                                            {t("schedule.sessionOf", { n: item.sessionNo, total: item.totalSessions })}
-                                                        </span>
-                                                    </div>
-
-                                                    <h5 className="popup-course-title">{item.courseName}</h5>
-
                                                     {item.isCancelled ? (
-                                                        <p className="popup-cancel-reason">
-                                                            <i className="fa-solid fa-circle-exclamation"></i>{" "}
-                                                            {t("schedule.cancelNotice", { reason: item.cancelReason || t("schedule.noReason") })}
+                                                        <p className="card-cancel-reason">
+                                                            {item.cancelReason || t("schedule.noReason")}
                                                         </p>
                                                     ) : (
-                                                        <p className="popup-desc">{item.description}</p>
+                                                        <div className="card-meta">
+                                                            <span className="meta-item">
+                                                                <i className="fa-solid fa-hashtag"></i> {item.className}
+                                                            </span>
+                                                            {item.teacherName && (
+                                                                <span className="meta-item">
+                                                                    <i className="fa-solid fa-chalkboard-user"></i> {item.teacherName}
+                                                                </span>
+                                                            )}
+                                                            {item.roomName && (
+                                                                <span className="meta-item">
+                                                                    <i className="fa-solid fa-location-dot"></i> {item.roomName}
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     )}
-
-                                                    <div className="popup-info-grid">
-                                                        <div>
-                                                            <i className="fa-solid fa-hashtag"></i> {t("schedule.class")} <strong>{item.className}</strong>
-                                                        </div>
-                                                        <div>
-                                                            <i className="fa-regular fa-clock"></i> {item.startTime} - {item.endTime}
-                                                        </div>
-                                                        {item.teacherName && (
-                                                            <div>
-                                                                <i className="fa-solid fa-chalkboard-user"></i> {t("schedule.teacher")} <strong>{item.teacherName}</strong>
-                                                            </div>
-                                                        )}
-                                                        {item.roomName && (
-                                                            <div>
-                                                                <i className="fa-solid fa-location-dot"></i> {t("schedule.room")} <strong>{item.roomName}</strong>
-                                                            </div>
-                                                        )}
-                                                    </div>
                                                 </div>
                                             </div>
                                         );
