@@ -26,6 +26,7 @@ import CoursesManagement from "./pages/admin/Courses/CoursesManagement";
 import BlogManagement from "./pages/admin/Blog/BlogManagement";
 import PaymentsManagement from "./pages/admin/Payments/PaymentsManagement";
 import Reports from "./pages/admin/Reports/Reports";
+import Consultations from "./pages/admin/Consultations/Consultations";
 import RoomsManagement from "./pages/admin/Rooms/RoomsManagement";
 import TeachersManagement from "./pages/admin/Teachers/TeachersManagement";
 import StudentsManagement from "./pages/admin/Students/StudentsManagement";
@@ -93,6 +94,7 @@ export default function AppRoutes() {
                 <Route path="blog" element={<BlogManagement />} />
                 <Route path="payments" element={<PaymentsManagement />} />
                 <Route path="reports" element={<Reports />} />
+                <Route path="consultations" element={<Consultations />} />
                 <Route path="rooms" element={<RoomsManagement />} />
                 <Route path="teachers" element={<TeachersManagement />} />
                 <Route path="teachers/:id" element={<AccountProfile kind="teachers" />} />

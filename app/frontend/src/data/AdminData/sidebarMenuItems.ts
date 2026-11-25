@@ -13,6 +13,7 @@ export const adminSidebarMenuGroups: AdminMenuGroup[] = [
     { label: "Học viên", path: "/admin/students", icon: "students" },
   ] },
   { label: "Nội dung", items: [
+    { label: "Yêu cầu tư vấn", path: "/admin/consultations", icon: "requests" },
     { label: "Tin tức / Blog", path: "/admin/blog", icon: "blog" },
   ] },
   { label: "Tài chính", items: [

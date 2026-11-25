@@ -1,4 +1,12 @@
 # Nhật ký bàn giao
+## [2026-11-25] Form tư vấn homepage lưu DB + danh sách Admin
+
+- DB trước đó chưa có bảng tư vấn. Tạo ConsultationRequests và migration 20261125023432_ConsultationRequests; đã backup COPY_ONLY/CHECKSUM, verify và áp dụng vào EnglishCenterDB local.
+- POST /api/public/consultations lưu thông tin; validate dữ liệu và chống tạo trùng theo SubmissionId. GET /api/admin/consultations bảo vệ role admin, tìm kiếm + phân trang.
+- Homepage gửi thật, giữ dữ liệu nếu lỗi. Sidebar Nội dung có Yêu cầu tư vấn, route /admin/consultations.
+- FE build/typecheck, BE build đạt; lint chỉ warning AuthContext cũ. HTTP thật: validate400, create201, retry200; Admin tìm đúng1 dòng; anonymous list401. Đã xóa đúng bản ghi QA sau kiểm tra.
+- BE đã chạy lại localhost5220 với AutoSetup=false. Máy khác pull cả migration/snapshot rồi update DB. Chi tiết docs/api/CONSULTATIONS.md. Form Contact riêng chưa thay đổi.
+
 ## [2026-11-25] Public Teacher lấy từ database, bỏ đánh giá sao
 
 - Tạo PublicTeacherProfiles và API GET /api/public/teachers, /api/public/teachers/{slug}; nhập 5 hồ sơ/ảnh từ website, giữ slug cũ. Không tạo tài khoản đăng nhập hoặc thay đổi 2 Teachers vận hành.

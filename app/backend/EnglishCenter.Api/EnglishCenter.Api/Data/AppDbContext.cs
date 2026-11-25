@@ -25,6 +25,7 @@ public partial class AppDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder b)
     {
         ConfigurePublic(b);
+        ConfigureConsultations(b);
         // ---------- Users ----------
         b.Entity<User>(e =>
         {

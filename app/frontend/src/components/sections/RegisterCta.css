@@ -70,3 +70,4 @@
   color: var(--muted);
   margin-bottom: 20px;
 }
+.page-shell .register-cta__fields { border: 0; padding: 0; margin: 0; min-width: 0; display: grid; gap: 16px; }
