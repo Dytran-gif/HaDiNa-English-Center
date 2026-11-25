@@ -2,6 +2,9 @@
 
 .Feedback-container {
     width: 100%;
+.student-layout * {
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 .Feedback-main-card {
@@ -475,4 +478,6 @@
     .Feedback-hero {
         flex-wrap: wrap;
     }
+.Feedback-btn-submit-feedback:hover {
+    background-color: #1d4ed8;
 }

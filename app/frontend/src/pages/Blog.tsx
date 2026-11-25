@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import PageShell from "../components/layout/PageShell";
 import PageBanner from "../components/ui/PageBanner";
 import BlogCard from "../components/ui/BlogCard";
@@ -12,7 +13,16 @@ export default function Blog() {
     () => Array.from(new Set(blogPosts.map((p) => p.category))),
     [blogPosts],
   );
-  const [activeCategory, setActiveCategory] = useState<string | "all">("all");
+  const [params, setParams] = useSearchParams();
+  const requestedCategory = params.get("category");
+  const activeCategory = requestedCategory && blogCategories.includes(requestedCategory) ? requestedCategory : "all";
+  function setActiveCategory(category: string) {
+    setParams(previous => {
+      const next = new URLSearchParams(previous);
+      if (category === "all") next.delete("category"); else next.set("category", category);
+      return next;
+    });
+  }
 
   const filtered =
     activeCategory === "all"

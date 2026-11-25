@@ -6,6 +6,5 @@ export interface Teacher {
   bio: string;
   credentials: string[];
   initials: string;
-  rating_avg: number;
   avatar?: string;
 }

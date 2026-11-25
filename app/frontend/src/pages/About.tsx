@@ -5,10 +5,12 @@ import StatBlock from "../components/ui/StatBlock";
 import TeacherCard from "../components/ui/TeacherCard";
 import { siteAbout } from "../data/siteConfig";
 import { stats, whyDifferentItems } from "../data/stats";
-import { teachers } from "../data/teachers";
+import usePublicTeachers from "../services/usePublicTeachers";
+import TeacherLoadState from "../components/ui/TeacherLoadState";
 import "./About.css";
 
 export default function About() {
+  const { teachers, loading, error, reload } = usePublicTeachers();
   return (
     <PageShell>
       <PageBanner
@@ -48,6 +50,7 @@ export default function About() {
       <section className="about-teachers container">
         <SectionHeading kicker="Đội ngũ" title="Giáo viên tiêu biểu" />
         <div className="about-teachers__grid">
+          <TeacherLoadState loading={loading} error={error} empty={!teachers.length} reload={reload}/>
           {teachers.map((t) => (
             <TeacherCard teacher={t} key={t.teacher_id} />
           ))}

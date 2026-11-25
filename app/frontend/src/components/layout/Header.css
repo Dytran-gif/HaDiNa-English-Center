@@ -51,6 +51,7 @@
   border-color: var(--blue);
 }
 
+
 .dropdown {
   display: none;
   position: absolute;
@@ -68,6 +69,15 @@
 .has-dropdown:hover .dropdown,
 .has-dropdown:focus-within .dropdown {
   display: block;
+}
+
+/* Keep the hover path continuous across the visual gap below the parent link. */
+.site-header__nav .has-dropdown > .dropdown::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: -12px;
+  height: 12px;
 }
 
 .dropdown li {

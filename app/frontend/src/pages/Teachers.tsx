@@ -1,10 +1,12 @@
 import PageShell from "../components/layout/PageShell";
 import PageBanner from "../components/ui/PageBanner";
 import TeacherCard from "../components/ui/TeacherCard";
-import { teachers } from "../data/teachers";
+import usePublicTeachers from "../services/usePublicTeachers";
+import TeacherLoadState from "../components/ui/TeacherLoadState";
 import "./Teachers.css";
 
 export default function Teachers() {
+  const { teachers, loading, error, reload } = usePublicTeachers();
   return (
     <PageShell>
       <PageBanner
@@ -13,7 +15,8 @@ export default function Teachers() {
         description="Đội ngũ giáo viên chuyên môn cao, đồng hành sát sao cùng học viên trong suốt lộ trình."
       />
       <div className="container teachers-grid">
-        {teachers.map((t) => (
+        <TeacherLoadState loading={loading} error={error} empty={!teachers.length} reload={reload}/>
+          {teachers.map((t) => (
           <TeacherCard teacher={t} key={t.teacher_id} />
         ))}
       </div>

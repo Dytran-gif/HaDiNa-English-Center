@@ -1,4 +1,8 @@
 /* Tuition — bảng thanh toán + panel tổng kết (layout 2 cột) */
+.student-layout * {
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
 
 .payment-container {
     display: grid;
@@ -211,4 +215,21 @@
     background-color: #e2e8f0;
     color: #94a3b8;
     cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+    .payment-summary-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .payment-summary-right {
+        width: 100%;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    .payment-summary-item {
+        border-left: none;
+        padding-left: 0;
+    }
 }

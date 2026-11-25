@@ -38,11 +38,6 @@
   margin-top: 6px;
 }
 
-.teacher-detail__rating {
-  font-weight: 600;
-  color: var(--blue);
-  margin-top: 6px;
-}
 
 .teacher-detail__bio {
   font-size: 1.05rem;

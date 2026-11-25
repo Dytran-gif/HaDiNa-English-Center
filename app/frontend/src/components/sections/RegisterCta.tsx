@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import Button from "../ui/Button";
 import { InputField, SelectField } from "../ui/FormField";
 import { courses } from "../../data/courses";
+import { sendConsultation } from "../../services/consultations";
 import "./RegisterCta.css";
 
 export default function RegisterCta() {
@@ -10,11 +11,21 @@ export default function RegisterCta() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [courseSlug, setCourseSlug] = useState(courses[0]?.slug ?? "");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [submissionId, setSubmissionId] = useState(() => crypto.randomUUID());
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    // Demo only — no backend yet, mirrors the flow described in docs/6.
-    setSubmitted(true);
+    if (busy) return;
+    const course = courses.find(item => item.slug === courseSlug);
+    if (!course) { setError("Vui lòng chọn khóa học bạn quan tâm."); return; }
+    setBusy(true); setError("");
+    try {
+      await sendConsultation({ submissionId, fullName: name.trim(), phone: phone.trim(), email: email.trim(), courseSlug, courseName: course.course_name });
+      setSubmitted(true);
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Chưa gửi được yêu cầu. Hãy thử lại."); }
+    finally { setBusy(false); }
   }
 
   return (
@@ -32,10 +43,9 @@ export default function RegisterCta() {
         <div className="register-cta__form">
           {submitted ? (
             <div className="register-cta__success">
-              <h3>Thông tin chưa được gửi</h3>
+              <h3>Đã nhận yêu cầu tư vấn!</h3>
               <p>
-                Form tư vấn hiện chưa kết nối máy chủ. Chưa có yêu cầu nào được lưu;
-                bạn có thể xem thêm thông tin tại trang Liên hệ.
+                Cảm ơn bạn đã quan tâm. Thông tin của bạn đã được gửi tới trung tâm để liên hệ tư vấn.
               </p>
               <Button
                 variant="outline"
@@ -44,18 +54,22 @@ export default function RegisterCta() {
                   setName("");
                   setPhone("");
                   setEmail("");
+                  setSubmissionId(crypto.randomUUID());
                 }}
               >
-                Quay lại biểu mẫu
+                Gửi yêu cầu khác
               </Button>
             </div>
           ) : (
             <form onSubmit={handleSubmit}>
-              <p role="note">Biểu mẫu đang trong quá trình hoàn thiện, chưa gửi thông tin tới trung tâm.</p>
+              <p>Thông tin được dùng để trung tâm liên hệ tư vấn khóa học bạn quan tâm.</p>
+              {error && <p role="alert">{error}</p>}
+              <fieldset disabled={busy} className="register-cta__fields" onChange={() => setSubmissionId(crypto.randomUUID())}>
               <InputField
                 label="Họ và tên"
                 id="register-name"
                 required
+                maxLength={150}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
@@ -63,6 +77,8 @@ export default function RegisterCta() {
                 label="Số điện thoại"
                 id="register-phone"
                 type="tel"
+                maxLength={30}
+                minLength={8}
                 required
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
@@ -71,6 +87,7 @@ export default function RegisterCta() {
                 label="Email"
                 id="register-email"
                 type="email"
+                maxLength={255}
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -85,8 +102,9 @@ export default function RegisterCta() {
                   label: c.course_name,
                 }))}
               />
-              <Button type="submit" variant="primary" className="register-cta__submit">
-                Gửi đăng ký
+              </fieldset>
+              <Button type="submit" variant="primary" disabled={busy} className="register-cta__submit">
+                {busy ? "Đang gửi…" : "Gửi đăng ký"}
               </Button>
             </form>
           )}

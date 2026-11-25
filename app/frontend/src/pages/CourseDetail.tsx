@@ -5,20 +5,21 @@ import Tag from "../components/ui/Tag";
 import TeacherCard from "../components/ui/TeacherCard";
 import { getCourseBySlug, formatPrice } from "../data/courses";
 import { getCategoryById } from "../data/categories";
-import { getTeacherById } from "../data/teachers";
+import usePublicTeachers from "../services/usePublicTeachers";
 import NotFound from "./NotFound";
 import "./CourseDetail.css";
 
 export default function CourseDetail() {
   const { slug = "" } = useParams();
   const course = getCourseBySlug(slug);
+  const { teachers } = usePublicTeachers();
 
   if (!course) {
     return <NotFound />;
   }
 
   const category = getCategoryById(course.category_id);
-  const teacher = getTeacherById(course.teacher_id);
+  const teacher = teachers.find(t => t.teacher_id === course.teacher_id);
 
   return (
     <PageShell>

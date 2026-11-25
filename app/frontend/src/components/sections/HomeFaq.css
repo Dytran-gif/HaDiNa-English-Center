@@ -6,3 +6,8 @@
 .page-shell .home-faq summary:focus-visible { outline: 2px solid var(--blue-dark); outline-offset: 4px; }
 .page-shell .home-faq details[open] { border-color: var(--blue); background: var(--blue-light); }
 .page-shell .home-faq details p { margin: 16px 0 0; color: var(--muted); line-height: 1.8; }
+@media (max-width: 859px) {
+  .page-shell .home-faq { grid-template-columns: minmax(0, 1fr); gap: 24px; padding-block: 32px; }
+  .page-shell .home-faq__questions { min-width: 0; }
+  .page-shell .home-faq details { padding: 16px; }
+}

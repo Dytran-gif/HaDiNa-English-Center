@@ -95,19 +95,7 @@ public class StudentsController : ControllerBase
     }
 
     // Sinh mã học viên tiếp theo: HV0001, HV0002, ...
-    private async Task<string> NextCode()
-    {
-        var last = await _db.Students
-            .OrderByDescending(s => s.Code)
-            .Select(s => s.Code)
-            .FirstOrDefaultAsync();
-
-        var number = 0;
-        if (last != null && last.Length > 2)
-            int.TryParse(last.Substring(2), out number);
-
-        return $"HV{number + 1:D4}";
-    }
+    private Task<string> NextCode() => StudentCodeGenerator.NextAsync(_db);
 
     private Task<Student?> GetWithUser(int id)
     {
