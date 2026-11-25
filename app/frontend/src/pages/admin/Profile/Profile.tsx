@@ -9,6 +9,7 @@ import Notice from "../Components/Ui/Notice";
 import { InputField } from "../Components/Ui/FormField";
 import useToast from "../Components/Ui/useToast";
 import PasswordCard from "./PasswordCard";
+import AdminAvatarControl from "../Components/Ui/AdminAvatarControl";
 import type { AdminProfile } from "./profileTypes";
 import "./Profile.css";
 
@@ -44,7 +45,7 @@ function PersonalInfo({ initial }: { initial: AdminProfile }) {
   }
 
   return <>
-    <div className="admin-personal-identity"><span className="admin-personal-avatar" aria-hidden="true">{name.charAt(0).toUpperCase()}</span><div><h2>{name}</h2><Badge tone="info">Quản trị viên</Badge></div></div>
+    <div className="admin-personal-identity"><AdminAvatarControl className="admin-personal-avatar"/><div><h2>{name}</h2><Badge tone="info">Quản trị viên</Badge></div></div>
     <form className="admin-panel-form" onSubmit={save} aria-busy={busy}>
       {error && <Notice tone="error">{error}</Notice>}
       <InputField label="Họ và tên" autoComplete="name" placeholder="Nhập họ và tên của bạn" required maxLength={150} disabled={busy} value={form.fullName} error={fieldError("fullName")} onChange={event => setForm({ ...form, fullName: event.target.value })}/>
