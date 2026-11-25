@@ -26,4 +26,9 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
         path: "/student/tuition",
         icon: "fa-solid fa-money-check-dollar",
     },
+    {
+        label: "Profile",
+        path: "/student/profile",
+        icon: "fa-regular fa-id-card",
+    },
 ];

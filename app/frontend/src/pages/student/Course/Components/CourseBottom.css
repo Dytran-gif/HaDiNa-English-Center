@@ -19,7 +19,7 @@
 }
 
 .cb-panel-title {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 700;
     color: #1f2937;
     margin: 0 0 16px 0;
@@ -85,7 +85,7 @@
 }
 
 .cb-level {
-    font-size: 10px;
+    font-size: 8px;
     font-weight: 700;
     color: #ffffff;
     padding: 2px 8px;
@@ -98,14 +98,14 @@
 .badge-advanced { background-color: #a855f7; }
 
 .cb-title {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 700;
     color: #1f2937;
     margin: 0 0 4px 0;
 }
 
 .cb-meta {
-    font-size: 12px;
+    font-size: 8px;
     color: #6b7280;
     display: flex;
     flex-wrap: wrap;
@@ -121,7 +121,7 @@
 }
 
 .cb-price-original {
-    font-size: 11px;
+    font-size: 9px;
     color: #94a3b8;
     font-weight: 500;
 }
@@ -134,7 +134,7 @@
 .cb-discount-chip {
     background-color: #dcfce7;
     color: #15803d;
-    font-size: 10px;
+    font-size: 7px;
     font-weight: 700;
     padding: 1px 7px;
     border-radius: 999px;
@@ -271,7 +271,7 @@
 }
 
 .cb-summary-note {
-    font-size: 11px;
+    font-size: 8px;
     color: #6b7280;
     text-align: center;
     line-height: 1.5;
@@ -279,7 +279,7 @@
 }
 
 .cb-paid-badge {
-    font-size: 10px;
+    font-size: 8px;
     font-weight: 700;
     color: #ffffff;
     background-color: #64748b;

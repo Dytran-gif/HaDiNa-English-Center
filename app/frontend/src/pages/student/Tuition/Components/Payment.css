@@ -32,25 +32,6 @@
     color: #0f172a;
 }
 
-.payment-card-header::before {
-    content: "";
-    width: 4px;
-    height: 16px;
-    border-radius: 999px;
-    background: linear-gradient(180deg, #2563eb, #60a5fa);
-}
-
-.payment-card-count {
-    margin-left: auto;
-    background: #eff6ff;
-    color: #1d4ed8;
-    border: 1px solid #dbeafe;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 2px 9px;
-    border-radius: 999px;
-}
-
 .payment-table-responsive {
     overflow-x: auto;
     scrollbar-width: thin;

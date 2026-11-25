@@ -45,10 +45,7 @@ const PaymentFE = ({ items, onPay, autoSelectAll }: PaymentProps) => {
         <div className="payment-container">
             {/* Bảng khóa học cần thanh toán */}
             <div className="payment-table-card">
-                <div className="payment-card-header">
-                    {t("tuition.myCourses")}
-                    <span className="payment-card-count">{items.length}</span>
-                </div>
+                <div className="payment-card-header">{t("tuition.myCourses")}</div>
                 <div className="payment-table-responsive">
                     <table className="payment-custom-table">
                         <thead>
