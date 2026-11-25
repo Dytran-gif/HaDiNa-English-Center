@@ -1,5 +1,6 @@
 import Button from "../ui/Button";
 import { siteName } from "../../data/siteConfig";
+import useCenterSettings from "../../services/useCenterSettings";
 import "./Hero.css";
 
 const steps = [
@@ -9,10 +10,11 @@ const steps = [
 ];
 
 export default function Hero() {
+  const { center } = useCenterSettings();
   return <section className="hero">
     <div className="container hero__grid">
       <div className="hero__copy">
-        <span className="kicker">{siteName} · Học để tự tin hơn</span>
+        <span className="kicker">{center?.name ?? siteName} · Học để tự tin hơn</span>
         <h1 className="hero__title">Mỗi mục tiêu tiếng Anh,<br/><span className="hero__title--accent">một lộ trình phù hợp.</span></h1>
         <p className="hero__intro">Từ xây nền tảng đến luyện thi IELTS, SAT — tìm chương trình phù hợp với trình độ, thời gian và mục tiêu của bạn.</p>
         <div className="hero__actions">

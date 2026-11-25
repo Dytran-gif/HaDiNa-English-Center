@@ -4,10 +4,12 @@ import PageBanner from "../components/ui/PageBanner";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import { InputField, TextareaField } from "../components/ui/FormField";
-import { offices, contactEmail, contactPhone } from "../data/siteConfig";
+import { contactEmail, siteName } from "../data/siteConfig";
+import useCenterSettings from "../services/useCenterSettings";
 import "./Contact.css";
 
 export default function Contact() {
+  const { center, loading, error, reload } = useCenterSettings();
   const [submitted, setSubmitted] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -22,22 +24,22 @@ export default function Contact() {
     <PageShell>
       <PageBanner
         kicker="Liên hệ"
-        title="Liên hệ với Happy IELTS"
-        description="Gửi câu hỏi hoặc yêu cầu tư vấn, đội ngũ Happy IELTS sẽ phản hồi trong thời gian sớm nhất."
+        title={`Liên hệ với ${center?.name ?? siteName}`}
+        description={`Gửi câu hỏi hoặc yêu cầu tư vấn, đội ngũ ${center?.name ?? siteName} sẽ phản hồi trong thời gian sớm nhất.`}
       />
       <div className="container contact-grid">
         <Card className="contact-form-card">
           {submitted ? (
             <div className="contact-success">
               <h2>Thông tin chưa được gửi</h2>
-              <p>Biểu mẫu chưa kết nối máy chủ nên chưa lưu yêu cầu của bạn. Thông tin liên hệ trên trang hiện là dữ liệu minh họa.</p>
+              <p>Biểu mẫu này chưa hỗ trợ gửi tin. Bạn có thể gọi số điện thoại trung tâm hoặc dùng form tư vấn trên trang chủ.</p>
               <Button variant="outline" onClick={() => setSubmitted(false)}>
                 Quay lại biểu mẫu
               </Button>
             </div>
           ) : (
             <form onSubmit={handleSubmit}>
-              <p role="note">Trang minh họa: biểu mẫu chưa gửi thông tin, địa chỉ và hotline cần được trung tâm xác nhận.</p>
+              <p role="note">Biểu mẫu này chưa gửi tin; bạn có thể gọi trực tiếp hoặc dùng form tư vấn trên trang chủ.</p>
               <InputField
                 label="Họ và tên"
                 id="contact-name"
@@ -69,18 +71,13 @@ export default function Contact() {
 
         <div className="contact-offices">
           <h3>Địa chỉ liên hệ</h3>
-          {offices.map((office) => (
-            <div key={office.city} className="contact-offices__item">
-              <span className="kicker">{office.city}</span>
-              {office.lines.map((line) => (
-                <p key={line}>{line}</p>
-              ))}
-            </div>
-          ))}
+          {loading && !center && <p role="status">Đang tải thông tin trung tâm…</p>}
+          {error && <div role="alert"><p>{error}</p><Button onClick={() => { void reload(); }}>Thử lại</Button></div>}
+          {center && <div className="contact-offices__item"><span className="kicker">{center.name}</span><p>{center.address || "Chưa cập nhật địa chỉ"}</p></div>}
           <div className="contact-offices__item">
             <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
             <br />
-            <a href={`tel:${contactPhone.replace(/\s/g, "")}`}>{contactPhone}</a>
+            {center?.phone && <a href={`tel:${center.phone.replace(/[^+\d]/g, "")}`}>{center.phone}</a>}
           </div>
         </div>
       </div>

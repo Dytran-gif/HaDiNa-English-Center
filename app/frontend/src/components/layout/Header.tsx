@@ -5,8 +5,10 @@ import Button from "../ui/Button";
 import usePublicTeachers from "../../services/usePublicTeachers";
 import usePublicPosts from "../../services/usePublicPosts";
 import "./Header.css";
+import useCenterSettings from "../../services/useCenterSettings";
 
 export default function Header() {
+  const { center } = useCenterSettings();
   const [mobileOpen, setMobileOpen] = useState(false);
   const posts = usePublicPosts();
   const { teachers } = usePublicTeachers();
@@ -27,7 +29,7 @@ export default function Header() {
     <header className="site-header">
       <div className="site-header__bar container">
         <NavLink to="/" className="site-header__logo" onClick={() => setMobileOpen(false)}>
-          {siteName}
+          {center?.name ?? siteName}
         </NavLink>
 
         <nav className="site-header__nav" aria-label="Điều hướng chính">
