@@ -26,3 +26,13 @@ Existing Users table gains nullable `FullName` nvarchar(150) and `Phone` nvarcha
 - BE restarted at localhost5220 with Database:AutoSetup=false. No visual browser acceptance claimed.
 
 Other machines must apply the committed migration after pulling. User-owned uncommitted changes elsewhere were preserved.
+
+## Avatar
+
+- Users.AvatarUrl already exists; no additional migration.
+- POST /api/admin/profile/avatar, multipart file field `file`: authenticated admin's own avatar, JPG/PNG/WebP up to5MB. Validates MIME and file signature; random filename, never trusts original client filename.
+- Files stored in wwwroot/uploads/admin-avatars/{userId}; DB stores URL. File write/DB failure cleans up the new file. Successful replacement removes the previous file only if it is inside that admin's managed avatar directory.
+- DELETE /api/admin/profile/avatar exists for removal/cleanup; current UI intentionally offers exactly two choices: Xem ảnh / Đổi ảnh.
+- Clicking either profile avatar or header avatar opens those choices. Xem ảnh opens a larger image (disabled when no avatar); Đổi ảnh opens the file picker. Successful upload immediately updates AuthContext, profile and header; fresh GET restores it after reload. Name/email button in the header still navigates to profile.
+- Live tests passed: upload200, persistent GET, served image200, unique replacement URL, removed old image404, invalid MIME/signature400, anonymous401. Temporary test avatar removed afterward, restoring original empty avatar.
+- FE/BE builds passed; lint only existing warnings. Image dialog interactions not visually accepted in a browser yet.
