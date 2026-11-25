@@ -18,7 +18,6 @@ function Header({ onOpenMenu }: HeaderProps) {
     const { data: profile } = useStudentProfile();
 
     const displayName = profile?.fullName ?? "";
-    const displayEmail = profile?.email ?? "";
     const avatar = assetUrl(profile?.avatarUrl) || '';
 
     const pageTitleKeys: Record<string, string> = {
@@ -66,7 +65,6 @@ function Header({ onOpenMenu }: HeaderProps) {
 
                     <div className="user-info">
                         <strong>{displayName}</strong>
-                        <span>{displayEmail}</span>
                     </div>
 
                     <span className="user-arrow">

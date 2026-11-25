@@ -9,10 +9,13 @@ import { useLang } from "../../../i18n/LanguageContext";
 
 const AVATAR_MAX_MB = 5;
 
+// SĐT: đủ 10 số, bắt đầu bằng 0; sai thì báo đỏ + chặn Save
+const PHONE_RE = /^0\d{9}$/;
+
 type Notice = { tone: 'ok' | 'err'; text: string } | null;
 
 function Field({
-    label, icon, value, onChange, type = 'text', placeholder, disabled,
+    label, icon, value, onChange, type = 'text', placeholder, disabled, error, inputMode,
 }: {
     label: string;
     icon: string;
@@ -21,6 +24,8 @@ function Field({
     type?: string;
     placeholder?: string;
     disabled?: boolean;
+    error?: string;
+    inputMode?: "numeric" | "tel" | "text";
 }) {
     return (
         <label className="sp-field">
@@ -32,14 +37,18 @@ function Field({
                 value={value}
                 placeholder={placeholder}
                 disabled={disabled}
+                inputMode={inputMode}
+                aria-invalid={Boolean(error)}
+                className={error ? 'invalid' : undefined}
                 onChange={(e) => onChange?.(e.target.value)}
             />
+            {error && <span className="sp-field-error">{error}</span>}
         </label>
     );
 }
 
 function ProfilePage() {
-    const { t, date } = useLang();
+    const { t } = useLang();
     const api = useStudentApi();
     const { replaceToken } = useAuth();
     const { data: profile, loading, error, reload } = useStudentProfile();
@@ -78,9 +87,17 @@ function ProfilePage() {
         || parentPhone !== (profile?.parentPhone ?? '')
     );
 
+    // Rỗng = xóa số; có nội dung thì phải đủ 10 số, bắt đầu bằng 0
+    const phoneErr = phone && !PHONE_RE.test(phone) ? t("profile.phoneInvalid") : '';
+    const parentPhoneErr = parentPhone && !PHONE_RE.test(parentPhone) ? t("profile.phoneInvalid") : '';
+
     const saveContact = async (e: FormEvent) => {
         e.preventDefault();
         if (!profile || savingContact || !contactDirty) return;
+        if (phoneErr || parentPhoneErr) {
+            setContactNotice({ tone: 'err', text: t("profile.phoneInvalid") });
+            return;
+        }
         setSavingContact(true);
         setContactNotice(null);
         try {
@@ -225,15 +242,11 @@ function ProfilePage() {
                                 disabled={avatarBusy}
                                 hidden
                             />
-                            <p className="sp-avatar-hint">{t("profile.avatarHint", { max: AVATAR_MAX_MB })}</p>
                         </div>
 
                         <div className="sp-identity-main">
                             <h2>{profile.fullName || '—'}</h2>
                             <div className="sp-chips">
-                                <span className="sp-chip sp-chip-code">
-                                    <i className="fa-solid fa-hashtag"></i> {profile.code}
-                                </span>
                                 <span className="sp-chip sp-chip-role">
                                     <i className="fa-solid fa-user-gear"></i> {roleLabel}
                                 </span>
@@ -250,7 +263,6 @@ function ProfilePage() {
                     <article className="sp-card">
                         <header className="sp-card-head">
                             <h3><i className="fa-regular fa-address-card"></i> {t("profile.editTitle")}</h3>
-                            <p>{t("profile.editDesc")}</p>
                         </header>
 
                         <form className="sp-form" onSubmit={saveContact}>
@@ -278,6 +290,8 @@ function ProfilePage() {
                                     onChange={setPhone}
                                     placeholder={t("profile.phonePlaceholder")}
                                     disabled={savingContact}
+                                    error={phoneErr}
+                                    inputMode="numeric"
                                 />
                                 <Field
                                     label={t("profile.address")}
@@ -295,6 +309,8 @@ function ProfilePage() {
                                     onChange={setParentPhone}
                                     placeholder={t("profile.parentPhonePlaceholder")}
                                     disabled={savingContact}
+                                    error={parentPhoneErr}
+                                    inputMode="numeric"
                                 />
                             </div>
 
@@ -313,7 +329,7 @@ function ProfilePage() {
                                 >
                                     {t("profile.reset")}
                                 </button>
-                                <button type="submit" className="sp-btn primary" disabled={savingContact || !contactDirty}>
+                                <button type="submit" className="sp-btn primary" disabled={savingContact || !contactDirty || Boolean(phoneErr || parentPhoneErr)}>
                                     <i className="fa-solid fa-floppy-disk"></i>
                                     {savingContact ? t('profile.saving') : t('profile.save')}
                                 </button>
@@ -347,12 +363,6 @@ function ProfilePage() {
                                 <dt><i className="fa-solid fa-user-group"></i> {t("profile.parentName")}</dt>
                                 <dd>{profile.parentName || '—'}</dd>
                             </div>
-                            {profile.dateOfBirth && (
-                                <div className="sp-row">
-                                    <dt><i className="fa-regular fa-calendar"></i> {t("profile.dob")}</dt>
-                                    <dd>{date(profile.dateOfBirth)}</dd>
-                                </div>
-                            )}
                         </dl>
                     </article>
 
