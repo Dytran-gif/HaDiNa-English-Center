@@ -26,6 +26,7 @@ import AdminDashboard from "./pages/admin/Dashboard/Dashboard";
 import CoursesManagement from "./pages/admin/Courses/CoursesManagement";
 import BlogManagement from "./pages/admin/Blog/BlogManagement";
 import PaymentsManagement from "./pages/admin/Payments/PaymentsManagement";
+import ReviewsManagement from "./pages/admin/Reviews/ReviewsManagement";
 import Reports from "./pages/admin/Reports/Reports";
 import Consultations from "./pages/admin/Consultations/Consultations";
 import RoomsManagement from "./pages/admin/Rooms/RoomsManagement";
@@ -95,6 +96,7 @@ export default function AppRoutes() {
                 <Route path="users" element={<Navigate to="/admin/students" replace />} />
                 <Route path="blog" element={<BlogManagement />} />
                 <Route path="payments" element={<PaymentsManagement />} />
+                <Route path="reviews" element={<ReviewsManagement />} />
                 <Route path="reports" element={<Reports />} />
                 <Route path="consultations" element={<Consultations />} />
                 <Route path="rooms" element={<RoomsManagement />} />

@@ -21,7 +21,7 @@ import SearchField from "./SearchField";
 import "../../admin-shared.css";
 import "./AdminApi.css";
 
-type Field = { key: string; label: string; type?: string; required?: boolean; min?: number; max?: number; step?: number; options?: string[]; createOnly?: boolean; maxLength?: number };
+type Field = { key: string; label: string; type?: string; required?: boolean; min?: number; max?: number; step?: number; options?: string[]; optionLabels?: Record<string, string>; createOnly?: boolean; maxLength?: number; help?: string };
 export interface ResourceConfig { path: string; title: string; singular: string; paged: boolean; pageSize?: number; search?: boolean; status?: string[]; fields: Field[]; columns: { key: string; label: string; currency?: boolean }[] }
 function errorText(reason: unknown) { return reason instanceof Error ? reason.message : "Không thực hiện được thao tác."; }
 function TeacherSpecialtyFilter({ value, onChange }: { value: string; onChange: (value: string) => void }) {
@@ -39,6 +39,7 @@ export default function ResourcePage({ config }: { config: ResourceConfig }) {
   const rows = Array.isArray(list.data) ? list.data : list.data?.items ?? [];
   const total = Array.isArray(list.data) ? list.data.length : list.data?.totalItems ?? 0;
   const makeForm = (row?: AdminRecord) => Object.fromEntries(config.fields.map(field => [field.key, row ? String(row[field.key] ?? "") : field.options?.[0] ?? (field.key === "discountPercent" ? "0" : "")]));
+  // Giá trị gửi lên: số -> number, "boolean" -> true/false, chuỗi rỗng -> null
   const [form,setForm] = useState<Record<string,string>>(() => makeForm()); const [editing,setEditing] = useState<number|null>(null);
   const [open,setOpen] = useState(params.get("action") === "create");
   const [busy,setBusy] = useState(false); const [editorLoading,setEditorLoading] = useState(false); const [actionError,setActionError] = useState("");
@@ -71,7 +72,7 @@ export default function ResourcePage({ config }: { config: ResourceConfig }) {
   async function save(event:FormEvent) {
     event.preventDefault();if(busy||editorLoading)return;
     if(isCourse){const errors:Record<string,string>={};if(Number(form.bandFrom)>Number(form.bandTo))errors.bandfrom="Band từ phải nhỏ hơn hoặc bằng band đến.";if(Number(form.sessionsPerWeek)>Number(form.totalSessions))errors.sessionsperweek="Số buổi mỗi tuần không được lớn hơn tổng số buổi.";if(Object.keys(errors).length){setFieldErrors(errors);return;}}
-    const body=Object.fromEntries(config.fields.filter(field=>editing===null||!field.createOnly).map(field=>[field.key,field.type==="number"?Number(form[field.key]):form[field.key]||null]));
+    const body=Object.fromEntries(config.fields.filter(field=>editing===null||!field.createOnly).map(field=>[field.key,field.type==="number"?Number(form[field.key]):field.type==="boolean"?form[field.key]==="true":form[field.key]||null]));
     if(await mutate(()=>api.send(editing===null?"POST":"PUT",config.path+(editing===null?"":`/${editing}`),body),"Đã lưu thay đổi.")) {setOpen(false);setParams(previous=>{const next=new URLSearchParams(previous);next.delete("edit");next.delete("action");return next;},{replace:true});}
   }
   const nameOf=(row:AdminRecord)=>String(row.fullName ?? row.name ?? config.singular);
@@ -97,7 +98,7 @@ export default function ResourcePage({ config }: { config: ResourceConfig }) {
     {!list.error&&(isCourse?<div className="admin-course-grid" aria-busy={list.loading}>
       {list.loading?Array.from({length:4},(_,index)=><Card key={index} className="admin-course-card"><span className="admin-skeleton-line"/><span className="admin-skeleton-line"/>{index===0&&<span role="status" className="admin-sr-only">Đang tải khóa học…</span>}</Card>):rows.map(row=><Card className="admin-course-card" key={row.id}>
         <div className="admin-management-toolbar"><Badge tone="info">Band {display(row.bandFrom)} – {display(row.bandTo)}</Badge>{Number(row.discountPercent)>0&&<Badge tone="success">Giảm {row.discountPercent as number}%</Badge>}</div>
-        <h3>{String(row.name)}</h3><p>{display(row.totalSessions)} buổi · {display(row.sessionsPerWeek)} buổi/tuần</p><p>{display(row.activeStudents)} học viên đang học</p>
+        <h3>{row.code ? <span className="admin-code">{String(row.code)}</span> : null} {String(row.name)}</h3>{row.isPublished === false && <Badge tone="neutral">Ẩn khỏi website</Badge>}<p>{display(row.totalSessions)} buổi · {display(row.sessionsPerWeek)} buổi/tuần</p><p>{display(row.activeStudents)} học viên đang học</p>
         <div><strong className="admin-course-price">{money(row.finalPrice)}</strong>{Number(row.discountPercent)>0&&<span className="admin-management-subtitle"><s>{money(row.tuition)}</s></span>}</div>
         <footer>{actions(row)}</footer>
       </Card>)}
@@ -109,7 +110,7 @@ export default function ResourcePage({ config }: { config: ResourceConfig }) {
     <Modal open={open} title={`${editing===null?"Thêm":"Sửa"} ${config.singular}`} busy={busy} onClose={closeEditor}>
       {editorLoading?<p role="status">Đang tải hồ sơ để chỉnh sửa…</p>:<form className="admin-api-stack" onSubmit={save}>
         {actionError&&<Notice tone="error">{actionError}</Notice>}
-        {config.fields.filter(field=>editing===null||!field.createOnly).map(field=>field.options?<SelectField key={field.key} label={field.label} required={field.required} disabled={busy} error={fieldErrors[field.key.toLowerCase()]} value={form[field.key]??""} onChange={event=>updateField(field.key,event.target.value)} options={field.options.map(value=>({value,label:display(value)}))}/>:field.type==="textarea"?<TextareaField key={field.key} label={field.label} disabled={busy} error={fieldErrors[field.key.toLowerCase()]} maxLength={field.maxLength} value={form[field.key]??""} onChange={event=>updateField(field.key,event.target.value)}/>:<InputField key={field.key} label={field.label} placeholder={`Nhập ${field.label.toLowerCase()}`} type={field.type??"text"} required={field.required} disabled={busy} error={fieldErrors[field.key.toLowerCase()]} min={field.min} max={field.max} step={field.step} maxLength={field.maxLength} minLength={field.type==="password"?8:undefined} value={form[field.key]??""} onChange={event=>updateField(field.key,event.target.value)}/>)}
+        {config.fields.filter(field=>editing===null||!field.createOnly).map(field=>field.options?<SelectField key={field.key} label={field.label} required={field.required} disabled={busy} error={fieldErrors[field.key.toLowerCase()]} value={form[field.key]??""} onChange={event=>updateField(field.key,event.target.value)} help={field.help} options={field.options.map(value=>({value,label:field.optionLabels?.[value]??display(value)}))}/>:field.type==="textarea"?<TextareaField key={field.key} label={field.label} disabled={busy} error={fieldErrors[field.key.toLowerCase()]} maxLength={field.maxLength} value={form[field.key]??""} onChange={event=>updateField(field.key,event.target.value)}/>:<InputField key={field.key} label={field.label} help={field.help} placeholder={`Nhập ${field.label.toLowerCase()}`} type={field.type??"text"} required={field.required} disabled={busy} error={fieldErrors[field.key.toLowerCase()]} min={field.min} max={field.max} step={field.step} maxLength={field.maxLength} minLength={field.type==="password"?8:undefined} value={form[field.key]??""} onChange={event=>updateField(field.key,event.target.value)}/>)}
         {isCourse&&<><p>Học phí sau giảm: <strong>{money(Number(form.tuition||0)*(1-Number(form.discountPercent||0)/100))}</strong></p>{editing!==null&&<Notice tone="info">Thay đổi học phí và giảm giá chỉ áp dụng cho học viên ghi danh từ bây giờ.</Notice>}</>}
         {editing!==null&&accounts&&<p className="admin-api-muted">Email đăng nhập được giữ nguyên khi sửa hồ sơ.</p>}
         <div className="admin-row-actions"><Button disabled={busy} onClick={closeEditor}>Hủy</Button><Button type="submit" variant="primary" loading={busy}>Lưu {config.singular}</Button></div>

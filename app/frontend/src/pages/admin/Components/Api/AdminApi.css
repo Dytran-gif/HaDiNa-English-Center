@@ -65,3 +65,19 @@
 .admin-layout .admin-course-card footer { margin-block-start: auto; display: flex; flex-wrap: wrap; gap: var(--admin-space-2); }
 .admin-layout .admin-table td { vertical-align: top; }
 .admin-layout .admin-dialog-body > .admin-api-stack { min-width: 0; }
+
+/* ---------- Học phí: KPI, tab, mã lớp (25/11/2026) ---------- */
+.admin-layout .admin-pay-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: var(--admin-space-3, 12px); }
+.admin-layout .admin-pay-kpis .card { padding: 14px 16px; display: grid; gap: 4px; }
+.admin-layout .admin-pay-kpis span { font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--admin-text-muted, #6b7280); }
+.admin-layout .admin-pay-kpis strong { font-size: 20px; }
+.admin-layout .admin-pay-kpis .is-ok { color: #11733f; }
+.admin-layout .admin-pay-kpis .is-bad { color: #b42318; }
+.admin-layout .admin-pay-kpis .is-warn { color: #a35b00; }
+.admin-layout .admin-pay-tabs { display: inline-flex; gap: 4px; padding: 4px; border: 1px solid var(--admin-border, #e5e7eb); border-radius: 12px; background: var(--admin-surface, #fff); }
+.admin-layout .admin-pay-tabs button { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border: 0; border-radius: 9px; background: transparent; font-weight: 700; cursor: pointer; color: inherit; }
+.admin-layout .admin-pay-tabs button[aria-selected="true"] { background: var(--admin-primary, #1e3a8a); color: #fff; }
+.admin-layout .admin-pay-tabs button span { padding: 0 7px; border-radius: 99px; background: rgba(0,0,0,.08); font-size: 11px; }
+.admin-layout .admin-pay-tabs button[aria-selected="true"] span { background: rgba(255,255,255,.25); }
+.admin-layout .admin-code { display: inline-flex; padding: 2px 8px; border-radius: 99px; background: #eef3ff; color: #1e3a8a; font: 700 12px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: nowrap; }
+.admin-layout .admin-row-actions { display: flex; flex-wrap: wrap; gap: 6px; }

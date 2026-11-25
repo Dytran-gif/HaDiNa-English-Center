@@ -25,7 +25,11 @@ export const adminPageTitles: Record<string, PageTitle> = {
     },
     "/admin/payments": {
         title: "Quản lý học phí",
-        subtitle: "Theo dõi hóa đơn và trạng thái thanh toán của học viên.",
+        subtitle: "Phiếu thu nhiều đợt, đối soát chuyển khoản, công nợ và hoàn tiền.",
+    },
+    "/admin/reviews": {
+        title: "Đánh giá giáo viên",
+        subtitle: "Duyệt đánh giá của học viên trước khi hiển thị trên website.",
     },
     "/admin/reports": {
         title: "Báo cáo & thống kê",

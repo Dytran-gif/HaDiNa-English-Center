@@ -291,7 +291,10 @@ public class ClassesController : ControllerBase
             if (clashes.Count > 0)
                 return Conflict(new
                 {
-                    message = $"Lịch mới trùng lịch học của {clashes.Count} học viên trong lớp. Gửi lại với force = true để vẫn lưu.",
+                    code = "STUDENT_SCHEDULE_CONFLICT",
+                    message = $"Lịch mới trùng lịch học của {clashes.Count} học viên trong lớp: " +
+                              string.Join("; ", clashes.Take(5)) + (clashes.Count > 5 ? $"; và {clashes.Count - 5} học viên khác" : "") +
+                              ". Gửi lại với force = true nếu vẫn muốn lưu.",
                     studentConflicts = clashes
                 });
         }

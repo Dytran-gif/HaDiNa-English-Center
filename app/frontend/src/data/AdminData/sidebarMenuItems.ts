@@ -15,6 +15,7 @@ export const adminSidebarMenuGroups: AdminMenuGroup[] = [
   { label: "Nội dung", items: [
     { label: "Yêu cầu tư vấn", path: "/admin/consultations", icon: "requests" },
     { label: "Tin tức / Blog", path: "/admin/blog", icon: "blog" },
+    { label: "Đánh giá giáo viên", path: "/admin/reviews", icon: "teachers" },
   ] },
   { label: "Tài chính", items: [
     { label: "Học phí", path: "/admin/payments", icon: "payments" },

@@ -12,7 +12,7 @@ export default function StatsOverview() {
     { label: "Học viên đang học", value: data?.activeStudents, to: "/admin/students?status=Studying", icon: "students" },
     { label: "Lớp đang mở", value: data?.openClasses, to: "/admin/classes", icon: "classes" },
     { label: "Giáo viên", value: data?.teachers, to: "/admin/teachers", icon: "teachers" },
-    { label: "Doanh thu tháng này", value: data?.monthlyRevenue, to: "/admin/reports", icon: "payments", currency: true },
+    { label: "Doanh thu tháng này (đã xác nhận)", value: data?.monthlyRevenue, to: "/admin/payments?tab=receipts", icon: "payments", currency: true },
   ];
   return <>
     {error && <Notice tone="error" title="Không tải được số liệu" action={<Button onClick={reload}>Thử lại</Button>}>{error}</Notice>}
