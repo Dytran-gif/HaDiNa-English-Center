@@ -1,152 +1,44 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import "../General.css";
 import "./Dashboard.css";
 import { useStudentDashboard, useStudentTuition } from "../../../services/student/useStudentApi";
 import PresentLessonFE from "./Components/PresentLesson";
-import CourseDetailModal from "./Components/CourseDetailModal";
 import CourseFE from "./Components/Course";
 import QuickActionFE from "./Components/QuickAction";
+import SessionDetail from "../Components/Session/SessionDetail";
 import { useLang } from "../../../i18n/LanguageContext";
-import type { Course } from "../../../types/StudentTypes/MainTypes";
-
-interface LessonSlotView {
-    courseId: number;
-    courseName: string;
-    bandFrom: string;
-    bandTo: string;
-    description?: string;
-    totalSessions?: number;
-    imageUrl?: string;
-    nextDate: string;
-    startTime: string;
-    endTime: string;
-}
-
-interface RawLessonSlot {
-    courseId: number;
-    dayOfWeek: number;
-    startTime: string;
-    endTime: string;
-}
-
-// Buổi kế tiếp tính theo đồng hồ máy học viên (đúng cả khi trang mở qua giờ học)
-function computeNearestLesson(slots: RawLessonSlot[]) {
-    const now = new Date();
-    const todayNo = now.getDay() === 0 ? 7 : now.getDay();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const nowMinutes = now.getHours() * 60 + now.getMinutes();
-
-    let best: { slot: RawLessonSlot; date: Date } | null = null;
-    for (const slot of slots) {
-        let diff = slot.dayOfWeek - todayNo;
-        const startMinutes = Number(slot.startTime.slice(0, 2)) * 60 + Number(slot.startTime.slice(3, 5));
-        if (diff < 0 || (diff === 0 && startMinutes <= nowMinutes)) diff += 7;
-        const at = new Date(todayStart.getTime() + diff * 86400000);
-        if (!best || at < best.date || (at.getTime() === best.date.getTime() && slot.startTime < best.slot.startTime)) {
-            best = { slot, date: at };
-        }
-    }
-    return best;
-}
 
 export default function StudentDashboard() {
-    const { data } = useStudentDashboard();
+    const { data, reload } = useStudentDashboard();
     const { data: tuition } = useStudentTuition();
     const { t, money, date } = useLang();
-    const [openCourse, setOpenCourse] = useState<Course | null>(null);
+    const [openLesson, setOpenLesson] = useState(false);
 
-    // Tự cập nhật "buổi kế tiếp" mỗi 20 giây, không cần tải lại trang
-    const [lessonTick, setLessonTick] = useState(() => Date.now());
+    // "Buổi học tiếp theo" do BE tính theo đúng khoảng ngày của lớp (không còn tự tính ở FE nên không hiện buổi của lớp đã xong).
+    // Khi buổi đó kết thúc thì tải lại để lấy buổi kế tiếp.
+    const nextLesson = data?.nextLesson;
     useEffect(() => {
-        const timer = window.setInterval(() => setLessonTick(Date.now()), 20000);
-        return () => window.clearInterval(timer);
-    }, []);
-
-    const courseById = useMemo(() => {
-        const map = new Map<number, Course>();
-        (data?.courses ?? []).forEach((c) => {
-            const id = Number(c.id);
-            if (!Number.isNaN(id)) map.set(id, c);
-        });
-        return map;
-    }, [data]);
-
-    const liveLesson = useMemo(() => {
-        const slots = data?.lessonSlots ?? [];
-        if (slots.length === 0) return null;
-        const nearest = computeNearestLesson(slots);
-        if (!nearest) return null;
-        const course = courseById.get(nearest.slot.courseId);
-        const y = nearest.date.getFullYear();
-        const m = String(nearest.date.getMonth() + 1).padStart(2, "0");
-        const d = String(nearest.date.getDate()).padStart(2, "0");
-        return {
-            courseId: nearest.slot.courseId,
-            courseName: course?.name ?? "",
-            bandFrom: course?.bandFrom ?? "",
-            bandTo: course?.bandTo ?? "",
-            description: course?.description,
-            totalSessions: course?.totalSessions,
-            imageUrl: course?.imageUrl,
-            nextDate: `${y}-${m}-${d}`,
-            startTime: nearest.slot.startTime,
-            endTime: nearest.slot.endTime,
-        } satisfies LessonSlotView;
+        if (!nextLesson?.nextDate || !nextLesson.endTime) return;
+        const end = new Date(`${nextLesson.nextDate}T${nextLesson.endTime}`).getTime();
+        const wait = end - Date.now();
+        if (wait <= 0) return;
+        const timer = window.setTimeout(reload, Math.min(wait + 1000, 2147483647));
+        return () => window.clearTimeout(timer);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [data, courseById, lessonTick]);
+    }, [nextLesson?.nextDate, nextLesson?.endTime]);
 
-    const beLesson = data?.nextLesson;
-    const beIsFresh = Boolean(
-        beLesson?.nextDate &&
-        new Date(`${beLesson.nextDate}T${beLesson.startTime ?? "23:59:59"}`).getTime() > lessonTick,
-    );
-    const nextLesson = liveLesson ?? (beIsFresh ? beLesson : undefined);
-
-    // Popup chi tiết khóa cần Course (có id); ưu tiên lấy từ danh sách khóa đang học, không có thì dựng tối thiểu
-    const nextCourse: Course | undefined = nextLesson?.courseId != null
-        ? data?.courses.find(c => c.id === String(nextLesson.courseId)) ?? {
-            id: String(nextLesson.courseId),
-            name: nextLesson.courseName,
-            description: nextLesson.description ?? "",
-            bandFrom: nextLesson.bandFrom,
-            bandTo: nextLesson.bandTo,
-            totalSessions: nextLesson.totalSessions ?? 0,
-            sessionsPerWeek: 0,
-            tuition: 0,
-            discountPercent: 0,
-            imageUrl: nextLesson.imageUrl
-        }
-        : undefined;
-
-    const totalSessions = (data?.courses ?? []).reduce((sum, c) => sum + c.totalSessions, 0);
-    const unpaidTotal = (tuition ?? []).filter(i => !i.isPaid).reduce((sum, i) => sum + i.finalTuitionFee, 0);
+    const totalSessions = (data?.courses ?? []).reduce((sum, c) => sum + (c.classTotalSessions ?? c.totalSessions), 0);
+    const unpaidTotal = (tuition ?? []).filter(i => i.enrollmentStatus !== "Dropped").reduce((sum, i) => sum + (i.remainingAmount ?? 0), 0);
 
     const kpis = [
+        { icon: "fa-solid fa-book-open", tone: "blue", label: t("dash.kpiCourses"), value: String(data?.courses.length ?? 0) },
+        { icon: "fa-solid fa-layer-group", tone: "violet", label: t("dash.kpiSessions"), value: String(totalSessions) },
         {
-            icon: "fa-solid fa-book-open",
-            tone: "blue",
-            label: t("dash.kpiCourses"),
-            value: String(data?.courses.length ?? 0)
-        },
-        {
-            icon: "fa-solid fa-layer-group",
-            tone: "violet",
-            label: t("dash.kpiSessions"),
-            value: String(totalSessions)
-        },
-        {
-            icon: "fa-solid fa-calendar-day",
-            tone: "green",
-            label: t("dash.kpiNext"),
+            icon: "fa-solid fa-calendar-day", tone: "green", label: t("dash.kpiNext"),
             value: nextLesson?.nextDate ? date(nextLesson.nextDate) : t("dash.noUpcoming"),
             hint: nextLesson?.startTime ? `${nextLesson.startTime.slice(0, 5)} - ${nextLesson.endTime?.slice(0, 5) ?? ""}` : undefined
         },
-        {
-            icon: "fa-solid fa-wallet",
-            tone: "amber",
-            label: t("dash.kpiUnpaid"),
-            value: money(unpaidTotal)
-        }
+        { icon: "fa-solid fa-wallet", tone: "amber", label: t("dash.kpiUnpaid"), value: money(unpaidTotal) }
     ];
 
     return (
@@ -155,6 +47,7 @@ export default function StudentDashboard() {
                 <PresentLessonFE
                     lesson={nextLesson ? {
                         courseName: nextLesson.courseName,
+                        classCode: nextLesson.classCode,
                         bandFrom: nextLesson.bandFrom,
                         bandTo: nextLesson.bandTo,
                         description: nextLesson.description,
@@ -164,7 +57,7 @@ export default function StudentDashboard() {
                         startTime: nextLesson.startTime,
                         endTime: nextLesson.endTime
                     } : undefined}
-                    onOpen={nextCourse ? () => setOpenCourse(nextCourse) : undefined}
+                    onOpen={nextLesson ? () => setOpenLesson(true) : undefined}
                 />
 
                 <QuickActionFE />
@@ -189,8 +82,23 @@ export default function StudentDashboard() {
                 <CourseFE courses={data?.courses} />
             </section>
 
-            {openCourse && (
-                <CourseDetailModal course={openCourse} onClose={() => setOpenCourse(null)} />
+            {openLesson && nextLesson && (
+                <SessionDetail
+                    session={{
+                        courseName: nextLesson.courseName,
+                        classCode: nextLesson.classCode,
+                        className: nextLesson.className,
+                        dateStr: nextLesson.nextDate,
+                        startTime: nextLesson.startTime,
+                        endTime: nextLesson.endTime,
+                        sessionNo: nextLesson.sessionNo,
+                        totalSessions: nextLesson.classTotalSessions,
+                        teacherName: nextLesson.teacherName,
+                        roomName: nextLesson.roomName,
+                        meetingUrl: nextLesson.meetingUrl,
+                    }}
+                    onClose={() => setOpenLesson(false)}
+                />
             )}
         </div>
     );

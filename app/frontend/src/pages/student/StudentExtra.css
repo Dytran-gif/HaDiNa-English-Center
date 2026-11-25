@@ -1,0 +1,246 @@
+/* Thành phần dùng chung cho các phần mới của cổng Học viên (25/11/2026):
+   mã lớp, chip trạng thái, bộ lọc Đang/Sắp/Đã học, popup chi tiết buổi, chọn lớp, lịch sử dạng thư mục, học phí.
+   Tiền tố sx- để không đụng CSS cũ của Student. */
+
+.sx-code {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: #eef3ff;
+    color: #1e3a8a;
+    font: 700 12px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+.sx-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.sx-chip.is-ongoing, .sx-chip.is-paid, .sx-chip.is-present, .sx-chip.is-confirmed { background: #e7f7ee; color: #11733f; }
+.sx-chip.is-upcoming, .sx-chip.is-partial, .sx-chip.is-pending, .sx-chip.is-late { background: #fff3e0; color: #a35b00; }
+.sx-chip.is-finished, .sx-chip.is-neutral, .sx-chip.is-excused { background: #eef0f4; color: #4b5563; }
+.sx-chip.is-unpaid, .sx-chip.is-absent, .sx-chip.is-rejected, .sx-chip.is-cancelled, .sx-chip.is-danger { background: #fdecec; color: #b42318; }
+.sx-chip.is-refunded { background: #ede9fe; color: #5b21b6; }
+
+.sx-muted { color: #6b7280; font-size: 13px; }
+
+.sx-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 14px;
+    border-radius: 12px;
+    border: 1.5px solid #dbe3f1;
+    background: #ffffff;
+    color: #1e3a8a;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.sx-btn:hover:not(:disabled) { background: #f3f6fd; border-color: #c7d3ec; }
+.sx-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.sx-btn.is-primary { background: #2563eb; border-color: #2563eb; color: #ffffff; }
+.sx-btn.is-primary:hover:not(:disabled) { background: #1d4ed8; }
+.sx-btn.is-danger { color: #b42318; border-color: #f5c2c0; }
+.sx-btn.is-block { width: 100%; }
+
+/* ---------- Bộ lọc trạng thái dạng phân đoạn ---------- */
+.sx-seg {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 4px;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    background: #ffffff;
+}
+
+.sx-seg button {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 14px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: #4b5563;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.sx-seg button .sx-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; opacity: 0.8; }
+.sx-seg button .sx-count { padding: 0 7px; border-radius: 999px; background: rgba(15, 23, 42, 0.07); font-size: 11px; }
+.sx-seg button[aria-pressed="true"] { background: #1e3a8a; color: #ffffff; }
+.sx-seg button[aria-pressed="true"] .sx-count { background: rgba(255, 255, 255, 0.22); }
+.sx-seg button.is-ongoing { color: #11733f; }
+.sx-seg button.is-upcoming { color: #a35b00; }
+.sx-seg button.is-finished { color: #4b5563; }
+.sx-seg button[aria-pressed="true"].is-ongoing { background: #11733f; color: #fff; }
+.sx-seg button[aria-pressed="true"].is-upcoming { background: #b45309; color: #fff; }
+.sx-seg button[aria-pressed="true"].is-finished { background: #4b5563; color: #fff; }
+
+/* ---------- Thẻ lớp của tôi ---------- */
+.sx-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
+}
+
+.sx-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+    border: 1px solid #e5e7eb;
+    border-top: 4px solid #2563eb;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.sx-card.is-upcoming { border-top-color: #f0a020; }
+.sx-card.is-finished { border-top-color: #9ca3af; }
+.sx-card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.sx-card h4 { margin: 0; font-size: 16px; font-weight: 800; color: #0f172a; }
+.sx-card-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; }
+
+.sx-progress { height: 6px; border-radius: 99px; background: #eef0f4; overflow: hidden; }
+.sx-progress > i { display: block; height: 100%; background: #2563eb; border-radius: 99px; }
+
+.sx-empty {
+    padding: 28px 16px;
+    border: 1px dashed #d1d5db;
+    border-radius: 16px;
+    text-align: center;
+    color: #6b7280;
+}
+
+/* ---------- Popup (chi tiết buổi, chọn lớp) ---------- */
+.sx-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(15, 23, 42, 0.45);
+}
+
+.sx-modal {
+    width: min(560px, 100%);
+    max-height: calc(100dvh - 32px);
+    overflow-y: auto;
+    padding: 20px;
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25);
+}
+
+.sx-modal.is-wide { width: min(860px, 100%); }
+.sx-modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.sx-modal-head h3 { margin: 6px 0 0; font-size: 18px; font-weight: 800; color: #0f172a; }
+.sx-close { border: 0; background: #f3f4f6; width: 34px; height: 34px; border-radius: 10px; cursor: pointer; font-size: 18px; color: #374151; }
+
+.sx-dl { display: grid; grid-template-columns: 110px 1fr; gap: 8px 12px; margin: 0 0 16px; font-size: 14px; }
+.sx-dl dt { color: #6b7280; }
+.sx-dl dd { margin: 0; font-weight: 600; color: #111827; word-break: break-word; }
+
+.sx-steps { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.sx-step { flex: 1 1 140px; display: flex; align-items: center; gap: 8px; padding: 9px 12px; border: 1px solid #e5e7eb; border-radius: 12px; font-weight: 700; font-size: 13px; color: #9ca3af; }
+.sx-step b { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #f3f4f6; font-size: 12px; }
+.sx-step.is-active { border-color: #2563eb; color: #1e3a8a; }
+.sx-step.is-active b { background: #2563eb; color: #fff; }
+.sx-step.is-done b { background: #11733f; color: #fff; }
+
+.sx-class {
+    display: grid;
+    grid-template-columns: 1.2fr 1.6fr 0.9fr;
+    gap: 10px 14px;
+    align-items: center;
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 10px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 14px;
+    background: #ffffff;
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+}
+
+.sx-class:hover:not(:disabled) { border-color: #93c5fd; }
+.sx-class[aria-pressed="true"] { border-color: #2563eb; box-shadow: 0 0 0 3px #dbeafe; }
+.sx-class:disabled { cursor: not-allowed; opacity: 0.65; }
+.sx-class-reason { grid-column: 1 / -1; }
+.sx-class strong { display: block; margin-top: 4px; color: #0f172a; }
+
+@media (max-width: 640px) {
+    .sx-class { grid-template-columns: 1fr; }
+    .sx-dl { grid-template-columns: 96px 1fr; }
+}
+
+.sx-summary { display: grid; gap: 6px; padding: 14px; border-radius: 14px; background: #f8fafc; font-size: 14px; }
+.sx-summary div { display: flex; justify-content: space-between; gap: 12px; }
+.sx-summary .is-total { padding-top: 8px; border-top: 1px solid #e5e7eb; font-weight: 800; font-size: 16px; }
+.sx-modal-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+.sx-error { margin: 10px 0 0; color: #b42318; font-size: 13px; font-weight: 600; }
+.sx-ok { margin: 10px 0 0; color: #11733f; font-size: 14px; font-weight: 700; }
+
+/* ---------- Lịch sử dạng thư mục ---------- */
+.sx-folder { display: grid; grid-template-columns: 260px 1fr; gap: 16px; align-items: start; }
+.sx-tree { padding: 8px; border: 1px solid #e5e7eb; border-radius: 16px; background: #ffffff; }
+.sx-tree-year { width: 100%; display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 0; background: none; font-weight: 800; color: #0f172a; cursor: pointer; text-align: left; font: inherit; font-weight: 800; }
+.sx-tree-item { width: 100%; display: flex; flex-direction: column; gap: 2px; padding: 8px 10px 8px 30px; border: 0; border-radius: 10px; background: none; cursor: pointer; text-align: left; font: inherit; font-size: 13px; color: #374151; }
+.sx-tree-item[aria-current="true"] { background: #eef3ff; color: #1e3a8a; font-weight: 700; }
+.sx-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+.sx-stat { padding: 12px; border: 1px solid #e5e7eb; border-radius: 14px; }
+.sx-stat span { display: block; font-size: 11px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: #9ca3af; }
+.sx-stat b { display: block; margin-top: 4px; font-size: 20px; color: #0f172a; }
+
+@media (max-width: 760px) {
+    .sx-folder { grid-template-columns: 1fr; }
+    .sx-stats { grid-template-columns: 1fr 1fr; }
+}
+
+/* ---------- Thẻ lịch / nhắc lịch bấm được ---------- */
+.sx-clickable { cursor: pointer; }
+.sx-clickable:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
+
+/* ---------- Học phí ---------- */
+.sx-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.sx-table th, .sx-table td { padding: 10px; border-bottom: 1px solid #f1f5f9; text-align: left; vertical-align: top; }
+.sx-table th { font-size: 12px; color: #6b7280; font-weight: 700; }
+.sx-table td.is-money { text-align: right; white-space: nowrap; }
+.sx-bank { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: center; }
+.sx-qr { width: 96px; height: 96px; border-radius: 12px; background: repeating-linear-gradient(45deg, #1e3a8a 0 6px, #ffffff 6px 12px); opacity: 0.85; }
+.sx-field { display: grid; gap: 6px; margin-bottom: 12px; font-size: 13px; font-weight: 700; color: #374151; }
+.sx-field input, .sx-field select, .sx-field textarea { padding: 10px 12px; border: 1.5px solid #e5e7eb; border-radius: 12px; font: inherit; font-weight: 500; font-size: 15px; }
+.sx-field input:focus, .sx-field select:focus, .sx-field textarea:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px #dbeafe; }
+
+/* ---------- Đánh giá giáo viên ---------- */
+.sx-stars { display: inline-flex; gap: 2px; }
+.sx-stars button { border: 0; background: none; padding: 2px; font-size: 22px; line-height: 1; color: #d1d5db; cursor: pointer; }
+.sx-stars button.is-on { color: #f59e0b; }
+
+.sx-panel {
+    padding: 18px;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}

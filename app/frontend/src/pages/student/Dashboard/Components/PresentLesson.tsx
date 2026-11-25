@@ -1,10 +1,12 @@
 import defaultCourseImage from "../../../../assets/images/next-lesson-mock.jpg";
 import { useLang } from "../../../../i18n/LanguageContext";
 import "./PresentLesson.css";
+import "../../StudentExtra.css";
 
 interface PresentLessonProps {
     lesson?: {
         courseName: string;
+        classCode?: string;
         bandFrom: number | string;
         bandTo: number | string;
         description?: string;
@@ -32,7 +34,17 @@ export default function PresentLessonFE({ lesson, onOpen }: PresentLessonProps) 
         : null;
 
     return (
-        <section className="next-lesson-section">
+        <section
+            className={`next-lesson-section ${onOpen ? 'sx-clickable' : ''}`}
+            onClick={onOpen}
+            onKeyDown={(e) => {
+                if (!onOpen || e.target !== e.currentTarget) return;
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(); }
+            }}
+            role={onOpen ? 'button' : undefined}
+            tabIndex={onOpen ? 0 : undefined}
+            aria-label={onOpen ? `${t("present.title")}: ${lesson.courseName}` : undefined}
+        >
             <span className="nl-orb nl-orb-1" aria-hidden="true"></span>
             <span className="nl-orb nl-orb-2" aria-hidden="true"></span>
 
@@ -63,34 +75,21 @@ export default function PresentLessonFE({ lesson, onOpen }: PresentLessonProps) 
 
             </div>
 
-            <div
-                className={`nl-course ${onOpen ? 'clickable' : ''}`}
-                onClick={onOpen}
-                onKeyDown={(e) => {
-                    if (!onOpen) return;
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        onOpen();
-                    }
-                }}
-                role={onOpen ? 'button' : undefined}
-                tabIndex={onOpen ? 0 : undefined}
-                aria-label={onOpen ? `${t("present.cta")}: ${lesson.courseName}` : undefined}
-            >
+            <div className={`nl-course ${onOpen ? 'clickable' : ''}`}>
                 <img
                     src={lesson.imageUrl || defaultCourseImage}
                     alt={lesson.courseName}
                     className="nl-course-img"
                 />
                 <div className="nl-course-body">
-                    <span className="nl-course-band">Band {lesson.bandFrom} - {lesson.bandTo}</span>
+                    <span className="nl-course-band">{lesson.classCode ?? `Band ${lesson.bandFrom} - ${lesson.bandTo}`}</span>
                     <h3 className="nl-course-name">{lesson.courseName}</h3>
                     <p className="nl-course-sub">
                         {lesson.description || t("common.sessions", { n: lesson.totalSessions ?? 0 })}
                     </p>
                     {onOpen && (
                         <span className="nl-course-link">
-                            {t("present.cta")} <i className="fa-solid fa-arrow-right"></i>
+                            {t("sx.viewSession")} <i className="fa-solid fa-arrow-right"></i>
                         </span>
                     )}
                 </div>

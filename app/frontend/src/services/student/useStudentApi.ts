@@ -22,10 +22,22 @@ export interface StudentDashboardResponse {
     nextDate?: string;
     startTime?: string;
     endTime?: string;
+    // chi tiết buổi để mở popup buổi học
+    classId?: number;
+    classCode?: string;
+    className?: string;
+    teacherName?: string;
+    roomName?: string;
+    meetingUrl?: string;
+    sessionNo?: number;
+    classTotalSessions?: number;
   };
   // Lịch tuần từng khóa (1=Thứ 2 .. 7=Chủ nhật) — FE tính buổi kế theo đồng hồ máy
   lessonSlots?: Array<{
     courseId: number;
+    classId?: number;
+    startDate?: string;
+    endDate?: string;
     dayOfWeek: number;
     startTime: string;
     endTime: string;
@@ -42,6 +54,15 @@ export interface StudentDashboardResponse {
     discountPercent: number;
     imageUrl?: string;
     teacherName?: string;
+    classId?: number;
+    classCode?: string;
+    className?: string;
+    classStatus?: ClassStatus;
+    startDate?: string;
+    endDate?: string;
+    meetingUrl?: string;
+    sessionsDone?: number;
+    classTotalSessions?: number;
   }>;
   notifications: Array<{
     id: string;
@@ -99,38 +120,8 @@ export function useStudentApi() {
 }
 
 export function useStudentDashboard() {
-  const api = useStudentApi();
-  const { token } = useAuth();
-  const [data, setData] = useState<StudentDashboardResponse>();
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-    const controller = new AbortController();
-    setLoading(true);
-    setError("");
-
-    api.get<StudentDashboardResponse>("dashboard", controller.signal)
-      .then((res) => {
-        if (!controller.signal.aborted) setData(res);
-      })
-      .catch((err) => {
-        if (!controller.signal.aborted) {
-          setError(err instanceof Error ? err.message : "Không tải được dữ liệu dashboard.");
-        }
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
-
-    return () => controller.abort();
-  }, [api, token]);
-
-  return { data, error, loading };
+  // Dùng hook chung: có reload để làm mới "buổi học tiếp theo" khi buổi hiện tại đã qua
+  return useStudentQuery<StudentDashboardResponse>("dashboard");
 }
 
 
@@ -170,6 +161,9 @@ export function useStudentCourses() {
   return { data, error, loading };
 }
 
+export type ClassStatus = "Upcoming" | "Ongoing" | "Finished";
+export type PaymentStatus = "Unpaid" | "Partial" | "Paid" | "Refunded";
+
 export interface StudentEnrollmentItem {
   enrollmentId: number;
   status: string;
@@ -177,9 +171,27 @@ export interface StudentEnrollmentItem {
   tuitionFee: number;       // học phí gốc chốt lúc ghi danh
   discountPercent: number;
   discountAmount: number;
+  extraDiscountAmount?: number;
+  discountNote?: string;
   finalTuitionFee: number;  // số tiền thực phải thanh toán
-  isPaid: boolean;
+  // Lớp + trạng thái theo ngày của lớp
+  classId: number;
+  classCode: string;
+  className: string;
+  classStatus: ClassStatus;
+  startDate: string;
+  endDate: string;
+  teacherName: string;
+  scheduleText: string;
+  sessionsDone: number;
+  classTotalSessions: number;
+  canCancel: boolean;
+  // Tiền
+  isPaid: boolean;          // đã đóng đủ
   paidAmount?: number;
+  pendingAmount: number;
+  remainingAmount: number;
+  paymentStatus: PaymentStatus;
   paidDate?: string;
   method?: string;
 }
@@ -221,8 +233,30 @@ export function useStudentEnrollments() {
   return { data, error, loading, reload: () => setReloadKey(k => k + 1) };
 }
 
+export interface StudentPayment {
+  id: number;
+  receiptNo?: string;
+  kind: "Payment" | "Refund";
+  status: "Pending" | "Confirmed" | "Rejected" | "Cancelled";
+  amount: number;
+  method: string;
+  paidDate: string;
+  transferRef?: string;
+  cancelReason?: string;
+  createdAt: string;
+}
+
 export interface StudentTuitionItem {
   enrollmentId: number;
+  classId: number;
+  classCode: string;
+  enrollmentStatus: string;
+  extraDiscountAmount: number;
+  discountNote?: string;
+  pendingAmount: number;
+  remainingAmount: number;
+  paymentStatus: PaymentStatus;
+  payments: StudentPayment[];
   className: string;
   courseName: string;
   bandFrom: string;
@@ -285,6 +319,11 @@ export interface StudentScheduleDay {
 
 export interface StudentScheduleSession {
   classId: string;
+  classCode?: string;
+  meetingUrl?: string;
+  attendanceStatus?: "Present" | "Late" | "Absent" | "Excused" | null;
+  attendanceNote?: string;
+  newAssignments?: number;
   className: string;
   courseName: string;
   bandFrom: string;
@@ -355,6 +394,15 @@ export function useStudentSchedule(dateStr: string) {
 export interface StudentScheduleHistoryItem {
   enrollmentId: number;
   status: string;
+  classStatus: ClassStatus;
+  classCode: string;
+  year: number;
+  attendedSessions: number;
+  markedSessions: number;
+  assignmentCount: number;
+  submittedCount: number;
+  feedbackCount: number;
+  lastFeedbackAt?: string;
   registeredAt: string;
   classId: string;
   className: string;
@@ -509,7 +557,7 @@ export interface StudentAssignmentItem {
 }
 
 // GET api/student/assignments?courseId= - bài tập GV giao cho khóa + bài nộp của mình
-export function useStudentAssignments(courseId: string | undefined) {
+export function useStudentAssignments(courseId: string | undefined, classId?: number) {
   const api = useStudentApi();
   const { token } = useAuth();
   const [data, setData] = useState<StudentAssignmentItem[]>([]);
@@ -518,7 +566,7 @@ export function useStudentAssignments(courseId: string | undefined) {
   const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
-    if (!token || !courseId) {
+    if (!token || (!courseId && !classId)) {
       setData([]);
       setLoading(false);
       return;
@@ -527,7 +575,8 @@ export function useStudentAssignments(courseId: string | undefined) {
     setLoading(true);
     setError("");
 
-    api.get<StudentAssignmentItem[]>(`assignments?courseId=${courseId}`, controller.signal)
+    // Bài tập theo LỚP; dữ liệu chưa có classId thì BE tự lấy lớp của mình trong khóa
+    api.get<StudentAssignmentItem[]>(classId ? `assignments?classId=${classId}` : `assignments?courseId=${courseId}`, controller.signal)
       .then((res) => {
         if (!controller.signal.aborted) setData(res);
       })
@@ -541,7 +590,7 @@ export function useStudentAssignments(courseId: string | undefined) {
       });
 
     return () => controller.abort();
-  }, [api, token, courseId, reloadKey]);
+  }, [api, token, courseId, classId, reloadKey]);
 
   return { data, error, loading, reload: () => setReloadKey(k => k + 1) };
 }
@@ -605,7 +654,7 @@ export function useStudentCourseDetail(courseId: string | undefined) {
 }
 
 // GET api/student/attendance?courseId=&page= - điểm danh của mình trong khóa, 10 buổi/trang
-export function useStudentAttendance(courseId: string | undefined, page: number) {
+export function useStudentAttendance(courseId: string | undefined, page: number, classId?: number) {
   const api = useStudentApi();
   const { token } = useAuth();
   const [data, setData] = useState<AttendancePage>();
@@ -613,7 +662,7 @@ export function useStudentAttendance(courseId: string | undefined, page: number)
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!token || !courseId) {
+    if (!token || (!courseId && !classId)) {
       setLoading(false);
       return;
     }
@@ -621,7 +670,7 @@ export function useStudentAttendance(courseId: string | undefined, page: number)
     setLoading(true);
     setError("");
 
-    api.get<AttendancePage>(`attendance?courseId=${courseId}&page=${page}`, controller.signal)
+    api.get<AttendancePage>(classId ? `attendance?classId=${classId}&page=${page}` : `attendance?courseId=${courseId}&page=${page}`, controller.signal)
       .then((res) => {
         if (!controller.signal.aborted) setData(res);
       })
@@ -635,7 +684,7 @@ export function useStudentAttendance(courseId: string | undefined, page: number)
       });
 
     return () => controller.abort();
-  }, [api, token, courseId, page]);
+  }, [api, token, courseId, classId, page]);
 
   return { data, error, loading };
 }
@@ -691,3 +740,66 @@ export function useStudentProfile() {
 
   return { data, error, loading, reload: () => setReloadKey(k => k + 1) };
 }
+
+// ---------- Hook chung + API mới (đăng ký theo lớp, học phí chuyển khoản, đánh giá GV) ----------
+
+// Tải dữ liệu học viên: data / loading / error / reload. path = null thì không tải.
+export function useStudentQuery<T>(path: string | null) {
+  const api = useStudentApi();
+  const { token } = useAuth();
+  const [data, setData] = useState<T>();
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(path !== null);
+  const [reloadKey, setReloadKey] = useState(0);
+  useEffect(() => {
+    if (!token || path === null) { setData(undefined); setLoading(false); return; }
+    const controller = new AbortController();
+    setLoading(true); setError("");
+    api.get<T>(path, controller.signal)
+      .then(res => { if (!controller.signal.aborted) setData(res); })
+      .catch(err => { if (!controller.signal.aborted) { setData(undefined); setError(err instanceof Error ? err.message : "Không tải được dữ liệu."); } })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, [api, token, path, reloadKey]);
+  return { data, error, loading, reload: () => setReloadKey(k => k + 1) };
+}
+
+export interface StudentClassOption {
+  id: number;
+  code: string;
+  name: string;
+  teacherName: string;
+  startDate: string;
+  endDate: string;
+  status: ClassStatus;
+  schedules: { dayOfWeek: number; startTime: string; endTime: string; roomName?: string }[];
+  enrolled: number;
+  maxStudents: number;
+  totalSessions: number;
+  remainingSessions: number;
+  finalTuition: number;
+  isFull: boolean;
+  conflict?: string | null;
+  alreadyInCourse?: string | null;
+  canEnroll: boolean;
+  reason?: string | null;
+}
+
+// GET api/student/courses/{courseId}/classes - lớp còn mở của khóa (để chọn lớp khi đăng ký)
+export const useStudentCourseClasses = (courseId: string | null) =>
+  useStudentQuery<StudentClassOption[]>(courseId ? `courses/${courseId}/classes` : null);
+
+export interface StudentBankInfo { bankName: string; accountNumber: string; accountName: string; branch?: string }
+export const useStudentBankInfo = () => useStudentQuery<StudentBankInfo>("tuition/bank-info");
+
+export interface StudentReviewClass {
+  classId: number;
+  classCode: string;
+  courseName: string;
+  teacherId: number;
+  teacherName: string;
+  startDate: string;
+  endDate: string;
+  review?: { id: number; rating: number; comment: string; isPublished: boolean; createdAt: string } | null;
+}
+export const useStudentReviews = () => useStudentQuery<StudentReviewClass[]>("reviews");

@@ -13,6 +13,16 @@ export interface Course {
     createdAt?: string;
     availableClasses?: ClassItem[];
     teacherName?: string; // tên giáo viên của khóa (lấy từ các lớp của khóa)
+    // Lớp của học viên trong khóa (dashboard / khóa đã đăng ký); trang danh sách khóa thì không có
+    classId?: number;
+    classCode?: string;
+    className?: string;
+    classStatus?: "Upcoming" | "Ongoing" | "Finished";
+    startDate?: string;
+    endDate?: string;
+    meetingUrl?: string;
+    sessionsDone?: number;
+    classTotalSessions?: number;
 }
 
 // 2. Bảng Classes

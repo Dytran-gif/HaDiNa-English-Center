@@ -1,35 +1,20 @@
-import { useState, useMemo } from 'react';
-import { mockCourses, mockEnrollments, mockClasses } from "../../../../data/StudentData/MainData";
-import type { Course, ClassItem, Enrollment } from "../../../../types/StudentTypes/MainTypes";
+import { useState } from 'react';
+import type { Course } from "../../../../types/StudentTypes/MainTypes";
 import defaultCourseImage from "../../../../assets/images/next-lesson-mock.jpg";
 import { useLang } from "../../../../i18n/LanguageContext";
 import CourseDetailModal from "./CourseDetailModal";
 import "./Course.css";
+import "../../StudentExtra.css";
 
 interface CourseProps {
     courses?: Course[];
 }
 
+// Lớp đang học / sắp học (mỗi lớp một thẻ: một khóa có thể có nhiều lớp). Không còn hiện dữ liệu mẫu khi đang tải.
 export default function CourseFE({ courses }: CourseProps) {
     const { t, money } = useLang();
     const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
-
-    // ID học viên đang đăng nhập (khớp với dữ liệu mẫu hệ thống)
-    const currentStudentId = "std-01";
-
-    // Có dữ liệu từ API thì dùng dữ liệu API (kể cả rỗng); chưa tải được thì dùng dữ liệu mẫu
-    const list = useMemo(() => {
-        const source = courses ?? mockEnrollments
-            .filter((enr: Enrollment) => enr.studentId === currentStudentId)
-            .map((enr: Enrollment) => {
-                const classItem = mockClasses.find((c: ClassItem) => c.id === enr.classId);
-                return classItem ? mockCourses.find((co: Course) => co.id === classItem.courseId) : null;
-            })
-            .filter((course): course is Course => course !== null);
-
-        // Một khóa có thể lặp lại khi học viên học nhiều lớp cùng khóa -> bỏ trùng để key React là duy nhất
-        return source.filter((course, i) => source.findIndex(c => c.id === course.id) === i);
-    }, [courses]);
+    const list = courses ?? [];
 
     const openCourse = (course: Course) => setSelectedCourse(course);
 
@@ -54,7 +39,7 @@ export default function CourseFE({ courses }: CourseProps) {
                 <div className="cf-grid">
                     {list.map((course) => (
                         <article
-                            key={course.id}
+                            key={course.classId ?? course.id}
                             className="cf-card"
                             role="button"
                             tabIndex={0}
@@ -73,12 +58,27 @@ export default function CourseFE({ courses }: CourseProps) {
                             </div>
 
                             <div className="cf-card-body">
+                                {course.classCode && (
+                                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                                        <span className="sx-code">{course.classCode}</span>
+                                        {course.classStatus && (
+                                            <span className={`sx-chip is-${course.classStatus.toLowerCase()}`}>{t(`sx.class.${course.classStatus}`)}</span>
+                                        )}
+                                    </div>
+                                )}
                                 <h3 className="cf-card-title">{course.name}</h3>
-                                <p className="cf-card-desc">{course.description}</p>
-                                <div className="cf-card-meta">
-                                    <span><i className="fa-regular fa-clock"></i> {t("common.sessions", { n: course.totalSessions })}</span>
-                                    <span><i className="fa-solid fa-calendar-days"></i> {t("common.sessionsPerWeek", { n: course.sessionsPerWeek })}</span>
-                                </div>
+                                <p className="cf-card-desc">{course.teacherName ? `${t("common.teacher")} ${course.teacherName}` : course.description}</p>
+                                {course.classTotalSessions ? (
+                                    <div>
+                                        <span className="sx-muted">{t("sx.progress", { done: course.sessionsDone ?? 0, total: course.classTotalSessions })}</span>
+                                        <div className="sx-progress"><i style={{ width: `${Math.min(100, Math.round(100 * (course.sessionsDone ?? 0) / course.classTotalSessions))}%` }} /></div>
+                                    </div>
+                                ) : (
+                                    <div className="cf-card-meta">
+                                        <span><i className="fa-regular fa-clock"></i> {t("common.sessions", { n: course.totalSessions })}</span>
+                                        <span><i className="fa-solid fa-calendar-days"></i> {t("common.sessionsPerWeek", { n: course.sessionsPerWeek })}</span>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="cf-card-footer">

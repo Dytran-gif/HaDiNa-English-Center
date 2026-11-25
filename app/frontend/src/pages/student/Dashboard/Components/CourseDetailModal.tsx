@@ -32,8 +32,8 @@ export default function CourseDetailModal({ course, onClose }: Props) {
     const [tab, setTab] = useState<'info' | 'assignments' | 'attendance'>('info');
     const [attPage, setAttPage] = useState(1);
     const { data: detail, loading: detailLoading } = useStudentCourseDetail(course.id);
-    const { data: assignments, loading, reload } = useStudentAssignments(course.id);
-    const { data: attendance, loading: attLoading, error: attError } = useStudentAttendance(course.id, attPage);
+    const { data: assignments, loading, reload } = useStudentAssignments(course.id, course.classId);
+    const { data: attendance, loading: attLoading, error: attError } = useStudentAttendance(course.id, attPage, course.classId);
     const api = useStudentApi();
     const [busyId, setBusyId] = useState<number | null>(null);
 

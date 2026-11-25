@@ -20,9 +20,9 @@ export default function CourseMainFE({ courses, onRegisterCourse, registering }:
         });
     }, [courses, searchQuery]);
 
-    // Giá thực trả sau giảm giá (cùng công thức với BE: làm tròn 2 chữ số)
+    // Giá thực trả sau giảm giá (cùng công thức với BE: làm tròn đến 1.000đ)
     const finalPrice = (c: Course) =>
-        Math.round((c.tuition - c.tuition * c.discountPercent / 100) * 100) / 100;
+        c.tuition - Math.round(c.tuition * c.discountPercent / 100 / 1000) * 1000;
 
     return (
         <div className="course-main-card">
@@ -117,7 +117,7 @@ export default function CourseMainFE({ courses, onRegisterCourse, registering }:
                                                 disabled={registering}
                                                 onClick={() => onRegisterCourse(course)}
                                             >
-                                                {registering ? t("browse.registering") : t("browse.register")}
+                                                {t("sx.chooseClass")}
                                             </button>
                                         </div>
                                     </div>

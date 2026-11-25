@@ -1,15 +1,17 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import "../General.css";
 import "./Course.css";
 import {
     useStudentApi,
     useStudentCourses,
     useStudentEnrollments,
-    useStudentScheduleHistory
+    useStudentScheduleHistory,
+    type StudentEnrollmentItem
 } from "../../../services/student/useStudentApi";
 import CourseMainFE from "./Components/CourseMain";
-import CourseBottomFE from "./Components/CourseBottom";
+import MyCourses from "./Components/MyCourses";
+import ClassPicker from "./Components/ClassPicker";
 import CourseHistoryFE from "./Components/CourseHistory";
 import { useLang } from "../../../i18n/LanguageContext";
 
@@ -18,53 +20,47 @@ import type { Course } from '../../../types/StudentTypes/MainTypes';
 type TabKey = 'registered' | 'browse' | 'history';
 
 export default function StudentCourse() {
-    const navigate = useNavigate();
     const { t } = useLang();
+    const [params, setParams] = useSearchParams();
 
     // Danh sách khóa học (catalog), ghi danh của học viên và lịch sử khóa học từ BE
     const { data: courses } = useStudentCourses();
     const { data: enrollments, reload: reloadEnrollments } = useStudentEnrollments();
     const { data: history } = useStudentScheduleHistory();
     const api = useStudentApi();
-    const [registering, setRegistering] = useState(false);
-    const [tab, setTab] = useState<TabKey>('registered');
+    const [picking, setPicking] = useState<Course | null>(null);
 
-    // Tab "My Courses" chỉ gồm khóa đang học (Active); khóa đã qua (OnHold/Dropped) nằm ở tab Course History
+    // Tab lấy từ URL (?tab=browse) để trang Đăng ký public chuyển thẳng sang bước chọn khóa
+    const tabParam = params.get('tab');
+    const tab: TabKey = tabParam === 'browse' || tabParam === 'history' ? tabParam : 'registered';
+    const setTab = (key: TabKey) => setParams(key === 'registered' ? {} : { tab: key }, { replace: true });
+
+    // "Khóa của tôi": ghi danh còn Active (chia Đang học / Sắp học / Đã học theo ngày lớp).
+    // Lớp đã nghỉ / bảo lưu và lớp đã học xong cũng có trong tab Lịch sử.
     const activeEnrollments = enrollments.filter(e => e.status === 'Active');
-
-    // Bấm Register trên thẻ khóa -> lưu thẳng ghi danh xuống DB (BE chặn đăng ký trùng)
-    const handleRegisterCourse = async (course: Course) => {
-        if (registering) return;
-        setRegistering(true);
-        try {
-            await api.send("POST", `courses/${course.id}/register`);
-            alert(t("alerts.registerOk", { name: course.name }));
-            reloadEnrollments();
-            setTab('registered');
-        } catch (err) {
-            alert(err instanceof Error ? err.message : t("alerts.registerFailed"));
-        } finally {
-            setRegistering(false);
+    const lookup = Number(params.get('course'));
+    useEffect(() => {
+        if (tab === 'browse' && lookup && courses.length && !picking) {
+            const found = courses.find(c => Number(c.id) === lookup);
+            if (found) setPicking(found);
         }
-    };
+    }, [tab, lookup, courses, picking]);
 
-    // Bấm nút xóa ở danh sách đã đăng ký -> xóa ghi danh trong DB
-    const handleDeleteEnrollment = async (enrollmentId: number) => {
+    // Hủy đăng ký: chỉ lớp chưa khai giảng và chưa đóng tiền (BE kiểm tra lại)
+    const handleCancel = async (item: StudentEnrollmentItem) => {
+        if (!window.confirm(t("sx.confirmCancel", { code: item.classCode }))) return;
         try {
-            await api.send("DELETE", `enrollments/${enrollmentId}`);
+            await api.send("DELETE", `enrollments/${item.enrollmentId}`);
             reloadEnrollments();
         } catch (err) {
-            alert(err instanceof Error ? err.message : t("alerts.unregisterFailed"));
+            window.alert(err instanceof Error ? err.message : t("alerts.unregisterFailed"));
         }
     };
-
-    // Nút Payment Now -> sang trang học phí, kèm cờ tự tích tất cả khóa cần thanh toán
-    const handleGoTuition = () => navigate("/student/tuition", { state: { payAll: true } });
 
     const tabs: { key: TabKey; label: string; icon: string; count: number }[] = [
         { key: 'registered', label: t("courses.tabMine"), icon: 'fa-book-bookmark', count: activeEnrollments.length },
-        { key: 'browse', label: t("courses.tabBrowse"), icon: 'fa-compass', count: courses.length },
-        { key: 'history', label: t("courses.tabHistory"), icon: 'fa-clock-rotate-left', count: history.length }
+        { key: 'browse', label: t("sx.tabRegister"), icon: 'fa-circle-plus', count: courses.length },
+        { key: 'history', label: t("courses.tabHistory"), icon: 'fa-folder-tree', count: history.length }
     ];
 
     return (
@@ -84,17 +80,17 @@ export default function StudentCourse() {
                         </div>
 
                         <div className="course-tabs" role="tablist" aria-label="Course sections">
-                            {tabs.map((t) => (
+                            {tabs.map((item) => (
                                 <button
-                                    key={t.key}
+                                    key={item.key}
                                     role="tab"
-                                    aria-selected={tab === t.key}
-                                    className={`course-tab ${tab === t.key ? 'active' : ''}`}
-                                    onClick={() => setTab(t.key)}
+                                    aria-selected={tab === item.key}
+                                    className={`course-tab ${tab === item.key ? 'active' : ''}`}
+                                    onClick={() => setTab(item.key)}
                                 >
-                                    <i className={`fa-solid ${t.icon}`}></i>
-                                    <span>{t.label}</span>
-                                    {t.count > 0 && <span className="course-tab-count">{t.count}</span>}
+                                    <i className={`fa-solid ${item.icon}`}></i>
+                                    <span>{item.label}</span>
+                                    {item.count > 0 && <span className="course-tab-count">{item.count}</span>}
                                 </button>
                             ))}
                         </div>
@@ -104,20 +100,11 @@ export default function StudentCourse() {
                 <div className="col-12">
                     <div className="course-panel" key={tab}>
                         {tab === 'registered' && (
-                            <CourseBottomFE
-                                enrolledCourses={activeEnrollments}
-                                onDelete={handleDeleteEnrollment}
-                                onGoTuition={handleGoTuition}
-                                onBrowse={() => setTab('browse')}
-                            />
+                            <MyCourses items={activeEnrollments} onCancel={handleCancel} onBrowse={() => setTab('browse')} />
                         )}
 
                         {tab === 'browse' && (
-                            <CourseMainFE
-                                courses={courses}
-                                onRegisterCourse={handleRegisterCourse}
-                                registering={registering}
-                            />
+                            <CourseMainFE courses={courses} onRegisterCourse={setPicking} />
                         )}
 
                         {tab === 'history' && (
@@ -126,6 +113,14 @@ export default function StudentCourse() {
                     </div>
                 </div>
             </div>
+
+            {picking && (
+                <ClassPicker
+                    course={picking}
+                    onClose={() => { setPicking(null); if (params.get('course')) setTab('browse'); }}
+                    onDone={reloadEnrollments}
+                />
+            )}
         </div>
     );
 }

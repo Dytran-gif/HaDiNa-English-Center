@@ -4,7 +4,8 @@ import "../General.css"
 import ScheduleGridFE from "./Components/ScheduleMain";
 import ScheduleNoticeFE from "./Components/ScheduleNotice"; 
 // API
-import { useStudentSchedule } from "../../../services/student/useStudentApi";
+import { useStudentSchedule, type StudentScheduleSession } from "../../../services/student/useStudentApi";
+import SessionDetail from "../Components/Session/SessionDetail";
 
 // Thứ 2 đầu tuần của một ngày bất kỳ
 function startOfWeekMonday(d: Date): Date {
@@ -28,6 +29,7 @@ export default function StudentSchedule() {
     const [weekStart, setWeekStart] = useState<Date>(() => startOfWeekMonday(new Date()));
 
     const { data: schedule } = useStudentSchedule(formatDateStr(weekStart));
+    const [selected, setSelected] = useState<StudentScheduleSession | null>(null);
 
     const handlePrevWeek = () => {
         const prev = new Date(weekStart);
@@ -50,12 +52,33 @@ export default function StudentSchedule() {
                         sessions={schedule?.sessions ?? []} 
                         onPrevWeek={handlePrevWeek} 
                         onNextWeek={handleNextWeek} 
+                        onSelect={setSelected}
                     />
                 </div>
                 <div className="col-12">
                     <ScheduleNoticeFE notices={schedule?.notices ?? []} />
                 </div>
             </div>
+            {selected && (
+                <SessionDetail
+                    session={{
+                        courseName: selected.courseName,
+                        classCode: selected.classCode,
+                        className: selected.className,
+                        dateStr: selected.dateStr,
+                        startTime: selected.startTime,
+                        endTime: selected.endTime,
+                        sessionNo: selected.sessionNo,
+                        totalSessions: selected.totalSessions,
+                        teacherName: selected.teacherName,
+                        roomName: selected.roomName,
+                        meetingUrl: selected.meetingUrl,
+                        attendanceStatus: selected.attendanceStatus ?? null,
+                        newAssignments: selected.newAssignments,
+                    }}
+                    onClose={() => setSelected(null)}
+                />
+            )}
         </div>
     );
 }

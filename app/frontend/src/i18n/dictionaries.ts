@@ -1,7 +1,10 @@
 // Từ điển song ngữ cho Student module. Key dạng phẳng "nhóm.tên", giá trị có thể chứa {biến}.
+import { viExtra, enExtra } from "./studentExtra";
+
 export type Dict = Record<string, string>;
 
 export const vi: Dict = {
+    ...viExtra,
     // Chung
     "common.sessions": "{n} buổi",
     "common.sessionsPerWeek": "{n} buổi/tuần",
@@ -283,6 +286,7 @@ export const vi: Dict = {
 };
 
 export const en: Dict = {
+    ...enExtra,
     // Common
     "common.sessions": "{n} sessions",
     "common.sessionsPerWeek": "{n} sessions/wk",

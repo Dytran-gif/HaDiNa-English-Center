@@ -27,10 +27,22 @@ interface ScheduleGridProps {
     sessions: StudentScheduleSession[]; // Các buổi học trong tuần (từ BE)
     onPrevWeek: () => void;
     onNextWeek: () => void;
+    onSelect?: (session: StudentScheduleSession) => void; // bấm vào buổi -> popup chi tiết
 }
 
-export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWeek }: ScheduleGridProps) {
+export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWeek, onSelect }: ScheduleGridProps) {
     const { t, lang } = useLang();
+
+    // Thẻ buổi học bấm được (chuột, Enter, Space)
+    const clickable = (item: StudentScheduleSession) => onSelect ? {
+        role: "button" as const,
+        tabIndex: 0,
+        onClick: () => onSelect(item),
+        onKeyDown: (e: React.KeyboardEvent) => {
+            if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect(item); }
+        },
+        "aria-label": `${item.courseName} ${item.classCode ?? ""} ${item.dateStr} ${item.startTime}`,
+    } : {};
 
     // Ngày hôm nay (yyyy-mm-dd) để đánh dấu trong agenda mobile
     const now = new Date();
@@ -123,8 +135,9 @@ export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWe
                                         return (
                                             <div
                                                 key={`${item.classId}-${item.dateStr}-${item.startTime}`}
-                                                className={`class-card-styled ${item.isCancelled ? 'is-cancelled' : ''}`}
+                                                className={`class-card-styled sx-clickable ${item.isCancelled ? 'is-cancelled' : ''}`}
                                                 style={getCardStyle(item.startTime, item.endTime)}
+                                                {...clickable(item)}
                                             >
                                                 <div className="card-content">
                                                     <div className="card-top-row">
@@ -147,7 +160,7 @@ export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWe
                                                     ) : (
                                                         <div className="card-meta">
                                                             <span className="meta-item">
-                                                                <i className="fa-solid fa-hashtag"></i> {item.className}
+                                                                <i className="fa-solid fa-hashtag"></i> {item.classCode || item.className}
                                                             </span>
                                                             {item.teacherName && (
                                                                 <span className="meta-item">
@@ -192,7 +205,8 @@ export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWe
                                     {sessionsToday.map((item) => (
                                         <article
                                             key={`${item.classId}-${item.dateStr}-${item.startTime}`}
-                                            className={`agenda-card ${item.isCancelled ? 'is-cancelled' : ''}`}
+                                            className={`agenda-card sx-clickable ${item.isCancelled ? 'is-cancelled' : ''}`}
+                                            {...clickable(item)}
                                         >
                                             <div className="agenda-card-top">
                                                 <h4 className="agenda-course">{item.courseName}</h4>
@@ -210,7 +224,7 @@ export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWe
                                             </p>
 
                                             <div className="agenda-meta">
-                                                <span><i className="fa-solid fa-hashtag"></i> {item.className}</span>
+                                                <span><i className="fa-solid fa-hashtag"></i> {item.classCode || item.className}</span>
                                                 {item.teacherName && (
                                                     <span><i className="fa-solid fa-chalkboard-user"></i> {item.teacherName}</span>
                                                 )}
