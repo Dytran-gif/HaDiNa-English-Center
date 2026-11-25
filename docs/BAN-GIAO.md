@@ -1,4 +1,12 @@
 # Nhật ký bàn giao
+## [2026-11-25] Đăng ký học viên public lưu DB thật
+
+- /dang-ky trước chỉ báo thành công demo. Nay gọi POST /api/auth/register, tạo Users + Students trong cùng transaction, hash BCrypt, email duy nhất, role student cố định; không tự ghi danh lớp/thu học phí.
+- Form bổ sung điện thoại, required/length/password-confirmation, busy/error/success thật và mã học viên. Login trim email.
+- StudentCodeGenerator dùng chung với Admin; xét đuôi số để không sai khi qua HV9999. Public retry khi trùng mã do đăng ký đồng thời.
+- Không cần migration: dùng bảng Users/Students hiện có. Đã kiểm tra trên DB thật: đăng ký, đăng nhập, Admin thấy hồ sơ, duplicate409, validate400, role403, concurrent mã khác nhau. Đã xóa3tài khoản/profiles QA; không xóa dữ liệu có sẵn.
+- FE/BE build đạt, lint chỉ cảnh báo AuthContext cũ. BE đang chạy localhost5220, AutoSetup=false. Chi tiết docs/api/STUDENT-REGISTRATION.md.
+
 ## [2026-11-25] Form tư vấn homepage lưu DB + danh sách Admin
 
 - DB trước đó chưa có bảng tư vấn. Tạo ConsultationRequests và migration 20261125023432_ConsultationRequests; đã backup COPY_ONLY/CHECKSUM, verify và áp dụng vào EnglishCenterDB local.
