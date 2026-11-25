@@ -6,6 +6,7 @@ import "./Header.css";
 import { useEffect } from "react";
 import { useAdminQuery } from "../../../../services/admin/useAdminApi";
 import type { AdminProfile } from "../../Profile/profileTypes";
+import AdminAvatarControl from "../Ui/AdminAvatarControl";
 export default function Header({ menuOpen, onOpenMenu }: { menuOpen: boolean; onOpenMenu: () => void }) {
   const { pathname } = useLocation(); const { user, logout, updateProfile } = useAuth();
   const profile = useAdminQuery<AdminProfile>("profile");
@@ -15,8 +16,8 @@ export default function Header({ menuOpen, onOpenMenu }: { menuOpen: boolean; on
   const name = user?.full_name || user?.email || "Quản trị viên";
   return <><header className="admin-header"><div className="admin-header-heading"><IconButton className="admin-menu-toggle" icon="menu" label="Mở menu quản trị" aria-expanded={menuOpen} aria-haspopup="dialog" onClick={onOpenMenu}/><div className="admin-header-title"><h1>{page.title}</h1><p>{page.subtitle}</p></div></div>
     <div className="admin-header-account">
+      <AdminAvatarControl className="admin-user-avatar"/>
       <Button className="admin-profile-trigger" variant="ghost" aria-label={`Xem thông tin tài khoản ${name}`} onClick={() => navigate("/admin/profile")}>
-        <span className="admin-user-avatar" aria-hidden="true">{name.charAt(0).toUpperCase()}</span>
         <span className="admin-user-info"><strong title={name}>{name}</strong><span title={user?.email}>{user?.email ?? ""}</span></span>
       </Button>
       <Button className="admin-header-logout" variant="ghost" icon="logout" onClick={logout}>Đăng xuất</Button>

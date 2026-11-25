@@ -8,7 +8,7 @@ interface AuthContextValue {
   token: string | null;
   loginApi: (email: string, password: string) => Promise<User>;
   replaceToken: (token: string) => void;
-  updateProfile: (userId: number, profile: { fullName: string | null; phone: string | null }) => void;
+  updateProfile: (userId: number, profile: { fullName: string | null; phone: string | null; avatarUrl?: string | null }) => void;
   logout: () => void;
 }
 const STORAGE_KEY = "ecw_auth_user";
@@ -43,12 +43,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return user;
   }
   function replaceToken(token: string) { if (session) save({ ...session, token }); }
-  const updateProfile = useCallback((userId: number, profile: { fullName: string | null; phone: string | null }) => {
+  const updateProfile = useCallback((userId: number, profile: { fullName: string | null; phone: string | null; avatarUrl?: string | null }) => {
     setSession(current => {
       if (!current || current.user.user_id !== userId) return current;
       const fullName = profile.fullName ?? ""; const phone = profile.phone ?? "";
-      if (current.user.full_name === fullName && current.user.phone === phone) return current;
-      const next = { ...current, user: { ...current.user, full_name: fullName, phone } };
+      const avatar = profile.avatarUrl === undefined ? current.user.avatar_url : profile.avatarUrl;
+      if (current.user.full_name === fullName && current.user.phone === phone && current.user.avatar_url === avatar) return current;
+      const next = { ...current, user: { ...current.user, full_name: fullName, phone, avatar_url: avatar } };
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch { /* DB remains the source of truth. */ }
       return next;
     });
