@@ -19,6 +19,7 @@ import StudentCourse from "./pages/student/Course/Course";
 import StudentSchedule from "./pages/student/Schedule/Schedule";
 import StudentTuition from "./pages/student/Tuition/Tuition";
 import StudentFeedback from "./pages/student/Feedback/Feedback";
+import StudentProfile from "./pages/student/Profile/Profile";
 
 import AdminLayout from "./pages/admin/Layout/AdminLayout";
 import AdminDashboard from "./pages/admin/Dashboard/Dashboard";
@@ -76,6 +77,7 @@ export default function AppRoutes() {
                 <Route path="schedule" element={<StudentSchedule />} />
                 <Route path="tuition" element={<StudentTuition />} />
                 <Route path="feedback" element={<StudentFeedback />} />
+                <Route path="profile" element={<StudentProfile />} />
 
 
             </Route>

@@ -12,6 +12,7 @@ const NAV_KEYS: Record<string, string> = {
     "/student/courses": "nav.courses",
     "/student/feedback": "nav.feedback",
     "/student/tuition": "nav.tuition",
+    "/student/profile": "nav.profile",
 };
 
 interface SidebarProps {
