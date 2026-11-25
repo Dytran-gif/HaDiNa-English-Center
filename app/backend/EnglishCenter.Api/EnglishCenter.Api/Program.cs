@@ -10,6 +10,7 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<EnrollmentService>();
+builder.Services.AddScoped<PaymentService>();
 builder.Services.AddScoped<ScheduleService>();
 
 // Lưu file upload (ảnh đại diện...)

@@ -1,9 +1,16 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace EnglishCenter.Api.Dtos.Admin;
 
 public class ClassRequest : IValidatableObject
 {
+    // Mã lớp (vd IE65-2612-A). Bỏ trống thì hệ thống tự sinh theo mã khóa + tháng khai giảng.
+    [StringLength(20, ErrorMessage = "Mã lớp tối đa 20 ký tự")]
+    public string? Code { get; set; }
+
+    // Đổi lịch làm trùng lịch học viên trong lớp: lần đầu trả 409 kèm danh sách, gửi lại với Force = true để vẫn lưu
+    public bool Force { get; set; }
+
     [Required(ErrorMessage = "Tên lớp là bắt buộc")]
     [StringLength(150)]
     public string Name { get; set; } = "";

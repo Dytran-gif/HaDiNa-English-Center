@@ -1,4 +1,4 @@
-﻿using EnglishCenter.Api.Data;
+using EnglishCenter.Api.Data;
 using EnglishCenter.Api.Dtos.Admin;
 using EnglishCenter.Api.Dtos.Common;
 using EnglishCenter.Api.Entities;
@@ -45,17 +45,11 @@ public class StudentsController : ControllerBase
             CurrentClass = s.Enrollments
                 .Where(e => e.Status == "Active" && e.Class.EndDate >= today)
                 .OrderBy(e => e.Class.StartDate)
-                .Select(e => e.Class.Name)
+                .Select(e => e.Class.Code + " · " + e.Class.Name)
                 .FirstOrDefault()
         });
     }
 
-    private static string ClassStatus(DateOnly start, DateOnly end, DateOnly today)
-    {
-        if (today < start) return "Upcoming";
-        if (today > end) return "Finished";
-        return "Ongoing";
-    }
 
     // Lấy chi tiết học viên kèm danh sách ghi danh và phiếu thu
     private async Task<StudentResponse?> BuildDetail(int id)
@@ -72,6 +66,7 @@ public class StudentsController : ControllerBase
             {
                 Id = e.Id,
                 ClassId = e.ClassId,
+                ClassCode = e.Class.Code,
                 ClassName = e.Class.Name,
                 CourseName = e.Class.Course.Name,
                 ClassStartDate = e.Class.StartDate,
@@ -79,16 +74,29 @@ public class StudentsController : ControllerBase
                 TuitionFee = e.TuitionFee,
                 DiscountPercent = e.DiscountPercent,
                 DiscountAmount = e.DiscountAmount,
+                ExtraDiscountAmount = e.ExtraDiscountAmount,
+                DiscountNote = e.DiscountNote,
                 FinalTuitionFee = e.FinalTuitionFee,
                 Status = e.Status,
-                PaymentId = e.Payment != null ? (int?)e.Payment.Id : null,
-                PaidDate = e.Payment != null ? (DateOnly?)e.Payment.PaidDate : null,
-                PaymentMethod = e.Payment != null ? e.Payment.Method : null
+                PaidAmount = e.Payments.Where(p => p.Status == "Confirmed" && p.Kind == "Payment").Sum(p => (decimal?)p.Amount) ?? 0,
+                RefundedAmount = e.Payments.Where(p => p.Status == "Confirmed" && p.Kind == "Refund").Sum(p => (decimal?)p.Amount) ?? 0,
+                PendingAmount = e.Payments.Where(p => p.Status == "Pending").Sum(p => (decimal?)p.Amount) ?? 0,
+                PaymentId = e.Payments.Where(p => p.Status == "Confirmed" && p.Kind == "Payment")
+                    .OrderByDescending(p => p.Id).Select(p => (int?)p.Id).FirstOrDefault(),
+                PaidDate = e.Payments.Where(p => p.Status == "Confirmed" && p.Kind == "Payment")
+                    .OrderByDescending(p => p.Id).Select(p => (DateOnly?)p.PaidDate).FirstOrDefault(),
+                PaymentMethod = e.Payments.Where(p => p.Status == "Confirmed" && p.Kind == "Payment")
+                    .OrderByDescending(p => p.Id).Select(p => p.Method).FirstOrDefault()
             })
             .ToListAsync();
 
         foreach (var item in items)
-            item.ClassStatus = ClassStatus(item.ClassStartDate, item.ClassEndDate, today);
+        {
+            item.ClassStatus = ClassCalendar.Status(item.ClassStartDate, item.ClassEndDate, today);
+            var balance = new TuitionBalance(item.FinalTuitionFee, item.PaidAmount, item.RefundedAmount, item.PendingAmount);
+            item.RemainingAmount = balance.Remaining;
+            item.PaymentStatus = balance.Status;
+        }
 
         student.Enrollments = items;
         return student;
@@ -150,12 +158,13 @@ public class StudentsController : ControllerBase
 
         var items = await AdminPaymentQueries.Project(_db.Payments.AsNoTracking()
             .Where(p => p.Enrollment.StudentId == id)
-            .OrderByDescending(p => p.PaidDate).ThenByDescending(p => p.Id)).ToListAsync();
+            .OrderByDescending(p => p.CreatedAt).ThenByDescending(p => p.Id)).ToListAsync();
 
         return Ok(new StudentPaymentsResponse
         {
             Items = items,
-            TotalPaid = items.Sum(p => p.Amount)
+            TotalPaid = items.Where(p => p.Status == PaymentService.Confirmed && p.Kind == PaymentService.KindPayment).Sum(p => p.Amount)
+                - items.Where(p => p.Status == PaymentService.Confirmed && p.Kind == PaymentService.KindRefund).Sum(p => p.Amount)
         });
     }
 
@@ -289,7 +298,10 @@ public class StudentsController : ControllerBase
     [HttpPost("{id}/enrollments")]
     public async Task<IActionResult> Enroll(int id, EnrollRequest req)
     {
-        var result = await _enrollments.EnrollAsync(id, req.ClassId);
+        if (req.ExtraDiscountAmount > 0 && string.IsNullOrWhiteSpace(req.DiscountNote))
+            return BadRequest(new { message = "Nhập lý do khi có ưu đãi riêng", errors = new { discountNote = new[] { "Nhập lý do ưu đãi" } } });
+        var result = await _enrollments.EnrollAsync(id, req.ClassId,
+            new EnrollOptions(req.ExtraDiscountAmount, req.DiscountNote, req.ProrateRemaining));
         if (!result.Success)
             return StatusCode(result.StatusCode, new { message = result.Message });
 

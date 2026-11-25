@@ -22,7 +22,7 @@ public class TeacherClassesController : TeacherControllerBase
         var classes = await MyClasses.AsNoTracking()
             .Select(c => new { c.Id, c.StartDate, c.EndDate })
             .ToListAsync();
-        var ongoing = classes.Count(c => ClassStatus(c.StartDate, c.EndDate, today) == "Ongoing");
+        var ongoing = classes.Count(c => ClassCalendar.Status(c.StartDate, c.EndDate, today) == "Ongoing");
 
         var studentCount = await MyEnrollments.Select(e => e.StudentId).Distinct().CountAsync();
         var assignmentCount = await Db.AssignmentFiles
@@ -65,16 +65,22 @@ public class TeacherClassesController : TeacherControllerBase
         });
     }
 
-    // GET api/teacher/classes?status=Ongoing|Upcoming|Finished
+    // GET api/teacher/classes?status=Ongoing|Upcoming|Finished&q= (q tìm theo mã lớp, tên lớp, tên khóa)
     [HttpGet("classes")]
-    public async Task<IActionResult> Classes(string? status)
+    public async Task<IActionResult> Classes(string? status, string? q)
     {
         var today = AppTime.Today;
-        var rows = await MyClasses.AsNoTracking()
+        var query = MyClasses.AsNoTracking();
+        if (!string.IsNullOrWhiteSpace(q))
+        {
+            var term = q.Trim();
+            query = query.Where(c => c.Code.Contains(term) || c.Name.Contains(term) || c.Course.Name.Contains(term));
+        }
+        var rows = await query
             .OrderByDescending(c => c.StartDate)
             .Select(c => new
             {
-                c.Id, c.Name, c.CourseId, CourseName = c.Course.Name, c.StartDate, c.EndDate,
+                c.Id, c.Code, c.Name, c.CourseId, CourseName = c.Course.Name, c.StartDate, c.EndDate,
                 c.MaxStudents, c.MeetingUrl,
                 EnrolledCount = c.Enrollments.Count(e => e.Status == "Active"),
                 Schedules = c.Schedules.OrderBy(s => s.DayOfWeek).ThenBy(s => s.StartTime)
@@ -86,9 +92,9 @@ public class TeacherClassesController : TeacherControllerBase
         var items = rows
             .Select(c => new
             {
-                c.Id, c.Name, c.CourseId, c.CourseName, c.StartDate, c.EndDate, c.MaxStudents, c.MeetingUrl,
+                c.Id, c.Code, c.Name, c.CourseId, c.CourseName, c.StartDate, c.EndDate, c.MaxStudents, c.MeetingUrl,
                 c.EnrolledCount, c.Schedules,
-                Status = ClassStatus(c.StartDate, c.EndDate, today)
+                Status = ClassCalendar.Status(c.StartDate, c.EndDate, today)
             })
             .Where(c => string.IsNullOrEmpty(status) || c.Status == status)
             .ToList();
@@ -103,8 +109,8 @@ public class TeacherClassesController : TeacherControllerBase
             .Where(x => x.Id == id)
             .Select(x => new
             {
-                x.Id, x.Name, x.CourseId, CourseName = x.Course.Name, x.StartDate, x.EndDate,
-                x.MaxStudents, x.MeetingUrl, TotalSessions = x.Course.TotalSessions,
+                x.Id, x.Code, x.Name, x.CourseId, CourseName = x.Course.Name, x.StartDate, x.EndDate,
+                x.MaxStudents, x.MeetingUrl,
                 Schedules = x.Schedules.OrderBy(s => s.DayOfWeek).ThenBy(s => s.StartTime)
                     .Select(s => new { s.DayOfWeek, s.StartTime, s.EndTime, RoomName = s.Room.Name })
                     .ToList(),
@@ -119,12 +125,16 @@ public class TeacherClassesController : TeacherControllerBase
             .FirstOrDefaultAsync();
         if (c == null) return Error(404, "Không tìm thấy lớp hoặc bạn không phụ trách lớp này");
 
+        // Tổng số buổi tính từ lịch lớp, cùng cách tính với trang Lịch học của học viên
+        var slots = c.Schedules.Select(s => new ClassCalendar.Slot(s.DayOfWeek, s.StartTime, s.EndTime)).ToList();
         return Ok(new
         {
-            c.Id, c.Name, c.CourseId, c.CourseName, c.StartDate, c.EndDate, c.MaxStudents, c.MeetingUrl,
-            c.TotalSessions, c.Schedules, c.Students,
+            c.Id, c.Code, c.Name, c.CourseId, c.CourseName, c.StartDate, c.EndDate, c.MaxStudents, c.MeetingUrl,
+            TotalSessions = ClassCalendar.TotalSessions(c.StartDate, c.EndDate, slots),
+            SessionsDone = ClassCalendar.DoneSessions(c.StartDate, c.EndDate, slots, AppTime.Today),
+            c.Schedules, c.Students,
             EnrolledCount = c.Students.Count(s => s.EnrollmentStatus == "Active"),
-            Status = ClassStatus(c.StartDate, c.EndDate, AppTime.Today)
+            Status = ClassCalendar.Status(c.StartDate, c.EndDate, AppTime.Today)
         });
     }
 
@@ -146,7 +156,7 @@ public class TeacherClassesController : TeacherControllerBase
             .Where(s => s.Class.TeacherId == TeacherId && s.Class.StartDate <= to && s.Class.EndDate >= from)
             .Select(s => new
             {
-                s.ClassId, ClassName = s.Class.Name, CourseName = s.Class.Course.Name,
+                s.ClassId, ClassCode = s.Class.Code, ClassName = s.Class.Name, CourseName = s.Class.Course.Name,
                 s.Class.StartDate, s.Class.EndDate, s.Class.MeetingUrl,
                 s.DayOfWeek, s.StartTime, s.EndTime, RoomName = s.Room.Name
             })
@@ -164,13 +174,13 @@ public class TeacherClassesController : TeacherControllerBase
             var dayNo = AppTime.DayNo(d);
             events.AddRange(slots
                 .Where(s => s.DayOfWeek == dayNo && d >= s.StartDate && d <= s.EndDate)
-                .Select(s => new ScheduleEvent(d, s.ClassId, s.ClassName, s.CourseName,
+                .Select(s => new ScheduleEvent(d, s.ClassId, s.ClassCode, s.ClassName, s.CourseName,
                     s.StartTime, s.EndTime, s.RoomName, s.MeetingUrl, marked.Contains((s.ClassId, d)))));
         }
         // Lớp có 2 ca trong 1 ngày: điểm danh chung 1 lần/ngày nên giữ cả 2 ca, cùng trạng thái
         return events.OrderBy(e => e.Date).ThenBy(e => e.StartTime).ToList();
     }
 
-    public record ScheduleEvent(DateOnly Date, int ClassId, string ClassName, string CourseName,
+    public record ScheduleEvent(DateOnly Date, int ClassId, string ClassCode, string ClassName, string CourseName,
         TimeOnly StartTime, TimeOnly EndTime, string RoomName, string? MeetingUrl, bool AttendanceMarked);
 }

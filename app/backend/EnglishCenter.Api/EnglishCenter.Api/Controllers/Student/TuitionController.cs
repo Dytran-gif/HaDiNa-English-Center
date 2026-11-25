@@ -1,141 +1,102 @@
-using System.Security.Claims;
 using EnglishCenter.Api.Data;
 using EnglishCenter.Api.Dtos.StudentPortal;
-using EnglishCenter.Api.Entities;
 using EnglishCenter.Api.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 // Lưu ý: namespace phải là ...StudentPortal (không phải ...Student) vì tên "Student"
 // đã trùng với entity Student, đặt tên Student sẽ phá các controller khác.
 namespace EnglishCenter.Api.Controllers.StudentPortal;
 
-// Học phí của học viên (trang Tuition): danh sách khoản phải đóng + lịch sử thanh toán,
-// và thanh toán giả lập (tạo Payment, lưu xuống DB).
-// Viết độc lập, truy vấn thẳng AppDbContext.
-[ApiController]
-[Authorize(Roles = "student")]
+// Học phí của học viên: chỉ XEM (phải đóng, đã đóng, còn nợ, biên lai) và BÁO đã chuyển khoản.
+// Học viên không tự tạo phiếu thu: yêu cầu chuyển khoản ở trạng thái Pending, Admin xác nhận mới thành phiếu thu.
 [Route("api/student/tuition")]
-public class TuitionController : ControllerBase
+public class TuitionController : StudentControllerBase
 {
-    private readonly AppDbContext _db;
+    private readonly PaymentService _payments;
+    private readonly IConfiguration _config;
 
-    public TuitionController(AppDbContext db)
+    public TuitionController(AppDbContext db, PaymentService payments, IConfiguration config) : base(db)
     {
-        _db = db;
+        _payments = payments;
+        _config = config;
     }
 
-    // GET api/student/tuition - mỗi ghi danh một dòng kèm thông tin thanh toán (isPaid)
+    // GET api/student/tuition - học phí từng ghi danh kèm các phiếu
     [HttpGet]
     public async Task<IActionResult> GetMine()
     {
-        if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
-            return Unauthorized(new { message = "Token không hợp lệ" });
-
-        var studentId = await _db.Students.AsNoTracking()
-            .Where(s => s.UserId == userId)
-            .Select(s => (int?)s.Id)
-            .FirstOrDefaultAsync();
-
-        if (studentId == null)
-            return StatusCode(403, new { message = "Tài khoản chưa có hồ sơ học viên" });
-
-        var rows = await _db.Enrollments.AsNoTracking()
-            .Where(e => e.StudentId == studentId)
-            .OrderByDescending(e => e.Id)
-            .Select(e => new
-            {
-                e.Id,
-                ClassName = e.Class.Name,
-                CourseName = e.Class.Course.Name,
-                BandFrom = e.Class.Course.BandFrom,
-                BandTo = e.Class.Course.BandTo,
-                TotalSessions = e.Class.Course.TotalSessions,
-                e.TuitionFee,
-                e.DiscountPercent,
-                e.DiscountAmount,
-                e.FinalTuitionFee,
-                PaymentId = e.Payment != null ? (int?)e.Payment.Id : null,
-                PaidAmount = e.Payment != null ? (decimal?)e.Payment.Amount : null,
-                PaidDate = e.Payment != null ? (DateOnly?)e.Payment.PaidDate : null,
-                Method = e.Payment != null ? e.Payment.Method : null,
-                Note = e.Payment != null ? e.Payment.Note : null
-            })
-            .ToListAsync();
-
-        var items = rows.Select(e => new StudentTuitionItemDto
+        var rows = await LoadMyEnrollmentsAsync();
+        var items = rows.OrderByDescending(r => r.StartDate).Select(e =>
         {
-            EnrollmentId = e.Id,
-            ClassName = e.ClassName,
-            CourseName = e.CourseName,
-            BandFrom = e.BandFrom.ToString("0.#"),
-            BandTo = e.BandTo.ToString("0.#"),
-            TotalSessions = e.TotalSessions,
-            TuitionFee = e.TuitionFee,
-            DiscountPercent = e.DiscountPercent,
-            DiscountAmount = e.DiscountAmount,
-            FinalTuitionFee = e.FinalTuitionFee,
-            PaymentId = e.PaymentId,
-            PaidAmount = e.PaidAmount,
-            PaidDate = e.PaidDate,
-            Method = e.Method,
-            Note = e.Note,
-            IsPaid = e.PaidAmount != null
+            var b = e.Balance;
+            var lastPaid = e.Payments.Where(p => p.Status == PaymentService.Confirmed && p.Kind == PaymentService.KindPayment)
+                .OrderByDescending(p => p.Id).FirstOrDefault();
+            return new StudentTuitionItemDto
+            {
+                EnrollmentId = e.EnrollmentId,
+                ClassId = e.ClassId,
+                ClassCode = e.ClassCode,
+                EnrollmentStatus = e.Status,
+                ClassName = e.ClassName,
+                CourseName = e.CourseName,
+                BandFrom = e.BandFrom.ToString("0.#"),
+                BandTo = e.BandTo.ToString("0.#"),
+                TotalSessions = e.TotalSessions,
+                TuitionFee = e.TuitionFee,
+                DiscountPercent = e.DiscountPercent,
+                DiscountAmount = e.DiscountAmount,
+                ExtraDiscountAmount = e.ExtraDiscountAmount,
+                DiscountNote = e.DiscountNote,
+                FinalTuitionFee = e.FinalTuitionFee,
+                PaymentId = lastPaid?.Id,
+                PaidAmount = b.Net > 0 ? b.Net : null,
+                PaidDate = lastPaid?.PaidDate,
+                Method = lastPaid?.Method,
+                Note = e.DiscountNote,
+                IsPaid = b.Remaining == 0,
+                PendingAmount = b.Pending,
+                RemainingAmount = b.Remaining,
+                PaymentStatus = b.Status,
+                Payments = e.Payments.OrderByDescending(p => p.CreatedAt).Select(p => new StudentPaymentDto
+                {
+                    Id = p.Id,
+                    ReceiptNo = p.ReceiptNo,
+                    Kind = p.Kind,
+                    Status = p.Status,
+                    Amount = p.Amount,
+                    Method = p.Method,
+                    PaidDate = p.PaidDate,
+                    TransferRef = p.TransferRef,
+                    CancelReason = p.CancelReason,
+                    CreatedAt = p.CreatedAt
+                }).ToList()
+            };
         }).ToList();
 
         return Ok(items);
     }
 
-    // POST api/student/tuition/pay - thanh toán giả lập: tạo Payment cho các ghi danh chưa đóng của mình
-    [HttpPost("pay")]
-    public async Task<IActionResult> Pay(TuitionPayRequest req)
+    // GET api/student/tuition/bank-info - tài khoản nhận chuyển khoản (appsettings: Payment:Bank)
+    [HttpGet("bank-info")]
+    public IActionResult BankInfo()
     {
-        if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
-            return Unauthorized(new { message = "Token không hợp lệ" });
-
-        var studentId = await _db.Students.AsNoTracking()
-            .Where(s => s.UserId == userId)
-            .Select(s => (int?)s.Id)
-            .FirstOrDefaultAsync();
-
-        if (studentId == null)
-            return StatusCode(403, new { message = "Tài khoản chưa có hồ sơ học viên" });
-
-        var ids = req.EnrollmentIds.Distinct().ToList();
-        if (ids.Count == 0)
-            return BadRequest(new { message = "Chưa chọn khoản nào để thanh toán" });
-
-        var unpaid = await _db.Enrollments
-            .Where(e => e.StudentId == studentId && ids.Contains(e.Id) && e.Payment == null)
-            .ToListAsync();
-
-        if (unpaid.Count == 0)
-            return StatusCode(409, new { message = "Các khoản đã chọn đều đã thanh toán hoặc không thuộc về bạn" });
-
-        foreach (var e in unpaid)
+        var section = _config.GetSection("Payment:Bank");
+        return Ok(new BankInfoDto
         {
-            _db.Payments.Add(new Payment
-            {
-                EnrollmentId = e.Id,
-                CreatedByUserId = userId,
-                Amount = e.FinalTuitionFee,
-                Method = "Cash", // giả lập: nộp tiền mặt tại trung tâm
-                PaidDate = AppTime.Today,
-                Note = "Học viên thanh toán tại trung tâm (giả lập)"
-            });
-        }
+            BankName = section["BankName"] ?? "",
+            AccountNumber = section["AccountNumber"] ?? "",
+            AccountName = section["AccountName"] ?? "",
+            Branch = section["Branch"]
+        });
+    }
 
-        try
-        {
-            await _db.SaveChangesAsync();
-        }
-        catch (DbUpdateException)
-        {
-            // unique EnrollmentId (1 ghi danh - 1 phiếu thu): khoản vừa được thanh toán bởi yêu cầu khác
-            return StatusCode(409, new { message = "Có khoản vừa được thanh toán, vui lòng tải lại trang" });
-        }
-
-        return Ok(new { created = unpaid.Count, message = $"Thanh toán thành công {unpaid.Count} khóa học" });
+    // POST api/student/tuition/transfer-requests { enrollmentId, amount, transferRef?, note? }
+    // Báo đã chuyển khoản -> Pending, chưa tính đã đóng cho đến khi trung tâm xác nhận.
+    [HttpPost("transfer-requests")]
+    public async Task<IActionResult> RequestTransfer(TransferRequestDto req)
+    {
+        var result = await _payments.RequestTransferAsync(UserId, StudentId, req.EnrollmentId, req.Amount, req.TransferRef, req.Note);
+        if (!result.Success) return Error(result.StatusCode, result.Message);
+        return StatusCode(201, new { message = result.Message, id = result.PaymentId });
     }
 }

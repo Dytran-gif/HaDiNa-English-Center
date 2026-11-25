@@ -22,16 +22,23 @@ public class DashboardController(AppDbContext db) : ControllerBase
         // Same definition as courses: upcoming and ongoing, excluding ended classes.
         var classes = await db.Classes.CountAsync(c => c.EndDate >= today, cancellationToken);
         var teachers = await db.Teachers.CountAsync(cancellationToken);
-        var monthly = await db.Payments.Where(p => p.PaidDate >= start && p.PaidDate < end)
-            .SumAsync(p => (decimal?)p.Amount, cancellationToken) ?? 0m;
-        var total = await db.Payments.SumAsync(p => (decimal?)p.Amount, cancellationToken) ?? 0m;
+        // Doanh thu = phiếu đã xác nhận (thu) - phiếu hoàn, theo ngày xác nhận
+        var startAt = start.ToDateTime(TimeOnly.MinValue);
+        var endAt = end.ToDateTime(TimeOnly.MinValue);
+        var monthly = await db.Payments.Where(p => p.Status == "Confirmed" && p.ConfirmedAt >= startAt && p.ConfirmedAt < endAt)
+            .SumAsync(p => (decimal?)(p.Kind == "Refund" ? -p.Amount : p.Amount), cancellationToken) ?? 0m;
+        var total = await db.Payments.Where(p => p.Status == "Confirmed")
+            .SumAsync(p => (decimal?)(p.Kind == "Refund" ? -p.Amount : p.Amount), cancellationToken) ?? 0m;
         return Ok(new DashboardKpisResponse(students, classes, teachers, monthly, total));
     }
 
     internal static IQueryable<RevenueBucket> RevenueQuery(AppDbContext context, DateOnly start, DateOnly end) =>
-        context.Payments.AsNoTracking().Where(p => p.PaidDate >= start && p.PaidDate < end)
-            .GroupBy(p => new { p.PaidDate.Year, p.PaidDate.Month })
-            .Select(group => new RevenueBucket(group.Key.Year, group.Key.Month, group.Sum(p => p.Amount)));
+        context.Payments.AsNoTracking()
+            .Where(p => p.Status == "Confirmed" && p.ConfirmedAt >= start.ToDateTime(TimeOnly.MinValue)
+                && p.ConfirmedAt < end.ToDateTime(TimeOnly.MinValue))
+            .GroupBy(p => new { p.ConfirmedAt!.Value.Year, p.ConfirmedAt!.Value.Month })
+            .Select(group => new RevenueBucket(group.Key.Year, group.Key.Month,
+                group.Sum(p => p.Kind == "Refund" ? -p.Amount : p.Amount)));
 
     internal static RevenueMonthResponse[] FillMonths(DateOnly start, int months, IEnumerable<RevenueBucket> buckets)
     {

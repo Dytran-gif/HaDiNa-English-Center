@@ -9,50 +9,26 @@ using Microsoft.EntityFrameworkCore;
 // đã trùng với entity Student, đặt tên Student sẽ phá các controller khác.
 namespace EnglishCenter.Api.Controllers.StudentPortal;
 
-// Điểm danh của học viên trong một khóa (tab Điểm danh của popup Present Lessons).
-// Chỉ trả điểm danh của CHÍNH học viên đang đăng nhập, trong các lớp thuộc khóa đó.
-// Phân trang 10 buổi/trang, buổi mới nhất hiện trước.
-[ApiController]
-[Authorize(Roles = "student")]
+// Điểm danh của học viên trong một lớp (tab Điểm danh của popup khóa học). 10 buổi/trang, mới nhất trước.
 [Route("api/student/attendance")]
-public class AttendanceController : ControllerBase
+public class AttendanceController : StudentControllerBase
 {
     private const int PageSize = 10;
 
-    private readonly AppDbContext _db;
+    public AttendanceController(AppDbContext db) : base(db) { }
 
-    public AttendanceController(AppDbContext db)
-    {
-        _db = db;
-    }
-
-    // GET api/student/attendance?courseId=2&page=1
+    // GET api/student/attendance?classId=5&page=1 (hoặc ?courseId= cho FE cũ -> lớp của mình trong khóa)
+    // Chỉ điểm danh của chính mình, trong đúng lớp mình học (không gộp các lớp khác cùng khóa).
     [HttpGet]
-    public async Task<IActionResult> GetPage(int courseId, int page = 1)
+    public async Task<IActionResult> GetPage(int? classId, int? courseId, int page = 1)
     {
-        if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
-            return Unauthorized(new { message = "Token không hợp lệ" });
-
-        var studentId = await _db.Students.AsNoTracking()
-            .Where(s => s.UserId == userId)
-            .Select(s => (int?)s.Id)
-            .FirstOrDefaultAsync();
-
-        if (studentId == null)
-            return StatusCode(403, new { message = "Tài khoản chưa có hồ sơ học viên" });
-
-        if (!await _db.Courses.AsNoTracking().AnyAsync(c => c.Id == courseId))
-            return NotFound(new { message = "Không tìm thấy khóa học" });
+        var my = await ResolveMyClassAsync(classId, courseId);
+        if (my == null) return Error(403, "Bạn không thuộc lớp/khóa học này");
 
         if (page < 1) page = 1;
 
-        // Chỉ chọn Id của lớp để không load entity Class/Student (tránh cột thiếu trong DB dev)
-        var classIds = _db.Classes.AsNoTracking()
-            .Where(c => c.CourseId == courseId)
-            .Select(c => c.Id);
-
-        var query = _db.Attendances.AsNoTracking()
-            .Where(a => a.StudentId == studentId && classIds.Contains(a.ClassId));
+        var query = Db.Attendances.AsNoTracking()
+            .Where(a => a.StudentId == StudentId && a.ClassId == my.ClassId);
 
         var total = await query.CountAsync();
 

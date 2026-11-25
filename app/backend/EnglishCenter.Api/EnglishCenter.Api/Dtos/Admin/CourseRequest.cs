@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace EnglishCenter.Api.Dtos.Admin;
 
@@ -9,6 +9,20 @@ public class CourseRequest : IValidatableObject
     public string Name { get; set; } = "";
 
     public string? Description { get; set; }
+
+    // Mã khóa ngắn ghép vào mã lớp (vd IE65). Bỏ trống thì tự sinh từ tên.
+    [StringLength(10, ErrorMessage = "Mã khóa tối đa 10 ký tự")]
+    public string? Code { get; set; }
+
+    // Đường dẫn trang public /khoa-hoc/{slug}. Bỏ trống thì tự sinh từ tên.
+    [StringLength(150)]
+    public string? Slug { get; set; }
+
+    [StringLength(500)]
+    public string? ImageUrl { get; set; }
+
+    // Hiện trên website public (mặc định có)
+    public bool IsPublished { get; set; } = true;
 
     [System.Text.Json.Serialization.JsonRequired]
     [Range(0, 9, ErrorMessage = "Band từ phải trong khoảng 0.0-9.0")]

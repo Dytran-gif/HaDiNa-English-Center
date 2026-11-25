@@ -18,6 +18,10 @@ public partial class AppDbContext
             e.Property(x => x.Bio).HasMaxLength(4000).IsRequired();
             e.Property(x => x.CredentialsJson).HasMaxLength(4000).IsRequired();
             e.Property(x => x.AvatarUrl).HasMaxLength(500);
+            // Mỗi giáo viên tối đa 1 hồ sơ public; xóa giáo viên thì hồ sơ còn lại nhưng không gắn ai
+            e.HasIndex(x => x.TeacherId).IsUnique();
+            e.HasOne(x => x.Teacher).WithMany().HasForeignKey(x => x.TeacherId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
     }
 }

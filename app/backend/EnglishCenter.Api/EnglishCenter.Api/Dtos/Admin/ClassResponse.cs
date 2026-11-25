@@ -1,8 +1,9 @@
-﻿namespace EnglishCenter.Api.Dtos.Admin;
+namespace EnglishCenter.Api.Dtos.Admin;
 
 public class ClassResponse
 {
     public int Id { get; set; }
+    public string Code { get; set; } = "";
     public string Name { get; set; } = "";
     public int CourseId { get; set; }
     public string CourseName { get; set; } = "";
@@ -40,5 +41,8 @@ public class ClassStudentItem
     public string Phone { get; set; } = "";
     public string Status { get; set; } = "";    // Active | OnHold | Dropped
     public decimal FinalTuitionFee { get; set; }
-    public bool IsPaid { get; set; }
+    public decimal PaidAmount { get; set; }          // đã thu thực (xác nhận - hoàn)
+    public decimal RemainingAmount { get; set; }
+    public string PaymentStatus { get; set; } = "";  // Unpaid | Partial | Paid | Refunded
+    public bool IsPaid { get; set; }                 // đã đóng đủ
 }

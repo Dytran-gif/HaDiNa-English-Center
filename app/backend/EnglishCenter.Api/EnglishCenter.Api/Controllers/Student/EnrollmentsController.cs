@@ -1,81 +1,58 @@
-using System.Security.Claims;
 using EnglishCenter.Api.Data;
 using EnglishCenter.Api.Dtos.StudentPortal;
-using Microsoft.AspNetCore.Authorization;
+using EnglishCenter.Api.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 // Lưu ý: namespace phải là ...StudentPortal (không phải ...Student) vì tên "Student"
 // đã trùng với entity Student, đặt tên Student sẽ phá các controller khác.
 namespace EnglishCenter.Api.Controllers.StudentPortal;
 
-// Ghi danh của học viên: danh sách khóa đã đăng ký (trang Courses - khối bên dưới) và hủy đăng ký.
-// Viết độc lập, truy vấn thẳng AppDbContext, khớp type trong FE GeneralTypes.ts.
-[ApiController]
-[Authorize(Roles = "student")]
+// Ghi danh của học viên: "Khóa của tôi" (Đang học / Sắp học / Đã học), đăng ký theo LỚP, hủy đăng ký.
+// Đăng ký dùng chung EnrollmentService với Admin: lớp chưa kết thúc, còn chỗ, không trùng lịch, không học trùng khóa.
 [Route("api/student/enrollments")]
-public class EnrollmentsController : ControllerBase
+public class EnrollmentsController : StudentControllerBase
 {
-    private readonly AppDbContext _db;
+    private readonly EnrollmentService _enrollments;
 
-    public EnrollmentsController(AppDbContext db)
+    public EnrollmentsController(AppDbContext db, EnrollmentService enrollments) : base(db)
     {
-        _db = db;
+        _enrollments = enrollments;
     }
 
-    // GET api/student/enrollments - các ghi danh của học viên đang đăng nhập (mới nhất trước)
-    [HttpGet]
-    public async Task<IActionResult> GetMine()
+    internal static StudentEnrollmentItemDto ToDto(MyEnrollment e, DateOnly today)
     {
-        if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
-            return Unauthorized(new { message = "Token không hợp lệ" });
-
-        var studentId = await _db.Students.AsNoTracking()
-            .Where(s => s.UserId == userId)
-            .Select(s => (int?)s.Id)
-            .FirstOrDefaultAsync();
-
-        if (studentId == null)
-            return StatusCode(403, new { message = "Tài khoản chưa có hồ sơ học viên" });
-
-        var rows = await _db.Enrollments.AsNoTracking()
-            .Where(e => e.StudentId == studentId)
-            .OrderByDescending(e => e.Id)
-            .Select(e => new
-            {
-                e.Id,
-                e.Status,
-                CourseId = e.Class.CourseId,
-                CourseName = e.Class.Course.Name,
-                Description = e.Class.Course.Description,
-                BandFrom = e.Class.Course.BandFrom,
-                BandTo = e.Class.Course.BandTo,
-                TotalSessions = e.Class.Course.TotalSessions,
-                SessionsPerWeek = e.Class.Course.SessionsPerWeek,
-                Tuition = e.Class.Course.Tuition,
-                DiscountPercent = e.Class.Course.DiscountPercent,
-                e.TuitionFee,
-                e.DiscountAmount,
-                e.FinalTuitionFee,
-                IsPaid = e.Payment != null,
-                PaidAmount = e.Payment != null ? (decimal?)e.Payment.Amount : null,
-                PaidDate = e.Payment != null ? (DateOnly?)e.Payment.PaidDate : null,
-                Method = e.Payment != null ? e.Payment.Method : null
-            })
-            .ToListAsync();
-
-        var items = rows.Select(e => new StudentEnrollmentItemDto
+        var balance = e.Balance;
+        var lastPaid = e.Payments.Where(p => p.Status == PaymentService.Confirmed && p.Kind == PaymentService.KindPayment)
+            .OrderByDescending(p => p.Id).FirstOrDefault();
+        var classStatus = e.ClassStatus(today);
+        return new StudentEnrollmentItemDto
         {
-            EnrollmentId = e.Id,
+            EnrollmentId = e.EnrollmentId,
             Status = e.Status,
             TuitionFee = e.TuitionFee,
             DiscountPercent = e.DiscountPercent,
             DiscountAmount = e.DiscountAmount,
+            ExtraDiscountAmount = e.ExtraDiscountAmount,
+            DiscountNote = e.DiscountNote,
             FinalTuitionFee = e.FinalTuitionFee,
-            IsPaid = e.IsPaid,
-            PaidAmount = e.PaidAmount,
-            PaidDate = e.PaidDate,
-            Method = e.Method,
+            ClassId = e.ClassId,
+            ClassCode = e.ClassCode,
+            ClassName = e.ClassName,
+            ClassStatus = classStatus,
+            StartDate = e.StartDate,
+            EndDate = e.EndDate,
+            TeacherName = e.TeacherName,
+            ScheduleText = e.ScheduleText,
+            SessionsDone = e.DoneSessions(today),
+            ClassTotalSessions = e.TotalSessions,
+            CanCancel = e.Status == "Active" && e.StartDate > today && balance.Net <= 0,
+            IsPaid = balance.Remaining == 0,
+            PaidAmount = balance.Net > 0 ? balance.Net : null,
+            PendingAmount = balance.Pending,
+            RemainingAmount = balance.Remaining,
+            PaymentStatus = balance.Status,
+            PaidDate = lastPaid?.PaidDate,
+            Method = lastPaid?.Method,
             Course = new CourseItemDto
             {
                 Id = e.CourseId.ToString(),
@@ -83,46 +60,53 @@ public class EnrollmentsController : ControllerBase
                 Description = e.Description ?? "",
                 BandFrom = e.BandFrom.ToString("0.#"),
                 BandTo = e.BandTo.ToString("0.#"),
-                TotalSessions = e.TotalSessions,
+                TotalSessions = e.CourseTotalSessions,
                 SessionsPerWeek = e.SessionsPerWeek,
                 Tuition = e.Tuition,
-                DiscountPercent = e.DiscountPercent,
-                ImageUrl = null // bảng Courses chưa có cột ảnh; FE tự dùng ảnh mặc định
+                DiscountPercent = e.CourseDiscountPercent,
+                ImageUrl = e.ImageUrl,
+                TeacherName = e.TeacherName,
+                ClassId = e.ClassId,
+                ClassCode = e.ClassCode,
+                ClassName = e.ClassName,
+                ClassStatus = classStatus,
+                StartDate = e.StartDate,
+                EndDate = e.EndDate,
+                MeetingUrl = e.MeetingUrl,
+                SessionsDone = e.DoneSessions(today),
+                ClassTotalSessions = e.TotalSessions
             }
-        }).ToList();
-
-        return Ok(items);
+        };
     }
 
-    // DELETE api/student/enrollments/{enrollmentId} - hủy ghi danh của chính mình.
-    // Khóa đã thanh toán thì không cho tự hủy (đã có phiếu thu).
-    [HttpDelete("{enrollmentId}")]
+    // GET api/student/enrollments - mọi ghi danh của mình (FE chia tab theo classStatus / status)
+    [HttpGet]
+    public async Task<IActionResult> GetMine()
+    {
+        var today = AppTime.Today;
+        var rows = await LoadMyEnrollmentsAsync();
+        return Ok(rows.OrderByDescending(r => r.StartDate).Select(r => ToDto(r, today)).ToList());
+    }
+
+    // POST api/student/enrollments { classId } - đăng ký vào lớp đã chọn
+    [HttpPost]
+    public async Task<IActionResult> Create(StudentEnrollRequest req)
+    {
+        var result = await _enrollments.EnrollAsync(StudentId, req.ClassId);
+        if (!result.Success) return Error(result.StatusCode, result.Message);
+
+        var today = AppTime.Today;
+        var created = (await LoadMyEnrollmentsAsync(e => e.Id == result.EnrollmentId)).First();
+        return StatusCode(201, new { message = $"Đăng ký thành công lớp {created.ClassCode} ({created.CourseName})", enrollment = ToDto(created, today) });
+    }
+
+    // DELETE api/student/enrollments/{enrollmentId} - hủy đăng ký của chính mình.
+    // Chỉ khi lớp chưa khai giảng và chưa có khoản đã đóng; ngược lại liên hệ trung tâm.
+    [HttpDelete("{enrollmentId:int}")]
     public async Task<IActionResult> Delete(int enrollmentId)
     {
-        if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
-            return Unauthorized(new { message = "Token không hợp lệ" });
-
-        var studentId = await _db.Students.AsNoTracking()
-            .Where(s => s.UserId == userId)
-            .Select(s => (int?)s.Id)
-            .FirstOrDefaultAsync();
-
-        if (studentId == null)
-            return StatusCode(403, new { message = "Tài khoản chưa có hồ sơ học viên" });
-
-        var enrollment = await _db.Enrollments
-            .Include(e => e.Payment)
-            .FirstOrDefaultAsync(e => e.Id == enrollmentId && e.StudentId == studentId);
-
-        if (enrollment == null)
-            return NotFound(new { message = "Không tìm thấy ghi danh" });
-
-        if (enrollment.Payment != null)
-            return StatusCode(409, new { message = "Ghi danh đã thanh toán, không thể tự hủy" });
-
-        _db.Enrollments.Remove(enrollment);
-        await _db.SaveChangesAsync();
-
-        return Ok(new { message = "Đã hủy đăng ký khóa học" });
+        var result = await _enrollments.WithdrawAsync(StudentId, enrollmentId, byStudent: true);
+        if (!result.Success) return Error(result.StatusCode, result.Message);
+        return Ok(new { message = result.Message });
     }
 }

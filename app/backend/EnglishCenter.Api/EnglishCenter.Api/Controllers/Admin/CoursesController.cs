@@ -1,6 +1,7 @@
-﻿using EnglishCenter.Api.Data;
+using EnglishCenter.Api.Data;
 using EnglishCenter.Api.Dtos.Admin;
 using EnglishCenter.Api.Entities;
+using EnglishCenter.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +30,10 @@ public class CoursesController : ControllerBase
         return query.Select(c => new CourseResponse
         {
             Id = c.Id,
+            Code = c.Code,
+            Slug = c.Slug,
+            ImageUrl = c.ImageUrl,
+            IsPublished = c.IsPublished,
             Name = c.Name,
             Description = c.Description,
             BandFrom = c.BandFrom,
@@ -45,6 +50,46 @@ public class CoursesController : ControllerBase
         });
     }
 
+    // Mã + slug: lấy từ request hoặc tự sinh từ tên; trả lỗi nếu trùng khóa khác
+    private async Task<(string code, string slug, object? error)> ResolveCodesAsync(CourseRequest req, int? id)
+    {
+        var name = req.Name.Trim();
+        string code;
+        if (!string.IsNullOrWhiteSpace(req.Code))
+        {
+            code = Codes.NormalizeCourseCode(req.Code);
+            if (code.Length < 2) return ("", "", new { message = "Mã khóa tối thiểu 2 ký tự chữ/số", errors = new { code = new[] { "Mã khóa tối thiểu 2 ký tự chữ/số" } } });
+            if (await _db.Courses.AnyAsync(c => c.Code == code && c.Id != (id ?? 0)))
+                return ("", "", new { message = $"Mã khóa {code} đã được dùng", errors = new { code = new[] { "Mã khóa đã được dùng" } } });
+        }
+        else
+        {
+            var words = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var baseCode = Codes.NormalizeCourseCode(
+                new string((words.FirstOrDefault() ?? "KH").Where(char.IsLetter).Take(2).ToArray())
+                + new string(name.Where(char.IsAsciiDigit).Take(4).ToArray()));
+            if (baseCode.Length < 2) baseCode = "KH";
+            code = baseCode;
+            for (var i = 2; await _db.Courses.AnyAsync(c => c.Code == code && c.Id != (id ?? 0)); i++)
+                code = Codes.NormalizeCourseCode(baseCode[..Math.Min(baseCode.Length, 8)] + i);
+        }
+
+        var slug = Codes.Slugify(string.IsNullOrWhiteSpace(req.Slug) ? name : req.Slug);
+        if (slug.Length == 0) slug = "khoa-hoc";
+        if (!string.IsNullOrWhiteSpace(req.Slug))
+        {
+            if (await _db.Courses.AnyAsync(c => c.Slug == slug && c.Id != (id ?? 0)))
+                return ("", "", new { message = "Đường dẫn đã được khóa khác dùng", errors = new { slug = new[] { "Đường dẫn đã được dùng" } } });
+        }
+        else
+        {
+            var baseSlug = slug;
+            for (var i = 2; await _db.Courses.AnyAsync(c => c.Slug == slug && c.Id != (id ?? 0)); i++)
+                slug = $"{baseSlug}-{i}";
+        }
+        return (code, slug, null);
+    }
+
     // GET api/admin/courses?search=ielts&page=1&pageSize=16
     [HttpGet]
     public async Task<IActionResult> GetAll(string? search, int page = 1, int pageSize = 16)
@@ -53,7 +98,7 @@ public class CoursesController : ControllerBase
         if (pageSize < 1) pageSize = 16;
         if (pageSize > 100) pageSize = 100;
 
-        var query = _db.Courses.AsNoTracking().WhereContains(search, c => c.Name);
+        var query = _db.Courses.AsNoTracking().WhereContains(search, c => c.Name, c => c.Code);
 
         var total = await query.CountAsync();
 
@@ -90,8 +135,15 @@ public class CoursesController : ControllerBase
         if (await _db.Courses.AnyAsync(c => c.Name == name))
             return Conflict(new { message = "Tên khóa học đã tồn tại", errors = new { name = new[] { "Tên khóa học đã tồn tại" } } });
 
+        var (code, slug, codeError) = await ResolveCodesAsync(req, null);
+        if (codeError != null) return Conflict(codeError);
+
         var course = new Course
         {
+            Code = code,
+            Slug = slug,
+            ImageUrl = string.IsNullOrWhiteSpace(req.ImageUrl) ? null : req.ImageUrl.Trim(),
+            IsPublished = req.IsPublished,
             Name = name,
             Description = req.Description?.Trim(),
             BandFrom = req.BandFrom,
@@ -125,8 +177,18 @@ public class CoursesController : ControllerBase
         if (await _db.Courses.AnyAsync(c => c.Name == name && c.Id != id))
             return Conflict(new { message = "Tên khóa học đã tồn tại", errors = new { name = new[] { "Tên khóa học đã tồn tại" } } });
 
+        req.Code ??= course.Code;
+        req.Slug ??= course.Slug;
+        var (code, slug, codeError) = await ResolveCodesAsync(req, id);
+        if (codeError != null) return Conflict(codeError);
+
         // Đổi học phí / giảm giá chỉ ảnh hưởng ghi danh MỚI,
         // vì các ghi danh cũ đã lưu snapshot giá trong bảng Enrollments.
+        // Đổi mã khóa không đổi mã các lớp đã tạo.
+        course.Code = code;
+        course.Slug = slug;
+        course.ImageUrl = string.IsNullOrWhiteSpace(req.ImageUrl) ? null : req.ImageUrl.Trim();
+        course.IsPublished = req.IsPublished;
         course.Name = name;
         course.Description = req.Description?.Trim();
         course.BandFrom = req.BandFrom;

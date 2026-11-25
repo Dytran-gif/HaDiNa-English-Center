@@ -40,12 +40,25 @@ public class NextLessonInfoDto
     public DateOnly? NextDate { get; set; }
     public TimeOnly? StartTime { get; set; }
     public TimeOnly? EndTime { get; set; }
+
+    // Chi tiết buổi để FE mở popup buổi học
+    public int? ClassId { get; set; }
+    public string? ClassCode { get; set; }
+    public string? ClassName { get; set; }
+    public string? TeacherName { get; set; }
+    public string? RoomName { get; set; }
+    public string? MeetingUrl { get; set; }
+    public int SessionNo { get; set; }
+    public int ClassTotalSessions { get; set; }
 }
 
 // Một ca học trong tuần của khóa (DayOfWeek 1=Thứ 2 .. 7=Chủ nhật)
 public class LessonSlotDto
 {
     public int CourseId { get; set; }
+    public int ClassId { get; set; }
+    public DateOnly StartDate { get; set; }   // chỉ tính buổi trong khoảng ngày của lớp
+    public DateOnly EndDate { get; set; }
     public int DayOfWeek { get; set; }
     public TimeOnly StartTime { get; set; }
     public TimeOnly EndTime { get; set; }
@@ -65,6 +78,17 @@ public class CourseItemDto
     public decimal DiscountPercent { get; set; }
     public string? ImageUrl { get; set; }
     public string TeacherName { get; set; } = ""; // giáo viên của khóa (rỗng nếu khóa chưa có lớp)
+
+    // Lớp của học viên trong khóa (dashboard / khóa đã đăng ký). Trang danh sách khóa thì null.
+    public int? ClassId { get; set; }
+    public string? ClassCode { get; set; }
+    public string? ClassName { get; set; }
+    public string? ClassStatus { get; set; }       // Upcoming | Ongoing | Finished
+    public DateOnly? StartDate { get; set; }
+    public DateOnly? EndDate { get; set; }
+    public string? MeetingUrl { get; set; }
+    public int SessionsDone { get; set; }
+    public int ClassTotalSessions { get; set; }
 }
 
 // Khớp type AppNotification trong GeneralTypes.ts (rút gọn phần Dashboard cần)

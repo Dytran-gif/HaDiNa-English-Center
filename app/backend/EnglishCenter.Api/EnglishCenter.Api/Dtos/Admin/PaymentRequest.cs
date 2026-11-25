@@ -20,6 +20,13 @@ public class PaymentRequest : IValidatableObject
 
     public DateOnly? PaidDate { get; set; }
 
+    // Số tiền thu đợt này; bỏ trống = thu đủ số còn nợ
+    [Range(1, 1000000000, ErrorMessage = "Số tiền không hợp lệ")]
+    public decimal? Amount { get; set; }
+
+    [StringLength(100, ErrorMessage = "Mã giao dịch tối đa 100 ký tự")]
+    public string? TransferRef { get; set; }
+
     [StringLength(500, ErrorMessage = "Ghi chú tối đa 500 ký tự")]
     public string? Note { get; set; }
 
@@ -40,4 +47,31 @@ public class PaymentRequest : IValidatableObject
         if (PaidDate.HasValue && PaidDate.Value > AppTime.Today)
             yield return new ValidationResult("Ngày thu không được ở tương lai", new[] { nameof(PaidDate) });
     }
+}
+
+public class PaymentDecisionRequest
+{
+    // Ngày nhận tiền (khi xác nhận); bỏ trống = ngày học viên báo
+    public DateOnly? PaidDate { get; set; }
+
+    // Lý do (bắt buộc khi từ chối / hủy)
+    [StringLength(300, ErrorMessage = "Lý do tối đa 300 ký tự")]
+    public string? Reason { get; set; }
+}
+
+public class RefundRequest
+{
+    [Range(1, int.MaxValue, ErrorMessage = "Mã ghi danh không hợp lệ")]
+    public int EnrollmentId { get; set; }
+
+    [Range(1, 1000000000, ErrorMessage = "Số tiền không hợp lệ")]
+    public decimal Amount { get; set; }
+
+    [Required(ErrorMessage = "Hình thức là bắt buộc")]
+    [RegularExpression("^(Cash|Transfer)$", ErrorMessage = "Hình thức phải là Cash hoặc Transfer")]
+    public string Method { get; set; } = "Cash";
+
+    [Required(ErrorMessage = "Cần nhập lý do hoàn tiền")]
+    [StringLength(300, MinimumLength = 3, ErrorMessage = "Lý do 3-300 ký tự")]
+    public string Reason { get; set; } = "";
 }

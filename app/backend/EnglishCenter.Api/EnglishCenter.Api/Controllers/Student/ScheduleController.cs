@@ -1,8 +1,6 @@
-using System.Security.Claims;
 using EnglishCenter.Api.Data;
 using EnglishCenter.Api.Dtos.StudentPortal;
 using EnglishCenter.Api.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,196 +8,157 @@ using Microsoft.EntityFrameworkCore;
 // đã trùng với entity Student, đặt tên Student sẽ phá các controller khác.
 namespace EnglishCenter.Api.Controllers.StudentPortal;
 
-// Lịch học của học viên (trang Schedule): thời khóa biểu tuần + lịch sử khóa đã qua.
-// Viết độc lập, truy vấn thẳng AppDbContext, chỉ lấy lớp của học viên đang đăng nhập.
-// Giới hạn DB: chưa có bảng semester, thông báo (AppNotification) và buổi hủy (ClassSessions)
-// -> notices luôn rỗng; history = các ghi danh không còn Active (OnHold/Dropped).
-[ApiController]
-[Authorize(Roles = "student")]
+// Lịch học của học viên: thời khóa biểu tuần (mỗi buổi kèm mã lớp, link online, trạng thái điểm danh)
+// + lịch sử khóa học (lớp đã học xong hoặc đã nghỉ). Buổi học tính bằng ClassCalendar giống cổng Giáo viên.
+// DB chưa có bảng thông báo / buổi hủy -> notices rỗng, isCancelled = false.
 [Route("api/student/schedule")]
-public class ScheduleController : ControllerBase
+public class ScheduleController : StudentControllerBase
 {
     private static readonly string[] DayNames = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
 
-    private readonly AppDbContext _db;
-
-    public ScheduleController(AppDbContext db)
-    {
-        _db = db;
-    }
+    public ScheduleController(AppDbContext db) : base(db) { }
 
     // GET api/student/schedule?date=yyyy-MM-dd - thời khóa biểu tuần chứa ngày date
     [HttpGet]
     public async Task<IActionResult> GetWeek(DateOnly? date)
     {
-        if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
-            return Unauthorized(new { message = "Token không hợp lệ" });
-
-        var studentId = await _db.Students.AsNoTracking()
-            .Where(s => s.UserId == userId)
-            .Select(s => (int?)s.Id)
-            .FirstOrDefaultAsync();
-
-        if (studentId == null)
-            return StatusCode(403, new { message = "Tài khoản chưa có hồ sơ học viên" });
-
         var monday = AppTime.StartOfWeek(date ?? AppTime.Today);
-        var days = Enumerable.Range(0, 7)
-            .Select(i => monday.AddDays(i))
-            .ToList();
+        var sunday = monday.AddDays(6);
+        var days = Enumerable.Range(0, 7).Select(i => monday.AddDays(i)).ToList();
 
-        // Các lớp đang học (Active) + lịch tuần của từng lớp
-        var rows = await _db.Enrollments.AsNoTracking()
-            .Where(e => e.StudentId == studentId && e.Status == "Active")
-            .Select(e => new
-            {
-                ClassId = e.ClassId,
-                ClassName = e.Class.Name,
-                StartDate = e.Class.StartDate,
-                EndDate = e.Class.EndDate,
-                TeacherName = e.Class.Teacher.FullName,
-                CourseName = e.Class.Course.Name,
-                Description = e.Class.Course.Description,
-                BandFrom = e.Class.Course.BandFrom,
-                BandTo = e.Class.Course.BandTo,
-                TotalSessions = e.Class.Course.TotalSessions
-            })
-            .ToListAsync();
-
+        var rows = await LoadMyEnrollmentsAsync(e => e.Status == "Active"
+            && e.Class.StartDate <= sunday && e.Class.EndDate >= monday);
         var classIds = rows.Select(r => r.ClassId).ToList();
-        var schedules = (await _db.ClassSchedules.AsNoTracking()
-                .Where(s => classIds.Contains(s.ClassId))
-                .Select(s => new
-                {
-                    s.ClassId,
-                    s.DayOfWeek,
-                    s.StartTime,
-                    s.EndTime,
-                    RoomName = s.Room != null ? s.Room.Name : null
-                })
+
+        var attendance = (await Db.Attendances.AsNoTracking()
+                .Where(a => a.StudentId == StudentId && classIds.Contains(a.ClassId) && a.Date >= monday && a.Date <= sunday)
+                .Select(a => new { a.ClassId, a.Date, a.Status, a.Note })
                 .ToListAsync())
-            .ToLookup(s => s.ClassId);
+            .ToDictionary(a => (a.ClassId, a.Date));
+
+        // Bài tập GV giao trong tuần (và 7 ngày trước) cho từng lớp
+        var since = monday.AddDays(-7).ToDateTime(TimeOnly.MinValue);
+        var until = sunday.AddDays(1).ToDateTime(TimeOnly.MinValue);
+        var assignmentDates = new Dictionary<int, List<DateOnly>>();
+        foreach (var r in rows)
+        {
+            assignmentDates[r.ClassId] = (await AssignmentsFor(r.Ref).AsNoTracking()
+                    .Where(a => a.CreatedAt >= since && a.CreatedAt < until)
+                    .Select(a => a.CreatedAt).ToListAsync())
+                .Select(DateOnly.FromDateTime).ToList();
+        }
 
         var sessions = new List<StudentScheduleSessionDto>();
-
-        foreach (var row in rows)
+        foreach (var r in rows)
         {
-            var classSchedules = schedules[row.ClassId].ToList();
-            if (classSchedules.Count == 0) continue;
-
-            var scheduleDays = classSchedules.Select(s => (int)s.DayOfWeek).Distinct().ToHashSet();
-
-            foreach (var day in days)
+            var total = r.TotalSessions;
+            foreach (var s in ClassCalendar.Sessions(r.StartDate, r.EndDate, r.CalendarSlots).Where(s => s.Date >= monday && s.Date <= sunday))
             {
-                // Chỉ hiện buổi trong khoảng lớp đang mở
-                if (day < row.StartDate || day > row.EndDate) continue;
-
-                var dayNo = AppTime.DayNo(day);
-                foreach (var sch in classSchedules.Where(s => s.DayOfWeek == dayNo))
+                var room = r.Slots.First(x => x.Slot == s.Slot).RoomName;
+                attendance.TryGetValue((r.ClassId, s.Date), out var att);
+                sessions.Add(new StudentScheduleSessionDto
                 {
-                    var sessionNo = SessionNumber(row.StartDate, day, scheduleDays);
-
-                    // Chưa bắt đầu hoặc đã học đủ số buổi thì không hiển thị
-                    if (sessionNo == 0 || sessionNo > row.TotalSessions) continue;
-
-                    sessions.Add(new StudentScheduleSessionDto
-                    {
-                        ClassId = row.ClassId.ToString(),
-                        ClassName = row.ClassName,
-                        CourseName = row.CourseName,
-                        BandFrom = row.BandFrom.ToString("0.#"),
-                        BandTo = row.BandTo.ToString("0.#"),
-                        Description = row.Description ?? "",
-                        TotalSessions = row.TotalSessions,
-                        TeacherName = row.TeacherName,
-                        RoomName = sch.RoomName ?? "",
-                        DayOfWeek = DayNames[dayNo - 1],
-                        DateStr = day.ToString("yyyy-MM-dd"),
-                        StartTime = sch.StartTime.ToString("HH\\:mm"),
-                        EndTime = sch.EndTime.ToString("HH\\:mm"),
-                        SessionNo = sessionNo,
-                        IsCancelled = false // DB chưa có bảng buổi hủy (ClassSessions)
-                    });
-                }
+                    ClassId = r.ClassId.ToString(),
+                    ClassCode = r.ClassCode,
+                    ClassName = r.ClassName,
+                    CourseName = r.CourseName,
+                    BandFrom = r.BandFrom.ToString("0.#"),
+                    BandTo = r.BandTo.ToString("0.#"),
+                    Description = r.Description ?? "",
+                    TotalSessions = total,
+                    TeacherName = r.TeacherName,
+                    RoomName = room,
+                    MeetingUrl = r.MeetingUrl,
+                    DayOfWeek = DayNames[AppTime.DayNo(s.Date) - 1],
+                    DateStr = s.Date.ToString("yyyy-MM-dd"),
+                    StartTime = s.Slot.StartTime.ToString("HH\\:mm"),
+                    EndTime = s.Slot.EndTime.ToString("HH\\:mm"),
+                    SessionNo = s.Number,
+                    AttendanceStatus = att?.Status,
+                    AttendanceNote = att?.Note,
+                    NewAssignments = assignmentDates[r.ClassId].Count(d => d <= s.Date && d > s.Date.AddDays(-7)),
+                    IsCancelled = false
+                });
             }
         }
 
         return Ok(new StudentScheduleResponseDto
         {
             WeekStart = monday.ToString("yyyy-MM-dd"),
-            WeekEnd = monday.AddDays(6).ToString("yyyy-MM-dd"),
+            WeekEnd = sunday.ToString("yyyy-MM-dd"),
             Days = days.Select((d, i) => new StudentScheduleDayDto
             {
                 Key = DayNames[i],
                 Label = DayNames[i],
                 DateStr = d.ToString("yyyy-MM-dd")
             }).ToList(),
-            Sessions = sessions,
+            Sessions = sessions.OrderBy(s => s.DateStr).ThenBy(s => s.StartTime).ToList(),
             Notices = new List<StudentScheduleNoticeDto>()
         });
     }
 
-    // GET api/student/schedule/history - khóa đã qua (ghi danh không còn Active)
+    // GET api/student/schedule/history - lịch sử khóa học: lớp đã học xong (EndDate đã qua) hoặc ghi danh đã nghỉ/bảo lưu.
+    // Mỗi mục kèm chuyên cần, bài tập đã nộp, số nhận xét của GV (FE nhóm theo năm thành "thư mục").
     [HttpGet("history")]
     public async Task<IActionResult> GetHistory()
     {
-        if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
-            return Unauthorized(new { message = "Token không hợp lệ" });
+        var today = AppTime.Today;
+        var rows = (await LoadMyEnrollmentsAsync(e => e.Status != "Active" || e.Class.EndDate < today))
+            .OrderByDescending(r => r.EndDate).ToList();
+        var classIds = rows.Select(r => r.ClassId).ToList();
 
-        var studentId = await _db.Students.AsNoTracking()
-            .Where(s => s.UserId == userId)
-            .Select(s => (int?)s.Id)
-            .FirstOrDefaultAsync();
-
-        if (studentId == null)
-            return StatusCode(403, new { message = "Tài khoản chưa có hồ sơ học viên" });
-
-        var rows = await _db.Enrollments.AsNoTracking()
-            .Where(e => e.StudentId == studentId && e.Status != "Active")
-            .OrderByDescending(e => e.Id)
-            .Select(e => new
+        var att = await Db.Attendances.AsNoTracking()
+            .Where(a => a.StudentId == StudentId && classIds.Contains(a.ClassId))
+            .GroupBy(a => a.ClassId)
+            .Select(g => new
             {
-                e.Id,
-                e.Status,
-                e.CreatedAt,
-                ClassId = e.ClassId,
-                ClassName = e.Class.Name,
-                StartDate = e.Class.StartDate,
-                EndDate = e.Class.EndDate,
-                CourseName = e.Class.Course.Name,
-                BandFrom = e.Class.Course.BandFrom,
-                BandTo = e.Class.Course.BandTo,
-                TotalSessions = e.Class.Course.TotalSessions,
-                TeacherName = e.Class.Teacher.FullName
+                ClassId = g.Key, Marked = g.Count(),
+                Attended = g.Count(a => a.Status == "Present" || a.Status == "Late")
             })
-            .ToListAsync();
+            .ToDictionaryAsync(x => x.ClassId);
 
-        var items = rows.Select(e => new StudentScheduleHistoryItemDto
+        var feedback = await Db.StudentFeedbacks.AsNoTracking()
+            .Where(f => f.StudentId == StudentId && classIds.Contains(f.ClassId))
+            .GroupBy(f => f.ClassId)
+            .Select(g => new { ClassId = g.Key, Count = g.Count(), Last = g.Max(f => f.CreatedAt) })
+            .ToDictionaryAsync(x => x.ClassId);
+
+        var items = new List<StudentScheduleHistoryItemDto>();
+        foreach (var e in rows)
         {
-            EnrollmentId = e.Id,
-            Status = e.Status,
-            RegisteredAt = e.CreatedAt.ToString("yyyy-MM-dd"),
-            ClassId = e.ClassId.ToString(),
-            ClassName = e.ClassName,
-            StartDate = e.StartDate.ToString("yyyy-MM-dd"),
-            EndDate = e.EndDate.ToString("yyyy-MM-dd"),
-            CourseName = e.CourseName,
-            Band = $"Band {e.BandFrom.ToString("0.#")} - {e.BandTo.ToString("0.#")}",
-            TotalSessions = e.TotalSessions,
-            TeacherName = e.TeacherName
-        }).ToList();
+            var assignmentIds = await AssignmentsFor(e.Ref).Select(a => a.Id).ToListAsync();
+            var submitted = await Db.AssignmentFiles.AsNoTracking()
+                .Where(s => s.FileType == "Student" && s.StudentId == StudentId && s.AssignmentId != null
+                    && assignmentIds.Contains(s.AssignmentId.Value))
+                .Select(s => s.AssignmentId).Distinct().CountAsync();
+
+            att.TryGetValue(e.ClassId, out var a);
+            feedback.TryGetValue(e.ClassId, out var f);
+            items.Add(new StudentScheduleHistoryItemDto
+            {
+                EnrollmentId = e.EnrollmentId,
+                Status = e.Status,
+                ClassStatus = e.ClassStatus(today),
+                ClassCode = e.ClassCode,
+                Year = e.EndDate.Year,
+                RegisteredAt = e.CreatedAt.ToString("yyyy-MM-dd"),
+                ClassId = e.ClassId.ToString(),
+                ClassName = e.ClassName,
+                StartDate = e.StartDate.ToString("yyyy-MM-dd"),
+                EndDate = e.EndDate.ToString("yyyy-MM-dd"),
+                CourseName = e.CourseName,
+                Band = $"Band {e.BandFrom:0.#} - {e.BandTo:0.#}",
+                TotalSessions = e.TotalSessions,
+                TeacherName = e.TeacherName,
+                AttendedSessions = a?.Attended ?? 0,
+                MarkedSessions = a?.Marked ?? 0,
+                AssignmentCount = assignmentIds.Count,
+                SubmittedCount = submitted,
+                FeedbackCount = f?.Count ?? 0,
+                LastFeedbackAt = f?.Last.ToString("yyyy-MM-dd")
+            });
+        }
 
         return Ok(items);
-    }
-
-    // Số buổi học đã diễn ra tính từ ngày khai giảng đến ngày target
-    // (đếm các ngày trong khoảng trùng với ngày học trong tuần của lớp)
-    private static int SessionNumber(DateOnly start, DateOnly target, HashSet<int> scheduleDays)
-    {
-        var count = 0;
-        for (var d = start; d <= target; d = d.AddDays(1))
-            if (scheduleDays.Contains(AppTime.DayNo(d)))
-                count++;
-        return count;
     }
 }

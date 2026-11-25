@@ -2,6 +2,7 @@ using System.Security.Claims;
 using EnglishCenter.Api.Data;
 using EnglishCenter.Api.Dtos.StudentPortal;
 using EnglishCenter.Api.Entities;
+using EnglishCenter.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,27 +12,27 @@ using Microsoft.EntityFrameworkCore;
 namespace EnglishCenter.Api.Controllers.StudentPortal;
 
 // Danh sách khóa học của trung tâm cho trang Courses của học viên.
-// Viết độc lập (không theo khuôn Teacher/Admin), truy vấn thẳng AppDbContext,
-// khớp type Course trong types/StudentTypes/MainTypes/GeneralTypes.ts.
-[ApiController]
-[Authorize(Roles = "student")]
+// Đăng ký học: chọn khóa -> GET {courseId}/classes chọn lớp -> POST api/student/enrollments { classId }.
 [Route("api/student/courses")]
-public class CoursesController : ControllerBase
+public class CoursesController : StudentControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly EnrollmentService _enrollments;
 
-    public CoursesController(AppDbContext db)
+    public CoursesController(AppDbContext db, EnrollmentService enrollments) : base(db)
     {
         _db = db;
+        _enrollments = enrollments;
     }
 
     // GET api/student/courses
-    // Chỉ trả khóa ĐÃ CÓ lớp học — khóa chưa mở lớp thì không hiện ở trang Browse Courses.
+    // Chỉ trả khóa đang hiển thị và còn lớp chưa kết thúc để đăng ký.
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
+        var today = AppTime.Today;
         var rows = await _db.Courses.AsNoTracking()
-            .Where(c => c.Classes.Any())
+            .Where(c => c.IsPublished && c.Classes.Any(x => x.EndDate >= today))
             .OrderBy(c => c.Name)
             .Select(c => new
             {
@@ -43,7 +44,8 @@ public class CoursesController : ControllerBase
                 c.TotalSessions,
                 c.SessionsPerWeek,
                 c.Tuition,
-                c.DiscountPercent
+                c.DiscountPercent,
+                c.ImageUrl
             })
             .ToListAsync();
 
@@ -66,7 +68,7 @@ public class CoursesController : ControllerBase
             SessionsPerWeek = c.SessionsPerWeek,
             Tuition = c.Tuition,
             DiscountPercent = c.DiscountPercent,
-            ImageUrl = null, // bảng Courses chưa có cột ảnh; FE tự dùng ảnh mặc định
+            ImageUrl = c.ImageUrl,
             TeacherName = string.Join(", ", teachers.Where(t => t.CourseId == c.Id).Select(t => t.TeacherName))
         }).ToList();
 
@@ -105,11 +107,11 @@ public class CoursesController : ControllerBase
 
         // Các lớp của khóa
         var classes = await _db.Classes.AsNoTracking()
-            .Where(c => c.CourseId == courseId)
+            .Where(c => c.CourseId == courseId && c.EndDate >= AppTime.Today)
             .OrderBy(c => c.StartDate)
             .Select(c => new
             {
-                c.Id, c.Name, c.StartDate, c.EndDate, c.MaxStudents,
+                c.Id, c.Code, c.Name, c.StartDate, c.EndDate, c.MaxStudents,
                 TeacherName = c.Teacher.FullName
             })
             .ToListAsync();
@@ -142,6 +144,7 @@ public class CoursesController : ControllerBase
             Classes = classes.Select(c => new StudentCourseClassDto
             {
                 Id = c.Id,
+                Code = c.Code,
                 Name = c.Name,
                 StartDate = c.StartDate,
                 EndDate = c.EndDate,
@@ -159,88 +162,54 @@ public class CoursesController : ControllerBase
         });
     }
 
-    // POST api/student/courses/{courseId}/register
-    // Đăng ký giả lập: chọn khóa -> tạo Enrollment (Active) vào lớp đầu tiên của khóa.
-    // Không cho đăng ký trùng một khóa (đã có enrollment bất kỳ cho khóa đó thì trả 409).
-    [HttpPost("{courseId}/register")]
-    public async Task<IActionResult> Register(int courseId)
+    // GET api/student/courses/{courseId}/classes - các lớp còn mở của khóa để học viên chọn lớp đăng ký.
+    // Mỗi lớp kèm sĩ số, học phí, và lý do không đăng ký được (đầy / trùng lịch / đang học khóa này).
+    [HttpGet("{courseId:int}/classes")]
+    public async Task<IActionResult> GetClasses(int courseId)
     {
-        if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
-            return Unauthorized(new { message = "Token không hợp lệ" });
+        var course = await _db.Courses.AsNoTracking().Where(c => c.Id == courseId && c.IsPublished)
+            .Select(c => new { c.Tuition, c.DiscountPercent }).FirstOrDefaultAsync();
+        if (course == null) return Error(404, "Không tìm thấy khóa học");
 
-        var student = await _db.Students.AsNoTracking()
-            .Where(s => s.UserId == userId)
-            .Select(s => new { s.Id, s.FullName })
-            .FirstOrDefaultAsync();
-
-        if (student == null)
-            return StatusCode(403, new { message = "Tài khoản chưa có hồ sơ học viên" });
-
-        var course = await _db.Courses.AsNoTracking()
-            .FirstOrDefaultAsync(c => c.Id == courseId);
-        if (course == null)
-            return NotFound(new { message = "Không tìm thấy khóa học" });
-
-        // Chặn đăng ký lại khóa đã từng đăng ký (Active/OnHold/Dropped đều tính)
-        var alreadyEnrolled = await _db.Enrollments.AsNoTracking()
-            .AnyAsync(e => e.StudentId == student.Id && e.Class.CourseId == courseId);
-        if (alreadyEnrolled)
-            return StatusCode(409, new { message = "Bạn đã đăng ký khóa học này rồi" });
-
-        // Đăng ký vào lớp đầu tiên của khóa (theo ngày bắt đầu)
-        var cls = await _db.Classes.AsNoTracking()
-            .Where(c => c.CourseId == courseId)
-            .OrderBy(c => c.StartDate)
-            .FirstOrDefaultAsync();
-        if (cls == null)
-            return StatusCode(409, new { message = "Khóa học chưa có lớp để đăng ký" });
-
-        // Chặn đăng ký khi lịch học của lớp mới trùng giờ với lớp đang học (Active)
-        // (cùng ngày trong tuần + khoảng thời gian chồng lấn)
-        var newSchedules = await _db.ClassSchedules.AsNoTracking()
-            .Where(s => s.ClassId == cls.Id)
-            .Select(s => new { s.DayOfWeek, s.StartTime, s.EndTime })
+        var today = AppTime.Today;
+        var rows = await _db.Classes.AsNoTracking()
+            .Where(c => c.CourseId == courseId && c.EndDate >= today)
+            .OrderBy(c => c.StartDate).ThenBy(c => c.Code)
+            .Select(c => new
+            {
+                c.Id, c.Code, c.Name, TeacherName = c.Teacher.FullName, c.StartDate, c.EndDate, c.MaxStudents,
+                Enrolled = c.Enrollments.Count(e => e.Status == "Active"),
+                Slots = c.Schedules.OrderBy(s => s.DayOfWeek).ThenBy(s => s.StartTime)
+                    .Select(s => new { s.DayOfWeek, s.StartTime, s.EndTime, RoomName = s.Room.Name }).ToList()
+            })
             .ToListAsync();
 
-        if (newSchedules.Count > 0)
+        var checks = await _enrollments.CheckAsync(StudentId, rows.Select(r => r.Id));
+        var items = rows.Select(r =>
         {
-            var existingSchedules = await _db.ClassSchedules.AsNoTracking()
-                .Where(s => s.Class.Enrollments.Any(e => e.StudentId == student.Id && e.Status == "Active"))
-                .Select(s => new { s.DayOfWeek, s.StartTime, s.EndTime, CourseName = s.Class.Course.Name, ClassName = s.Class.Name })
-                .ToListAsync();
+            var slots = r.Slots.Select(s => new ClassCalendar.Slot(s.DayOfWeek, s.StartTime, s.EndTime)).ToList();
+            var total = ClassCalendar.TotalSessions(r.StartDate, r.EndDate, slots);
+            var done = ClassCalendar.DoneSessions(r.StartDate, r.EndDate, slots, today.AddDays(-1));
+            var quote = EnrollmentService.Quote(course.Tuition, course.DiscountPercent, 0, total - done, total, false, null);
+            var check = checks.GetValueOrDefault(r.Id) ?? new ClassAvailability(false, false, null, null);
+            return new StudentClassOptionDto
+            {
+                Id = r.Id, Code = r.Code, Name = r.Name, TeacherName = r.TeacherName,
+                StartDate = r.StartDate, EndDate = r.EndDate,
+                Status = ClassCalendar.Status(r.StartDate, r.EndDate, today),
+                Schedules = r.Slots.Select(s => new StudentClassSlotDto
+                {
+                    DayOfWeek = s.DayOfWeek, StartTime = s.StartTime.ToString("HH:mm"),
+                    EndTime = s.EndTime.ToString("HH:mm"), RoomName = s.RoomName
+                }).ToList(),
+                Enrolled = r.Enrolled, MaxStudents = r.MaxStudents,
+                TotalSessions = total, RemainingSessions = total - done,
+                FinalTuition = quote.FinalTuitionFee,
+                IsFull = check.IsFull, Conflict = check.Conflict, AlreadyInCourse = check.AlreadyInCourse,
+                CanEnroll = check.CanEnroll, Reason = check.Reason
+            };
+        }).ToList();
 
-            var conflict = (from a in newSchedules
-                            from b in existingSchedules
-                            where a.DayOfWeek == b.DayOfWeek && a.StartTime < b.EndTime && b.StartTime < a.EndTime
-                            select $"{b.CourseName} ({b.ClassName})").FirstOrDefault();
-
-            if (conflict != null)
-                return StatusCode(409, new { message = $"Không thể đăng ký: lịch học trùng giờ với {conflict} bạn đang học" });
-        }
-
-        var discountAmount = Math.Round(course.Tuition * course.DiscountPercent / 100, 2);
-        var enrollment = new Enrollment
-        {
-            StudentId = student.Id,
-            ClassId = cls.Id,
-            TuitionFee = course.Tuition,
-            DiscountPercent = course.DiscountPercent,
-            DiscountAmount = discountAmount,
-            FinalTuitionFee = course.Tuition - discountAmount,
-            Status = "Active"
-        };
-        _db.Enrollments.Add(enrollment);
-
-        try
-        {
-            await _db.SaveChangesAsync();
-        }
-        catch (DbUpdateException)
-        {
-            // unique (StudentId, ClassId): hai lần đăng ký gần như đồng thời
-            return StatusCode(409, new { message = "Bạn đã đăng ký khóa học này rồi" });
-        }
-
-        return StatusCode(201, new { enrollment.Id, message = $"Đăng ký thành công khóa {course.Name}" });
+        return Ok(items);
     }
 }

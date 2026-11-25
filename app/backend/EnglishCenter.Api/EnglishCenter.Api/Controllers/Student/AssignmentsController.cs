@@ -10,47 +10,32 @@ using Microsoft.EntityFrameworkCore;
 // đã trùng với entity Student, đặt tên Student sẽ phá các controller khác.
 namespace EnglishCenter.Api.Controllers.StudentPortal;
 
-// Bài tập + nộp bài (trang Present Lessons của Dashboard).
-// Học viên chỉ được tải/nộp bài của GV đang dạy mình (kiểm tra Enrollment -> Class.TeacherId).
-// Đọc bảng Assignments qua view (AssignmentFile); ghi bằng SQL thô vì bảng không thuộc model EF.
-[ApiController]
-[Authorize(Roles = "student")]
+// Bài tập + nộp bài. Bài tập theo LỚP: học viên chỉ thấy bài của lớp mình (hoặc bài giao chung của chính GV lớp đó).
+// Nhận classId (mới) hoặc courseId (FE cũ) -> quy về lớp của mình trong khóa. Không thuộc lớp -> 403.
 [Route("api/student/assignments")]
-public class AssignmentsController : ControllerBase
+public class AssignmentsController : StudentControllerBase
 {
-    private readonly AppDbContext _db;
     private readonly IWebHostEnvironment _env;
 
-    public AssignmentsController(AppDbContext db, IWebHostEnvironment env)
+    public AssignmentsController(AppDbContext db, IWebHostEnvironment env) : base(db)
     {
-        _db = db;
         _env = env;
     }
 
-    private async Task<int?> CurrentStudentId()
-    {
-        if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId)) return null;
-        return await _db.Students.AsNoTracking()
-            .Where(s => s.UserId == userId)
-            .Select(s => (int?)s.Id)
-            .FirstOrDefaultAsync();
-    }
-
-    // GET api/student/assignments?courseId= - bài tập GV giao cho khóa + bài nộp của chính mình
+    // GET api/student/assignments?classId= (hoặc ?courseId=) - bài tập của lớp + bài nộp của mình
     [HttpGet]
-    public async Task<IActionResult> GetList(int courseId)
+    public async Task<IActionResult> GetList(int? classId, int? courseId)
     {
-        var studentId = await CurrentStudentId();
-        if (studentId == null) return Unauthorized(new { message = "Token không hợp lệ" });
+        var my = await ResolveMyClassAsync(classId, courseId);
+        if (my == null) return Error(403, "Bạn không thuộc lớp/khóa học này");
 
-        // Lọc theo CourseId để bài tập/bài nộp của khóa này không lẫn sang khóa khác
-        var assignments = await _db.AssignmentFiles
-            .Where(f => f.FileType == "Teacher" && f.CourseId == courseId)
+        var assignments = await AssignmentsFor(my).AsNoTracking()
             .OrderByDescending(f => f.CreatedAt)
             .ToListAsync();
+        var ids = assignments.Select(a => a.Id).ToList();
 
-        var mySubs = await _db.AssignmentFiles
-            .Where(f => f.FileType == "Student" && f.StudentId == studentId && f.CourseId == courseId)
+        var mySubs = await Db.AssignmentFiles.AsNoTracking()
+            .Where(f => f.FileType == "Student" && f.StudentId == StudentId && f.AssignmentId != null && ids.Contains(f.AssignmentId.Value))
             .ToListAsync();
 
         var items = assignments.Select(a => new StudentAssignmentDto
@@ -76,26 +61,21 @@ public class AssignmentsController : ControllerBase
         return Ok(items);
     }
 
-    // GET api/student/assignments/{id}/download - tải file GV giao (phải học lớp của GV này)
+    // GET api/student/assignments/{id}/download - tải file GV giao (phải học lớp nhận bài)
     [HttpGet("{id}/download")]
     public async Task<IActionResult> Download(int id)
     {
-        var studentId = await CurrentStudentId();
-        if (studentId == null) return Unauthorized(new { message = "Token không hợp lệ" });
-
-        var a = await _db.AssignmentFiles
+        var a = await Db.AssignmentFiles.AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id && x.FileType == "Teacher");
         if (a == null || string.IsNullOrEmpty(a.FilePath))
-            return NotFound(new { message = "Không tìm thấy file bài tập" });
+            return Error(404, "Không tìm thấy file bài tập");
 
-        var enrolled = await _db.Enrollments.AsNoTracking()
-            .AnyAsync(e => e.StudentId == studentId && e.Class.CourseId == a.CourseId);
-        if (!enrolled)
-            return StatusCode(403, new { message = "Bạn không thuộc khóa học này" });
+        if (await MyClassForAssignmentAsync(a) == null)
+            return Error(403, "Bạn không thuộc lớp được giao bài này");
 
         var full = AssignmentFileStorage.Resolve(_env, a.FilePath);
         if (full == null || !System.IO.File.Exists(full))
-            return NotFound(new { message = "File không còn tồn tại" });
+            return Error(404, "File không còn tồn tại");
 
         return PhysicalFile(full, AssignmentFileStorage.ContentType(a.FileName), a.FileName);
     }
@@ -105,30 +85,26 @@ public class AssignmentsController : ControllerBase
     [RequestSizeLimit(AssignmentFileStorage.MaxBytes)]
     public async Task<IActionResult> Submit(int id, IFormFile file)
     {
-        var studentId = await CurrentStudentId();
-        if (studentId == null) return Unauthorized(new { message = "Token không hợp lệ" });
-
-        var a = await _db.AssignmentFiles
+        var a = await Db.AssignmentFiles.AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id && x.FileType == "Teacher");
         if (a == null)
-            return NotFound(new { message = "Không tìm thấy bài tập" });
+            return Error(404, "Không tìm thấy bài tập");
 
-        var enrolled = await _db.Enrollments.AsNoTracking()
-            .AnyAsync(e => e.StudentId == studentId && e.Class.CourseId == a.CourseId);
-        if (!enrolled)
-            return StatusCode(403, new { message = "Bạn không thuộc khóa học này" });
+        var my = await MyClassForAssignmentAsync(a);
+        if (my == null)
+            return Error(403, "Bạn không thuộc lớp được giao bài này");
 
         if (file == null || file.Length == 0)
-            return BadRequest(new { message = "Chưa chọn file" });
+            return Error(400, "Chưa chọn file");
         if (!AssignmentFileStorage.IsAllowed(file.FileName))
-            return BadRequest(new { message = "Chỉ hỗ trợ file PDF, DOC, DOCX" });
+            return Error(400, "Chỉ hỗ trợ file PDF, DOC, DOCX");
         if (file.Length > AssignmentFileStorage.MaxBytes)
-            return BadRequest(new { message = "File tối đa 15 MB" });
+            return Error(400, "File tối đa 15 MB");
 
         var (fileName, filePath) = await AssignmentFileStorage.SaveAsync(_env, file, "StudentSubmissions");
 
-        await _db.Database.ExecuteSqlInterpolatedAsync(
-            $"INSERT INTO Assignments (TeacherId, StudentId, CourseId, AssignmentId, Title, Description, FileName, FilePath, FileType, CreatedAt) VALUES ({a.TeacherId}, {studentId}, {a.CourseId}, {a.Id}, {a.Title}, {null}, {fileName}, {filePath}, {"Student"}, {AppTime.Now})");
+        await Db.Database.ExecuteSqlInterpolatedAsync(
+            $"INSERT INTO Assignments (TeacherId, StudentId, CourseId, ClassId, AssignmentId, Title, Description, FileName, FilePath, FileType, CreatedAt) VALUES ({a.TeacherId}, {StudentId}, {a.CourseId}, {my.ClassId}, {a.Id}, {a.Title}, {null}, {fileName}, {filePath}, {"Student"}, {AppTime.Now})");
 
         return StatusCode(201, new { message = "Nộp bài thành công" });
     }
@@ -137,26 +113,17 @@ public class AssignmentsController : ControllerBase
     [HttpGet("{id}/my-submission/download")]
     public async Task<IActionResult> DownloadMySubmission(int id)
     {
-        var studentId = await CurrentStudentId();
-        if (studentId == null) return Unauthorized(new { message = "Token không hợp lệ" });
-
-        var a = await _db.AssignmentFiles
-            .FirstOrDefaultAsync(x => x.Id == id && x.FileType == "Teacher");
-        if (a == null)
-            return NotFound(new { message = "Không tìm thấy bài tập" });
-
-        var sub = await _db.AssignmentFiles
-            .Where(s => s.FileType == "Student" && s.StudentId == studentId
-                && s.AssignmentId == a.Id)
+        var sub = await Db.AssignmentFiles.AsNoTracking()
+            .Where(s => s.FileType == "Student" && s.StudentId == StudentId && s.AssignmentId == id)
             .OrderByDescending(s => s.CreatedAt)
             .FirstOrDefaultAsync();
 
         if (sub == null || string.IsNullOrEmpty(sub.FilePath))
-            return NotFound(new { message = "Bạn chưa nộp bài cho bài tập này" });
+            return Error(404, "Bạn chưa nộp bài cho bài tập này");
 
         var full = AssignmentFileStorage.Resolve(_env, sub.FilePath);
         if (full == null || !System.IO.File.Exists(full))
-            return NotFound(new { message = "File không còn tồn tại" });
+            return Error(404, "File không còn tồn tại");
 
         return PhysicalFile(full, AssignmentFileStorage.ContentType(sub.FileName), sub.FileName);
     }

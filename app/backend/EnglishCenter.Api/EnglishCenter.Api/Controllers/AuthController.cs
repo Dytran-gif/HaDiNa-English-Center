@@ -1,4 +1,4 @@
-﻿using EnglishCenter.Api.Data;
+using EnglishCenter.Api.Data;
 using EnglishCenter.Api.Dtos;
 using EnglishCenter.Api.Dtos.Common;
 using EnglishCenter.Api.Services;
@@ -60,6 +60,9 @@ public class AuthController : ControllerBase
             {
                 Code = await StudentCodeGenerator.NextAsync(_db, ct), FullName = input.FullName.Trim(),
                 Phone = input.Phone.Trim(), Status = "Studying", CreatedAt = now,
+                DateOfBirth = input.DateOfBirth,
+                ParentName = string.IsNullOrWhiteSpace(input.ParentName) ? null : input.ParentName.Trim(),
+                ParentPhone = string.IsNullOrWhiteSpace(input.ParentPhone) ? null : input.ParentPhone.Trim(),
                 User = new User { Email = email, PasswordHash = hash, Role = "student", CreatedAt = now }
             };
             _db.Students.Add(student);
@@ -67,7 +70,13 @@ public class AuthController : ControllerBase
             {
                 // EF inserts the account and profile atomically in one SaveChanges transaction.
                 await _db.SaveChangesAsync(ct);
-                return StatusCode(201, new { message = "Đăng ký tài khoản học viên thành công. Vui lòng đăng nhập.", code = student.Code });
+                // Trả kèm token để FE đăng nhập luôn và chuyển sang bước chọn khóa / lớp
+                return StatusCode(201, new
+                {
+                    message = "Đăng ký tài khoản học viên thành công.",
+                    code = student.Code,
+                    login = new LoginResponse { Token = _tokens.CreateToken(student.User), UserId = student.User.Id, Email = email, Role = "student" }
+                });
             }
             catch (DbUpdateException ex) when (ex.InnerException is SqlException { Number: 2601 or 2627 })
             {

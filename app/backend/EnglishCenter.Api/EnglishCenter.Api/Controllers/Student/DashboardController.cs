@@ -1,8 +1,6 @@
-using System.Security.Claims;
 using EnglishCenter.Api.Data;
 using EnglishCenter.Api.Dtos.StudentPortal;
 using EnglishCenter.Api.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,151 +11,68 @@ namespace EnglishCenter.Api.Controllers.StudentPortal;
 // Dashboard học viên - viết ĐỘC LẬP (không theo khuôn Teacher/Admin), truy vấn thẳng AppDbContext.
 // Chỉ dùng các bảng có sẵn trong DB, khớp với types/StudentTypes/MainTypes/GeneralTypes.ts:
 //   Students, Users, Enrollments, Classes, Courses, ClassSchedules.
-[ApiController]
-[Authorize(Roles = "student")]
 [Route("api/student/dashboard")]
-public class DashboardController : ControllerBase
+public class DashboardController : StudentControllerBase
 {
-    private readonly AppDbContext _db;
-
-    public DashboardController(AppDbContext db)
-    {
-        _db = db;
-    }
+    public DashboardController(AppDbContext db) : base(db) { }
 
     // GET api/student/dashboard
     [HttpGet]
     public async Task<IActionResult> Get()
     {
-        if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
-            return Unauthorized(new { message = "Token không hợp lệ" });
+        var student = await Db.Students.AsNoTracking()
+            .Where(s => s.Id == StudentId)
+            .Select(s => new { s.Id, s.Code, s.FullName, s.User.Email, s.User.AvatarUrl })
+            .FirstAsync();
 
-        // ---------- Hồ sơ học viên ----------
-        var student = await _db.Students.AsNoTracking()
-            .Where(s => s.UserId == userId)
-            .Select(s => new
-            {
-                s.Id,
-                s.Code,
-                s.FullName,
-                s.User.Email,
-                s.User.AvatarUrl
-            })
-            .FirstOrDefaultAsync();
-
-        if (student == null)
-            return StatusCode(403, new { message = "Tài khoản chưa có hồ sơ học viên" });
-
-        // ---------- Khóa học đang học: Enrollment (Active) -> Classes -> Courses ----------
-        var enrollments = await _db.Enrollments.AsNoTracking()
-            .Where(e => e.StudentId == student.Id && e.Status == "Active")
-            .OrderBy(e => e.Class.StartDate)
-            .Select(e => new
-            {
-                ClassId = e.ClassId,
-                CourseId = e.Class.CourseId,
-                CourseName = e.Class.Course.Name,
-                Description = e.Class.Course.Description,
-                BandFrom = e.Class.Course.BandFrom,
-                BandTo = e.Class.Course.BandTo,
-                TotalSessions = e.Class.Course.TotalSessions,
-                SessionsPerWeek = e.Class.Course.SessionsPerWeek,
-                Tuition = e.Class.Course.Tuition,
-                DiscountPercent = e.Class.Course.DiscountPercent,
-                TeacherName = e.Class.Teacher.FullName
-            })
-            .ToListAsync();
-
-        var courses = enrollments.Select(e => new CourseItemDto
-        {
-            Id = e.CourseId.ToString(),
-            Name = e.CourseName,
-            Description = e.Description ?? "",
-            BandFrom = e.BandFrom.ToString("0.#"),
-            BandTo = e.BandTo.ToString("0.#"),
-            TotalSessions = e.TotalSessions,
-            SessionsPerWeek = e.SessionsPerWeek,
-            Tuition = e.Tuition,
-            DiscountPercent = e.DiscountPercent,
-            ImageUrl = null, // bảng Courses chưa có cột ảnh
-            TeacherName = e.TeacherName
-        }).ToList();
-
-        // ---------- Khối "Your next lesson": buổi học sắp tới GẦN NHẤT theo lịch tuần ----------
-        // Với mỗi lớp đang học, tính buổi kế tiếp theo ClassSchedules (DayOfWeek 1=Thứ 2 .. 7=CN),
-        // rồi chọn lớp có buổi sớm nhất so với bây giờ. Kèm ngày và giờ học.
+        // Lớp đang học hoặc sắp học (ghi danh Active, lớp chưa kết thúc). Mỗi lớp một thẻ (1 khóa có thể nhiều lớp).
         var now = AppTime.Now;
         var today = AppTime.Today;
-        var todayDayNo = AppTime.DayNo(today);
-        var nowTime = TimeOnly.FromDateTime(now);
+        var rows = await LoadMyEnrollmentsAsync(e => e.Status == "Active" && e.Class.EndDate >= today);
+        var courses = rows.Select(r => EnrollmentsController.ToDto(r, today).Course).ToList();
 
-        var classIds = enrollments.Select(e => e.ClassId).ToList();
-        var schedules = (await _db.ClassSchedules.AsNoTracking()
-                .Where(s => classIds.Contains(s.ClassId))
-                .Select(s => new { s.ClassId, s.DayOfWeek, s.StartTime, s.EndTime })
-                .ToListAsync())
-            .ToLookup(s => s.ClassId);
-
-        // Lịch tuần theo khóa để FE tự tính buổi kế tiếp theo đồng hồ máy học viên
-        var lessonSlots = enrollments
-            .SelectMany(e => schedules[e.ClassId].Select(s => new LessonSlotDto
+        // Lịch tuần kèm khoảng ngày của lớp (FE chỉ dùng để làm mới đồng hồ, buổi kế tiếp lấy từ nextLesson)
+        var lessonSlots = rows.SelectMany(r => r.CalendarSlots.Select(s => new LessonSlotDto
             {
-                CourseId = e.CourseId,
+                CourseId = r.CourseId,
+                ClassId = r.ClassId,
+                StartDate = r.StartDate,
+                EndDate = r.EndDate,
                 DayOfWeek = s.DayOfWeek,
                 StartTime = s.StartTime,
                 EndTime = s.EndTime
             }))
-            .OrderBy(s => s.DayOfWeek)
-            .ThenBy(s => s.StartTime)
+            .OrderBy(s => s.DayOfWeek).ThenBy(s => s.StartTime)
             .ToList();
 
+        // Buổi học kế tiếp gần nhất (trong khoảng ngày của lớp, chưa kết thúc)
         NextLessonInfoDto? nextLesson = null;
-        DateOnly? bestDate = null;
-        TimeOnly? bestStart = null;
-
-        foreach (var e in enrollments)
+        foreach (var r in rows)
         {
-            foreach (var s in schedules[e.ClassId])
-            {
-                var diff = s.DayOfWeek - todayDayNo;
-                if (diff < 0 || (diff == 0 && s.StartTime <= nowTime)) diff += 7;
-                var nextDate = today.AddDays(diff);
-
-                if (bestDate == null || nextDate < bestDate
-                    || (nextDate == bestDate && s.StartTime < bestStart))
-                {
-                    bestDate = nextDate;
-                    bestStart = s.StartTime;
-                    nextLesson = new NextLessonInfoDto
-                    {
-                        CourseId = e.CourseId,
-                        CourseName = e.CourseName,
-                        BandFrom = e.BandFrom.ToString("0.#"),
-                        BandTo = e.BandTo.ToString("0.#"),
-                        Description = e.Description ?? "",
-                        TotalSessions = e.TotalSessions,
-                        ImageUrl = null,
-                        NextDate = nextDate,
-                        StartTime = s.StartTime,
-                        EndTime = s.EndTime
-                    };
-                }
-            }
-        }
-
-        // Không có lịch tuần thì lấy khóa đang học đầu tiên (không kèm giờ)
-        if (nextLesson == null && courses.Count > 0)
-        {
-            var first = courses[0];
+            var next = ClassCalendar.Next(r.StartDate, r.EndDate, r.CalendarSlots, now);
+            if (next == null) continue;
+            if (nextLesson != null && (nextLesson.NextDate < next.Date
+                || (nextLesson.NextDate == next.Date && nextLesson.StartTime <= next.Slot.StartTime))) continue;
             nextLesson = new NextLessonInfoDto
             {
-                CourseId = enrollments[0].CourseId,
-                CourseName = first.Name,
-                BandFrom = first.BandFrom,
-                BandTo = first.BandTo,
-                Description = first.Description,
-                TotalSessions = first.TotalSessions,
-                ImageUrl = first.ImageUrl
+                CourseId = r.CourseId,
+                CourseName = r.CourseName,
+                BandFrom = r.BandFrom.ToString("0.#"),
+                BandTo = r.BandTo.ToString("0.#"),
+                Description = r.Description ?? "",
+                TotalSessions = r.CourseTotalSessions,
+                ImageUrl = r.ImageUrl,
+                NextDate = next.Date,
+                StartTime = next.Slot.StartTime,
+                EndTime = next.Slot.EndTime,
+                ClassId = r.ClassId,
+                ClassCode = r.ClassCode,
+                ClassName = r.ClassName,
+                TeacherName = r.TeacherName,
+                RoomName = r.Slots.First(x => x.Slot == next.Slot).RoomName,
+                MeetingUrl = r.MeetingUrl,
+                SessionNo = next.Number,
+                ClassTotalSessions = r.TotalSessions
             };
         }
 
@@ -174,9 +89,7 @@ public class DashboardController : ControllerBase
             NextLesson = nextLesson,
             LessonSlots = lessonSlots,
             Courses = courses,
-            // ⚠️ DB CHƯA CÓ bảng thông báo (xem type AppNotification trong GeneralTypes.ts) -> trả rỗng.
-            // => KHI THÊM BẢNG THÔNG BÁO VÀO DB: truy vấn thông báo của học viên (chung + theo lớp
-            //    đang học) rồi gán vào Notifications ở đây.
+            // DB chưa có bảng thông báo -> rỗng
             Notifications = new List<NotificationItemDto>()
         });
     }

@@ -1,4 +1,4 @@
-﻿using EnglishCenter.Api.Data;
+using EnglishCenter.Api.Data;
 using EnglishCenter.Api.Dtos.Admin;
 using EnglishCenter.Api.Dtos.Common;
 using EnglishCenter.Api.Entities;
@@ -27,11 +27,26 @@ public class ClassesController : ControllerBase
 
     private static DateOnly Today() => AppTime.Today;
 
-    private static string StatusOf(DateOnly start, DateOnly end, DateOnly today)
+    private static string StatusOf(DateOnly start, DateOnly end, DateOnly today) => ClassCalendar.Status(start, end, today);
+
+    // Mã lớp: chuẩn hóa mã Admin nhập, hoặc tự sinh; trả lỗi nếu trùng lớp khác
+    private async Task<(string? code, string? error)> ResolveCodeAsync(string? requested, int courseId, DateOnly start, int? classId)
     {
-        if (today < start) return "Upcoming";
-        if (today > end) return "Finished";
-        return "Ongoing";
+        if (string.IsNullOrWhiteSpace(requested))
+            return (await Codes.NextClassCodeAsync(_db, courseId, start, classId), null);
+        var code = Codes.NormalizeClassCode(requested);
+        if (code.Length < 3) return (null, "Mã lớp tối thiểu 3 ký tự (chữ, số, dấu -)");
+        if (await _db.Classes.AnyAsync(c => c.Code == code && c.Id != (classId ?? 0)))
+            return (null, $"Mã lớp {code} đã được dùng");
+        return (code, null);
+    }
+
+    private async Task<string?> TeacherAvailabilityError(int teacherId, int? currentTeacherId)
+    {
+        var status = await _db.Teachers.Where(t => t.Id == teacherId).Select(t => t.Status).FirstOrDefaultAsync();
+        if (status == null) return "Giáo viên không tồn tại";
+        if (status == "OnLeave" && teacherId != currentTeacherId) return "Giáo viên đang tạm nghỉ, không thể xếp vào lớp";
+        return null;
     }
 
     private static IQueryable<ClassResponse> Project(IQueryable<CourseClass> query)
@@ -39,6 +54,7 @@ public class ClassesController : ControllerBase
         return query.Select(c => new ClassResponse
         {
             Id = c.Id,
+            Code = c.Code,
             Name = c.Name,
             CourseId = c.CourseId,
             CourseName = c.Course.Name,
@@ -83,16 +99,25 @@ public class ClassesController : ControllerBase
                 Phone = e.Student.Phone,
                 Status = e.Status,
                 FinalTuitionFee = e.FinalTuitionFee,
-                IsPaid = e.Payment != null
+                PaidAmount = (e.Payments.Where(p => p.Status == "Confirmed" && p.Kind == "Payment").Sum(p => (decimal?)p.Amount) ?? 0)
+                    - (e.Payments.Where(p => p.Status == "Confirmed" && p.Kind == "Refund").Sum(p => (decimal?)p.Amount) ?? 0)
             })
             .ToListAsync();
+
+        foreach (var s in cls.Students)
+        {
+            var b = new TuitionBalance(s.FinalTuitionFee, s.PaidAmount, 0, 0);
+            s.RemainingAmount = b.Remaining;
+            s.PaymentStatus = b.Status;
+            s.IsPaid = b.Remaining == 0;
+        }
 
         return cls;
     }
 
     // GET api/admin/classes?courseId=&teacherId=&status=&page=1&pageSize=10
     [HttpGet]
-    public async Task<IActionResult> GetAll(int? courseId, int? teacherId, string? status,
+    public async Task<IActionResult> GetAll(int? courseId, int? teacherId, string? status, string? search,
         int page = 1, int pageSize = 10)
     {
         if (page < 1) page = 1;
@@ -100,7 +125,8 @@ public class ClassesController : ControllerBase
         if (pageSize > 100) pageSize = 100;
 
         var today = Today();
-        var query = _db.Classes.AsQueryable();
+        var query = _db.Classes.AsQueryable()
+            .WhereContains(search, c => c.Code, c => c.Name, c => c.Course.Name);
 
         if (courseId != null)
             query = query.Where(c => c.CourseId == courseId);
@@ -149,11 +175,12 @@ public class ClassesController : ControllerBase
         var today = AppTime.Today;
         var items = await _db.Classes.AsNoTracking()
             .Where(c => c.EndDate >= today && c.Enrollments.Count(e => e.Status == "Active") < c.MaxStudents)
-            .WhereContains(search, c => c.Name, c => c.Course.Name)
+            .WhereContains(search, c => c.Code, c => c.Name, c => c.Course.Name)
             .OrderBy(c => c.Name).ThenBy(c => c.Id)
             .Select(c => new AvailableClassResponse
             {
                 Id = c.Id,
+                Code = c.Code,
                 Name = c.Name,
                 CourseId = c.CourseId,
                 CourseName = c.Course.Name,
@@ -188,15 +215,21 @@ public class ClassesController : ControllerBase
         if (course == null)
             return BadRequest(new { message = "Khóa học không tồn tại" });
 
-        if (!await _db.Teachers.AnyAsync(t => t.Id == req.TeacherId))
-            return BadRequest(new { message = "Giáo viên không tồn tại" });
+        var teacherError = await TeacherAvailabilityError(req.TeacherId, null);
+        if (teacherError != null)
+            return BadRequest(new { message = teacherError });
 
         var check = await _schedules.CheckAsync(null, req, course);
         if (check.Error != null)
             return StatusCode(check.StatusCode, new { message = check.Error });
 
+        var (code, codeError) = await ResolveCodeAsync(req.Code, req.CourseId, req.StartDate, null);
+        if (codeError != null)
+            return Conflict(new { message = codeError, errors = new { code = new[] { codeError } } });
+
         var cls = new CourseClass
         {
+            Code = code!,
             Name = req.Name.Trim(),
             CourseId = req.CourseId,
             TeacherId = req.TeacherId,
@@ -231,8 +264,9 @@ public class ClassesController : ControllerBase
         if (course == null)
             return BadRequest(new { message = "Khóa học không tồn tại" });
 
-        if (!await _db.Teachers.AnyAsync(t => t.Id == req.TeacherId))
-            return BadRequest(new { message = "Giáo viên không tồn tại" });
+        var teacherError = await TeacherAvailabilityError(req.TeacherId, cls.TeacherId);
+        if (teacherError != null)
+            return BadRequest(new { message = teacherError });
 
         if (cls.CourseId != req.CourseId && await _db.Enrollments.AnyAsync(e => e.ClassId == id))
             return Conflict(new { message = "Lớp đã có học viên ghi danh, không thể đổi khóa học" });
@@ -245,9 +279,27 @@ public class ClassesController : ControllerBase
         if (check.Error != null)
             return StatusCode(check.StatusCode, new { message = check.Error });
 
+        var (code, codeError) = await ResolveCodeAsync(req.Code ?? cls.Code, req.CourseId, req.StartDate, id);
+        if (codeError != null)
+            return Conflict(new { message = codeError, errors = new { code = new[] { codeError } } });
+
+        // Lịch mới có làm học viên trong lớp bị trùng với lớp khác họ đang học không
+        if (!req.Force)
+        {
+            var clashes = await _enrollments.StudentConflictsForScheduleAsync(id, req.StartDate, check.EndDate,
+                req.Schedules.Select(s => new ClassCalendar.Slot(s.DayOfWeek, s.StartTime, s.EndTime)));
+            if (clashes.Count > 0)
+                return Conflict(new
+                {
+                    message = $"Lịch mới trùng lịch học của {clashes.Count} học viên trong lớp. Gửi lại với force = true để vẫn lưu.",
+                    studentConflicts = clashes
+                });
+        }
+
         // Xóa lịch cũ rồi thêm lịch mới, làm trong một transaction
         await using var tx = await _db.Database.BeginTransactionAsync();
 
+        cls.Code = code!;
         cls.Name = req.Name.Trim();
         cls.CourseId = req.CourseId;
         cls.TeacherId = req.TeacherId;
@@ -296,7 +348,10 @@ public class ClassesController : ControllerBase
     [HttpPost("{id}/students")]
     public async Task<IActionResult> AddStudent(int id, AddStudentRequest req)
     {
-        var result = await _enrollments.EnrollAsync(req.StudentId, id);
+        if (req.ExtraDiscountAmount > 0 && string.IsNullOrWhiteSpace(req.DiscountNote))
+            return BadRequest(new { message = "Nhập lý do khi có ưu đãi riêng", errors = new { discountNote = new[] { "Nhập lý do ưu đãi" } } });
+        var result = await _enrollments.EnrollAsync(req.StudentId, id,
+            new EnrollOptions(req.ExtraDiscountAmount, req.DiscountNote, req.ProrateRemaining));
         if (!result.Success)
             return StatusCode(result.StatusCode, new { message = result.Message });
 

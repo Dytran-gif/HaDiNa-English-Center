@@ -1,4 +1,4 @@
-﻿using EnglishCenter.Api.Entities;
+using EnglishCenter.Api.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace EnglishCenter.Api.Data;
@@ -58,6 +58,8 @@ public static class DbSeeder
         var room = new Room { Name = "P101", Capacity = 20 };
         var course = new Course
         {
+            Code = "IE65",
+            Slug = "ielts-6-5",
             Name = "IELTS 6.5",
             BandFrom = 5.0m,
             BandTo = 6.5m,
@@ -74,6 +76,7 @@ public static class DbSeeder
         {
             Course = course,
             Teacher = teacher,
+            Code = "IE65-2611-A",
             Name = "IELTS 6.5 - Lớp tối 2-4-6",
             StartDate = new DateOnly(2026, 11, 2),
             EndDate = new DateOnly(2026, 12, 30),

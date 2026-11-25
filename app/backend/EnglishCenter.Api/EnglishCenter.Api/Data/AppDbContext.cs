@@ -1,4 +1,4 @@
-﻿using EnglishCenter.Api.Entities;
+using EnglishCenter.Api.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace EnglishCenter.Api.Data;
@@ -26,6 +26,7 @@ public partial class AppDbContext : DbContext
     {
         ConfigurePublic(b);
         ConfigureConsultations(b);
+        ConfigureReviews(b);
         // ---------- Users ----------
         b.Entity<User>(e =>
         {
@@ -84,6 +85,11 @@ public partial class AppDbContext : DbContext
         {
             e.Property(x => x.Name).HasMaxLength(150).IsRequired();
             e.HasIndex(x => x.Name).IsUnique();
+            e.Property(x => x.Code).HasMaxLength(10).IsRequired();
+            e.HasIndex(x => x.Code).IsUnique();
+            e.Property(x => x.Slug).HasMaxLength(150).IsRequired();
+            e.HasIndex(x => x.Slug).IsUnique();
+            e.Property(x => x.ImageUrl).HasMaxLength(500);
             e.Property(x => x.BandFrom).HasPrecision(3, 1);
             e.Property(x => x.BandTo).HasPrecision(3, 1);
             e.Property(x => x.Tuition).HasPrecision(18, 2);
@@ -111,6 +117,8 @@ public partial class AppDbContext : DbContext
         b.Entity<CourseClass>(e =>
         {
             e.ToTable("Classes");
+            e.Property(x => x.Code).HasMaxLength(20).IsRequired();
+            e.HasIndex(x => x.Code).IsUnique();
             e.Property(x => x.Name).HasMaxLength(150).IsRequired();
             e.Property(x => x.MeetingUrl).HasMaxLength(500);
 
@@ -157,6 +165,8 @@ public partial class AppDbContext : DbContext
             e.Property(x => x.DiscountPercent).HasPrecision(5, 2);
             e.Property(x => x.DiscountAmount).HasPrecision(18, 2);
             e.Property(x => x.FinalTuitionFee).HasPrecision(18, 2);
+            e.Property(x => x.ExtraDiscountAmount).HasPrecision(18, 2);
+            e.Property(x => x.DiscountNote).HasMaxLength(300);
             e.Property(x => x.Status).HasMaxLength(20).IsRequired();
             e.Property(x => x.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
 
@@ -180,21 +190,34 @@ public partial class AppDbContext : DbContext
             e.Property(x => x.Amount).HasPrecision(18, 2);
             e.Property(x => x.Method).HasMaxLength(20).IsRequired();
             e.Property(x => x.Note).HasMaxLength(500);
+            e.Property(x => x.ReceiptNo).HasMaxLength(20);
+            e.HasIndex(x => x.ReceiptNo).IsUnique();
+            e.Property(x => x.Kind).HasMaxLength(10).IsRequired();
+            e.Property(x => x.Status).HasMaxLength(12).IsRequired();
+            e.Property(x => x.TransferRef).HasMaxLength(100);
+            e.Property(x => x.CancelReason).HasMaxLength(300);
             e.Property(x => x.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+            e.HasIndex(x => x.Status);
 
-            // 1 ghi danh - tối đa 1 phiếu thu (EnrollmentId tự thành unique)
-            e.HasOne(x => x.Enrollment).WithOne(en => en.Payment)
-                .HasForeignKey<Payment>(x => x.EnrollmentId)
+            // 1 ghi danh - nhiều phiếu (đóng nhiều đợt, hoàn tiền)
+            e.HasOne(x => x.Enrollment).WithMany(en => en.Payments)
+                .HasForeignKey(x => x.EnrollmentId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             e.HasOne(x => x.CreatedByUser).WithMany(u => u.Payments)
                 .HasForeignKey(x => x.CreatedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            e.HasOne(x => x.ConfirmedByUser).WithMany()
+                .HasForeignKey(x => x.ConfirmedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             e.ToTable(t =>
             {
                 t.HasCheckConstraint("CK_Payments_Amount", "[Amount] > 0");
                 t.HasCheckConstraint("CK_Payments_Method", "[Method] IN ('Cash','Transfer')");
+                t.HasCheckConstraint("CK_Payments_Kind", "[Kind] IN ('Payment','Refund')");
+                t.HasCheckConstraint("CK_Payments_Status", "[Status] IN ('Pending','Confirmed','Rejected','Cancelled')");
             });
         });
 
@@ -263,6 +286,7 @@ public partial class AppDbContext : DbContext
             e.HasIndex(x => x.TeacherId);
             e.HasIndex(x => x.StudentId);
             e.HasIndex(x => x.CourseId);
+            e.HasIndex(x => x.ClassId);
 
             e.HasOne<Teacher>().WithMany().HasForeignKey(x => x.TeacherId)
                 .OnDelete(DeleteBehavior.Restrict).HasConstraintName("FK_Assignments_Teachers");
@@ -270,6 +294,8 @@ public partial class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict).HasConstraintName("FK_Assignments_Students");
             e.HasOne<Course>().WithMany().HasForeignKey(x => x.CourseId)
                 .OnDelete(DeleteBehavior.Restrict).HasConstraintName("FK_Assignments_Courses");
+            e.HasOne<CourseClass>().WithMany().HasForeignKey(x => x.ClassId)
+                .OnDelete(DeleteBehavior.Restrict).HasConstraintName("FK_Assignments_Classes");
         });
     }
 }
