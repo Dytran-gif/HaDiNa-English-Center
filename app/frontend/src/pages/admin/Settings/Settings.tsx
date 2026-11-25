@@ -8,6 +8,7 @@ import { assetUrl } from "../../../services/apiClient";
 import { useAdminApi, useAdminQuery } from "../../../services/admin/useAdminApi";
 import type { CenterResponse } from "../../../types/adminApi";
 import { Feedback } from "../Components/Api/AdminUi";
+import { publishCenterSettings } from "../../../services/useCenterSettings";
 
 function CenterForm({ center, enabled }: { center: CenterResponse; enabled: boolean }) {
   const api = useAdminApi();
@@ -24,6 +25,7 @@ function CenterForm({ center, enabled }: { center: CenterResponse; enabled: bool
     setBusy(true); setError(""); setMessage("");
     try {
       const value = await api.send<CenterResponse>("PUT", "settings/center", { name: form.name, address: form.address, phone: form.phone });
+      publishCenterSettings(value);
       setForm(value); setSaved(value); setMessage("Đã lưu thông tin trung tâm.");
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Không lưu được thông tin.");
@@ -31,6 +33,7 @@ function CenterForm({ center, enabled }: { center: CenterResponse; enabled: bool
   }
 
   return <form className="admin-panel-form" onSubmit={save}>
+    <p className="admin-api-muted">Tên trung tâm hiển thị trên header/footer; địa chỉ và điện thoại hiển thị ở footer và trang Liên hệ sau khi lưu.</p>
     <Feedback error={error} message={message}/>
     {assetUrl(form.logoUrl) && <img className="admin-api-logo" src={assetUrl(form.logoUrl)} alt="Logo trung tâm"/>}
     <InputField label="Tên trung tâm" placeholder="Nhập tên trung tâm" required maxLength={150} value={form.name} disabled={!enabled || busy} onChange={event => setForm({ ...form, name: event.target.value })}/>

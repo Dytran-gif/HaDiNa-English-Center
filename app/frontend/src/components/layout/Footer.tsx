@@ -2,38 +2,34 @@ import { Link } from "react-router-dom";
 import {
   siteName,
   siteTagline,
-  offices,
   contactEmail,
-  contactPhone,
   footerCoursesNav,
   footerPolicyNav,
   primaryNav,
 } from "../../data/siteConfig";
 import "./Footer.css";
+import useCenterSettings from "../../services/useCenterSettings";
 
 export default function Footer() {
   const year = new Date().getFullYear();
+  const { center, loading, error, reload } = useCenterSettings();
+  const name = center?.name ?? siteName;
 
   return (
     <footer className="site-footer">
       <div className="container site-footer__grid">
         <div className="site-footer__brand">
-          <span className="site-footer__logo">{siteName}</span>
+          <span className="site-footer__logo">{name}</span>
           <p>{siteTagline}</p>
           <div className="site-footer__offices">
-            {offices.map((office) => (
-              <div key={office.city}>
-                <span className="kicker">{office.city}</span>
-                {office.lines.map((line) => (
-                  <p key={line}>{line}</p>
-                ))}
-              </div>
-            ))}
+            {center?.address && <p>{center.address}</p>}
+            {loading && !center && <p role="status">Đang tải thông tin trung tâm…</p>}
+            {error && <p>Không tải được thông tin mới. <button type="button" onClick={() => { void reload(); }}>Thử lại</button></p>}
           </div>
           <p>
             <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
             <br />
-            <a href={`tel:${contactPhone.replace(/\s/g, "")}`}>{contactPhone}</a>
+            {center?.phone && <a href={`tel:${center.phone.replace(/[^+\d]/g, "")}`}>{center.phone}</a>}
           </p>
         </div>
 
@@ -72,7 +68,7 @@ export default function Footer() {
       </div>
 
       <div className="site-footer__bottom container">
-        <span>© {year} {siteName}</span>
+        <span>© {year} {name}</span>
         <span>Đồ án học phần — không phải trang thanh toán thật</span>
       </div>
     </footer>

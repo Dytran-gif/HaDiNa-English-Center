@@ -1,4 +1,11 @@
 # Nhật ký bàn giao
+## [2026-11-25] Cài đặt trung tâm đồng bộ ra website public
+
+- Admin đã lưu CenterSettings nhưng Public trước đó dùng siteConfig tĩnh. Thêm GET /api/public/center và useCenterSettings store dùng chung; save Admin publish bản lưu, đồng bộ tab khác/focus.
+- Tên: Header/Hero/Footer/Contact; địa chỉ và điện thoại: Footer/Contact; điện thoại MiniCta. Settings giải thích nơi hiển thị. Không sửa email/marketing content hoặc thêm chức năng logo.
+- Không migration. FE/BE build đạt; lint còn2warning cũ. API thật đã thử sửa3trường và GETpublic khớp, sau đó khôi phục nguyên dữ liệu gốc. BE chạy5220 AutoSetup=false.
+- Chi tiết docs/api/CENTER-SETTINGS.md. Contact message form riêng vẫn chưa gửi; form tư vấn homepage hoạt động như trước.
+
 ## [2026-11-25] Hồ sơ Admin chỉnh sửa và lưu DB
 
 - Trước đó Users chưa có họ tên/điện thoại; FE chỉ hiện tên thay thế. Thêm hai cột nullable FullName/Phone bằng migration AdminUserProfile, đã backup và áp dụng DB local.
