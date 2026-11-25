@@ -239,18 +239,6 @@
         animation: FeedbackModalScale 0.2s ease-in-out;
     }
 
-    @keyframes FeedbackModalScale {
-        from {
-            transform: scale(0.96);
-            opacity: 0;
-        }
-
-        to {
-            transform: scale(1);
-            opacity: 1;
-        }
-    }
-
     .Feedback-modal-header {
         display: flex;
         justify-content: space-between;
@@ -486,4 +474,9 @@
             background-color: #1d4ed8;
         }
     }
+}
+
+@keyframes FeedbackModalScale {
+    from { transform: scale(0.96); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
 }

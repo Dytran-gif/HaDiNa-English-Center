@@ -23,6 +23,13 @@ export interface StudentDashboardResponse {
     startTime?: string;
     endTime?: string;
   };
+  // Lịch tuần từng khóa (1=Thứ 2 .. 7=Chủ nhật) — FE tính buổi kế theo đồng hồ máy
+  lessonSlots?: Array<{
+    courseId: number;
+    dayOfWeek: number;
+    startTime: string;
+    endTime: string;
+  }>;
   courses: Array<{
     id: string;
     name: string;

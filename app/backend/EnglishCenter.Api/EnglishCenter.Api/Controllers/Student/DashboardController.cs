@@ -98,6 +98,19 @@ public class DashboardController : ControllerBase
                 .ToListAsync())
             .ToLookup(s => s.ClassId);
 
+        // Lịch tuần theo khóa để FE tự tính buổi kế tiếp theo đồng hồ máy học viên
+        var lessonSlots = enrollments
+            .SelectMany(e => schedules[e.ClassId].Select(s => new LessonSlotDto
+            {
+                CourseId = e.CourseId,
+                DayOfWeek = s.DayOfWeek,
+                StartTime = s.StartTime,
+                EndTime = s.EndTime
+            }))
+            .OrderBy(s => s.DayOfWeek)
+            .ThenBy(s => s.StartTime)
+            .ToList();
+
         NextLessonInfoDto? nextLesson = null;
         DateOnly? bestDate = null;
         TimeOnly? bestStart = null;
@@ -159,6 +172,7 @@ public class DashboardController : ControllerBase
                 AvatarUrl = student.AvatarUrl
             },
             NextLesson = nextLesson,
+            LessonSlots = lessonSlots,
             Courses = courses,
             // ⚠️ DB CHƯA CÓ bảng thông báo (xem type AppNotification trong GeneralTypes.ts) -> trả rỗng.
             // => KHI THÊM BẢNG THÔNG BÁO VÀO DB: truy vấn thông báo của học viên (chung + theo lớp
