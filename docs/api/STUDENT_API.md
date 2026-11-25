@@ -11,7 +11,7 @@ Dữ liệu dùng chung với Teacher (bảng nào bên nào ghi): xem mục cu�
 
 | Method | URL | Mô tả |
 |---|---|---|
-| GET | `/api/student/dashboard` | `student` (id, code, fullName, email, avatarUrl), `nextLesson` (buổi học sắp tới **gần nhất** theo `ClassSchedules` của các lớp đang học, kèm `nextDate/startTime/endTime`; không có lịch thì lấy khóa đang học đầu tiên; không có khóa nào thì `null`), `courses` (khóa đang học theo `Enrollment.Status = Active`, shape theo `Course` trong FE `GeneralTypes.ts`), `notifications` (rỗng vì DB chưa có bảng thông báo) |
+| GET | `/api/student/dashboard` | `student` (id, code, fullName, email, avatarUrl), `nextLesson` (buổi học sắp tới **gần nhất** theo `ClassSchedules` của các lớp đang học, kèm `courseId` để mở popup chi tiết khóa và `nextDate/startTime/endTime`; không có lịch thì lấy khóa đang học đầu tiên; không có khóa nào thì `null`), `courses` (khóa đang học theo `Enrollment.Status = Active`, shape theo `Course` trong FE `GeneralTypes.ts`), `notifications` (rỗng vì DB chưa có bảng thông báo) |
 
 > Chỉ dùng các bảng có sẵn trong DB: `Students`, `Users`, `Enrollments`, `Classes`, `Courses` (khớp `types/StudentTypes/MainTypes/GeneralTypes.ts`). Khi DB có bảng thông báo (type `AppNotification`), gán dữ liệu vào `notifications` tại chỗ đã ghi chú trong `Controllers/Student/DashboardController.cs`.
 

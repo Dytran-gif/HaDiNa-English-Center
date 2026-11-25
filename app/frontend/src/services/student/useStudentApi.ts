@@ -12,6 +12,7 @@ export interface StudentDashboardResponse {
     avatarUrl?: string;
   };
   nextLesson?: {
+    courseId?: number;
     courseName: string;
     bandFrom: string;
     bandTo: string;
@@ -166,6 +167,10 @@ export interface StudentEnrollmentItem {
   enrollmentId: number;
   status: string;
   course: Course;
+  tuitionFee: number;       // học phí gốc chốt lúc ghi danh
+  discountPercent: number;
+  discountAmount: number;
+  finalTuitionFee: number;  // số tiền thực phải thanh toán
   isPaid: boolean;
   paidAmount?: number;
   paidDate?: string;

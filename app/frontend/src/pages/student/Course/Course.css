@@ -1,0 +1,132 @@
+/* Trang Courses: hero + 3 tab (My Courses / Browse Courses / Course History) */
+
+.course-hero {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+    padding: 22px 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.course-hero-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.course-hero-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    box-shadow: 0 6px 14px rgba(37, 99, 235, 0.28);
+}
+
+.course-hero-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.course-hero-sub {
+    margin: 3px 0 0;
+    font-size: 12.5px;
+    color: #64748b;
+}
+
+/* Segmented tabs */
+.course-tabs {
+    display: flex;
+    gap: 4px;
+    background-color: #f1f5f9;
+    padding: 5px;
+    border-radius: 999px;
+    width: max-content;
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.course-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.course-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    background: transparent;
+    border-radius: 999px;
+    padding: 9px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.course-tab i {
+    font-size: 13px;
+}
+
+.course-tab:hover {
+    color: #1d4ed8;
+}
+
+.course-tab.active {
+    background-color: #ffffff;
+    color: #1d4ed8;
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.14);
+}
+
+.course-tab-count {
+    min-width: 20px;
+    height: 18px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background-color: #e2e8f0;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.course-tab.active .course-tab-count {
+    background-color: #2563eb;
+    color: #ffffff;
+}
+
+/* Panel nội dung theo tab */
+.course-panel {
+    animation: coursePanelIn 0.22s ease-out;
+}
+
+@keyframes coursePanelIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+}
+
+@media (max-width: 576px) {
+    .course-hero {
+        padding: 18px 16px;
+    }
+
+    .course-tab {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+}

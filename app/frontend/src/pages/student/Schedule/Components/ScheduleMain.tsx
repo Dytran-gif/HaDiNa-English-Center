@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import type { StudentScheduleSession } from "../../../../services/student/useStudentApi";
+import { useLang } from "../../../../i18n/LanguageContext";
 import './ScheduleMain.css';
 
 const TIME_SLOTS = [
@@ -9,7 +10,7 @@ const TIME_SLOTS = [
     { start: '13:30', end: '14:30' }, { start: '14:30', end: '15:30' },
     { start: '15:30', end: '16:30' }, { start: '16:30', end: '17:30' },
     { start: '17:30', end: '18:30' }, { start: '18:30', end: '19:30' },
-    { start: '19:30', end: '20:30' }
+    { start: '19:30', end: '20:30' }, { start: '20:30', end: '21:30' },
 ];
 
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -22,6 +23,12 @@ interface ScheduleGridProps {
 }
 
 export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWeek }: ScheduleGridProps) {
+    const { t, lang } = useLang();
+
+    // Ngày hôm nay (yyyy-mm-dd) để đánh dấu trong agenda mobile
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
     // Danh sách các ngày trong tuần hiện tại
     const daysOfWeek = useMemo(() => {
         return DAY_NAMES.map((name, idx) => {
@@ -34,12 +41,12 @@ export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWe
 
             return {
                 key: name,
-                label: name,
+                label: t(`day.${name.toLowerCase()}`),
                 dateStr: `${year}-${month}-${day}`,
                 displayDate: `${day}/${month}`
             };
         });
-    }, [weekStart]);
+    }, [weekStart, t]);
 
     const timeToMinutes = (timeStr: string) => {
         if (!timeStr) return 0;
@@ -65,7 +72,9 @@ export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWe
                 </button>
 
                 <span className="week-label">
-                    Week of {weekStart.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    {t("schedule.weekOf", {
+                        date: weekStart.toLocaleDateString(lang === 'vi' ? 'vi-VN' : 'en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+                    })}
                 </span>
 
                 <button className="nav-btn" onClick={onNextWeek}>
@@ -73,10 +82,11 @@ export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWe
                 </button>
             </div>
 
-            {/* LƯỚI THỜI KHÓA BIỂU */}
+            {/* LƯỚI THỜI KHÓA BIỂU (desktop) */}
+            <div className="schedule-grid-desktop">
             <div className="grid-box">
                 <div className="grid-header">
-                    <div className="cell-time-head">Time</div>
+                    <div className="cell-time-head">{t("schedule.time")}</div>
                     {daysOfWeek.map((day) => (
                         <div key={day.key} className="cell-day-head">
                             <strong>{day.label}</strong>
@@ -113,10 +123,10 @@ export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWe
                                                     <div className="card-top-row">
                                                         <h4 className="title">{item.courseName}</h4>
                                                         {item.isCancelled ? (
-                                                            <span className="cancelled-badge">Cancelled</span>
+                                                            <span className="cancelled-badge">{t("schedule.cancelled")}</span>
                                                         ) : (
                                                             <span className="lesson-badge">
-                                                                Lesson {item.sessionNo}/{item.totalSessions}
+                                                                {t("schedule.lesson", { n: item.sessionNo, total: item.totalSessions })}
                                                             </span>
                                                         )}
                                                     </div>
@@ -129,10 +139,10 @@ export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWe
                                                 <div className="card-hover-popup">
                                                     <div className="popup-top">
                                                         <span className={`popup-level ${item.isCancelled ? 'popup-cancelled-tag' : ''}`}>
-                                                            {item.isCancelled ? 'Cancelled' : `Band ${item.bandFrom} - ${item.bandTo}`}
+                                                            {item.isCancelled ? t("schedule.cancelled") : `Band ${item.bandFrom} - ${item.bandTo}`}
                                                         </span>
                                                         <span className="popup-index">
-                                                            Session {item.sessionNo} of {item.totalSessions}
+                                                            {t("schedule.sessionOf", { n: item.sessionNo, total: item.totalSessions })}
                                                         </span>
                                                     </div>
 
@@ -140,7 +150,8 @@ export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWe
 
                                                     {item.isCancelled ? (
                                                         <p className="popup-cancel-reason">
-                                                            <i className="fa-solid fa-circle-exclamation"></i> Notice: Class cancelled ({item.cancelReason || "No reason provided"})
+                                                            <i className="fa-solid fa-circle-exclamation"></i>{" "}
+                                                            {t("schedule.cancelNotice", { reason: item.cancelReason || t("schedule.noReason") })}
                                                         </p>
                                                     ) : (
                                                         <p className="popup-desc">{item.description}</p>
@@ -148,19 +159,19 @@ export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWe
 
                                                     <div className="popup-info-grid">
                                                         <div>
-                                                            <i className="fa-solid fa-hashtag"></i> Class: <strong>{item.className}</strong>
+                                                            <i className="fa-solid fa-hashtag"></i> {t("schedule.class")} <strong>{item.className}</strong>
                                                         </div>
                                                         <div>
                                                             <i className="fa-regular fa-clock"></i> {item.startTime} - {item.endTime}
                                                         </div>
                                                         {item.teacherName && (
                                                             <div>
-                                                                <i className="fa-solid fa-chalkboard-user"></i> Teacher: <strong>{item.teacherName}</strong>
+                                                                <i className="fa-solid fa-chalkboard-user"></i> {t("schedule.teacher")} <strong>{item.teacherName}</strong>
                                                             </div>
                                                         )}
                                                         {item.roomName && (
                                                             <div>
-                                                                <i className="fa-solid fa-location-dot"></i> Room: <strong>{item.roomName}</strong>
+                                                                <i className="fa-solid fa-location-dot"></i> {t("schedule.room")} <strong>{item.roomName}</strong>
                                                             </div>
                                                         )}
                                                     </div>
@@ -173,6 +184,69 @@ export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWe
                         })}
                     </div>
                 </div>
+            </div>
+            </div>
+
+            {/* AGENDA DỌC CHO MOBILE: mỗi ngày một nhóm buổi học */}
+            <div className="schedule-agenda">
+                {daysOfWeek.map((day) => {
+                    const sessionsToday = sessions.filter(s => s.dateStr === day.dateStr);
+                    const isToday = day.dateStr === todayStr;
+
+                    return (
+                        <section key={day.key} className={`agenda-day ${isToday ? 'is-today' : ''}`}>
+                            <header className="agenda-day-head">
+                                <span className="agenda-day-name">{day.label}</span>
+                                <span className="agenda-day-date">{day.displayDate}</span>
+                                {isToday && <span className="agenda-today-chip">{t("schedule.today")}</span>}
+                            </header>
+
+                            {sessionsToday.length > 0 ? (
+                                <div className="agenda-cards">
+                                    {sessionsToday.map((item) => (
+                                        <article
+                                            key={`${item.classId}-${item.dateStr}-${item.startTime}`}
+                                            className={`agenda-card ${item.isCancelled ? 'is-cancelled' : ''}`}
+                                        >
+                                            <div className="agenda-card-top">
+                                                <h4 className="agenda-course">{item.courseName}</h4>
+                                                {item.isCancelled ? (
+                                                    <span className="agenda-badge cancelled">{t("schedule.cancelled")}</span>
+                                                ) : (
+                                                    <span className="agenda-badge">
+                                                        {t("schedule.lesson", { n: item.sessionNo, total: item.totalSessions })}
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            <p className="agenda-time">
+                                                <i className="fa-regular fa-clock"></i> {item.startTime} - {item.endTime}
+                                            </p>
+
+                                            <div className="agenda-meta">
+                                                <span><i className="fa-solid fa-hashtag"></i> {item.className}</span>
+                                                {item.teacherName && (
+                                                    <span><i className="fa-solid fa-chalkboard-user"></i> {item.teacherName}</span>
+                                                )}
+                                                {item.roomName && (
+                                                    <span><i className="fa-solid fa-location-dot"></i> {item.roomName}</span>
+                                                )}
+                                            </div>
+
+                                            {item.isCancelled && (
+                                                <p className="agenda-cancel-reason">
+                                                    {item.cancelReason || t("schedule.noReason")}
+                                                </p>
+                                            )}
+                                        </article>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="agenda-empty">{t("schedule.freeDay")}</p>
+                            )}
+                        </section>
+                    );
+                })}
             </div>
         </div>
     );

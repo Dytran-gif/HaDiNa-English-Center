@@ -1,5 +1,16 @@
 /* CourseMain.css */
 
+/* CARD BAO NGOÀI TOÀN BỘ SECTION */
+.course-main-card {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    width: 100%;
+    box-sizing: border-box;
+}
+
 .course-main-section {
     display: flex;
     flex-direction: column;
@@ -8,7 +19,7 @@
 
 /* HEADER */
 .cm-header {
-    margin-bottom: 24px;
+    margin-bottom: 20px;
 }
 
 .cm-title {
@@ -29,93 +40,94 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
 }
 
 .cm-filter-row-1 {
     display: flex;
     align-items: center;
     gap: 16px;
-}
-
-.cm-level-tabs {
-    display: flex;
-    gap: 8px;
-}
-
-.cm-level-btn {
-    background-color: #ffffff;
-    border: 1px solid #e5e7eb;
-    color: #4b5563;
-    padding: 8px 16px;
-    border-radius: 9999px;
-    font-size: 10px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.cm-level-btn:hover {
-    background-color: #f3f4f6;
-}
-
-.cm-level-btn.active {
-    background-color: #2563eb;
-    color: #ffffff;
-    border-color: #2563eb;
+    width: 100%;
 }
 
 .cm-search-box {
     display: flex;
     align-items: center;
-    background-color: #ffffff;
+    gap: 8px;
+    background-color: #f8fafc;
     border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 3px 15px;
-    width: 150px;
+    border-radius: 999px;
+    padding: 6px 12px;
+    width: 230px;
+    max-width: 100%;
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cm-search-box:hover {
+    border-color: #cbd5e1;
+}
+
+.cm-search-box:focus-within {
+    background-color: #ffffff;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
 .cm-search-box i {
-    color: #9ca3af;
-    margin-right: 8px;
+    color: #94a3b8;
+    font-size: 12px;
+    margin: 0;
 }
 
 .cm-search-box input {
     border: none;
     outline: none;
+    background: transparent;
     width: 100%;
-    font-size: 14px;
+    min-width: 0;
+    font-size: 12.5px;
     color: #1f2937;
 }
 
-.cm-filter-row-2 {
-    display: flex;
-    gap: 12px;
+.cm-search-box input::placeholder {
+    color: #9ca3af;
 }
 
-.cm-dropdown select {
-    appearance: none;
-    background-color: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 5px 30px 8px 10px;
+.cm-search-clear {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    border: none;
+    border-radius: 999px;
+    background-color: #e2e8f0;
+    color: #475569;
     font-size: 12px;
-    color: #4b5563;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    outline: none;
-    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239ca3af%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px top 50%;
-    background-size: 10px auto;
+    padding: 0;
+}
+
+.cm-search-clear:hover {
+    background-color: #cbd5e1;
+    color: #0f172a;
+}
+
+.cm-result-count {
+    margin-left: auto;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #64748b;
+    white-space: nowrap;
 }
 
 /* KHU VỰC DANH SÁCH KHÓA HỌC & THANH TRƯỢT */
 .cm-course-list-wrapper {
-    /* Đặt chiều cao tối đa khoảng 2 hàng rưỡi để kích hoạt scrollbar nếu > 6 thẻ */
-    max-height: 400px; 
+    max-height: 620px; 
     overflow-y: auto;
-    padding-right: 12px;
-    padding-bottom: 20px;
+    padding: 4px 12px 20px 4px; /* Thêm padding top/left nhẹ để hiệu ứng hover không bị cắt sát mép */
 }
 
 /* Custom Scrollbar */
@@ -133,39 +145,46 @@
 
 .cm-course-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
 }
 
-/* THẺ KHÓA HỌC CÁ NHÂN */
+/* THẺ KHÓA HỌC CÁ NHÂN (gọn) */
 .cm-course-card {
     display: flex;
     flex-direction: column;
     background-color: #ffffff;
     border: 1px solid #e5e7eb;
-    border-radius: 30px;
+    border-radius: 14px;
     overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
 }
 
-/* HIỆU ỨNG HOVER THEO YÊU CẦU (-4px để dịch sang TRÁI, -4px để dịch LÊN TRÊN) */
 .cm-course-card:hover {
-    transform: translate(-4px, -4px);
-    box-shadow: 6px 6px 15px rgba(0, 0, 0, 0.08);
+    transform: translateY(-3px);
+    border-color: #c7d7f5;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
 }
 
 .cm-card-image {
     position: relative;
     width: 100%;
-    height: 80px;
+    height: 64px;
+}
+
+.cm-card-image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .cm-badge {
     position: absolute;
-    bottom: 12px;
-    left: 12px;
-    padding: 4px 12px;
+    bottom: 8px;
+    left: 8px;
+    padding: 2px 9px;
     border-radius: 9999px;
     font-size: 8px;
     font-weight: 700;
@@ -176,25 +195,30 @@
 .badge-advanced { background-color: #a855f7; }
 
 .cm-card-content {
-    padding: 12px;
+    padding: 10px 12px;
     flex: 1;
     display: flex;
     flex-direction: column;
 }
 
 .cm-card-title {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
     color: #1f2937;
-    margin: 0 0 4px 0;
+    margin: 0 0 3px 0;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .cm-card-desc {
-    font-size: 10px;
+    font-size: 11px;
     color: #6b7280;
     line-height: 1.4;
-    flex: 1; /* Đẩy các nội dung bên dưới xuống đáy */
-    padding-bottom: 20px;
+    flex: 1;
+    padding-bottom: 8px;
     display: -webkit-box;
     -webkit-line-clamp: 2; 
     -webkit-box-orient: vertical;
@@ -203,7 +227,8 @@
 
 .cm-card-meta {
     display: flex;
-    gap: 16px;
+    flex-wrap: wrap;
+    gap: 4px 10px;
     font-size: 10px;
     color: #4b5563;
     margin-bottom: 6px;
@@ -215,51 +240,86 @@
 .cm-card-skills {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 5px;
 }
 
 .cm-skill-tag {
     background-color: #eff6ff;
     color: #2563eb;
-    font-size: 8px;
+    font-size: 8.5px;
     font-weight: 600;
-    padding: 4px 10px;
+    padding: 3px 8px;
     border-radius: 9999px;
 }
 
 /* FOOTER THẺ (Price & Nút) */
 .cm-card-footer {
-    display: block;
+    display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px;
+    gap: 8px;
+    padding: 10px 12px;
     border-top: 1px solid #f1f5f9;
 }
 
+.cm-price-box {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+
+.cm-price-original {
+    font-size: 9.5px;
+    color: #94a3b8;
+    text-decoration: line-through;
+    white-space: nowrap;
+}
+
 .cm-price {
-    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11.5px;
     font-weight: 700;
     color: #1f2937;
+    white-space: nowrap;
+}
+
+.cm-discount-chip {
+    background-color: #dcfce7;
+    color: #15803d;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 999px;
 }
 .cm-card-actions {
     display: flex;
-    gap: 15px; 
+    gap: 6px;
 }
 .cm-register-btn {
     background-color: #2563eb;
     color: #ffffff;
     border: none;
-    padding: 6px 12px;
+    padding: 5px 12px;
     border-radius: 8px;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 600;
     cursor: pointer;
+    white-space: nowrap;
     transition: all 0.2s ease;
 }
 
-.cm-register-btn:hover {
+.cm-register-btn:hover:not(:disabled) {
     background-color: #1d4ed8;
     box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+
+.cm-register-btn:disabled {
+    opacity: 0.6;
+    cursor: default;
+    box-shadow: none;
 }
 .cm-view-btn {
     background-color: #ffffff;
@@ -282,9 +342,28 @@
 }
 
 .cm-no-results {
-    grid-column: span 3;
+    grid-column: span 4;
     text-align: center;
     padding: 40px;
     color: #6b7280;
     font-size: 14px;
+}
+
+/* 4 cột desktop -> giảm dần theo màn hình */
+@media (max-width: 1200px) {
+    .cm-course-grid { grid-template-columns: repeat(3, 1fr); }
+    .cm-no-results { grid-column: span 3; }
+}
+
+@media (max-width: 900px) {
+    .cm-course-grid { grid-template-columns: repeat(2, 1fr); }
+    .cm-no-results { grid-column: span 2; }
+}
+
+@media (max-width: 576px) {
+    .cm-course-grid { grid-template-columns: 1fr; }
+    .cm-no-results { grid-column: span 1; }
+    .cm-search-box { width: 100%; }
+    .cm-filter-row-1 { flex-wrap: wrap; }
+    .cm-result-count { margin-left: 0; }
 }

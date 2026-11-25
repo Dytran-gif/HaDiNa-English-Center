@@ -1,181 +1,206 @@
-.student-layout * {
-    box-sizing: border-box;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-}
+/* Tuition — bảng thanh toán + panel tổng kết (layout 2 cột) */
 
-.payment-header-section {
-    display: flex;
-    align-items: center;
+.payment-container {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 310px;
     gap: 16px;
-    padding: 14px;
-    border-bottom: 1px solid #e2e8f0;
-    background-color: #fafbfc;
+    align-items: start;
 }
 
-.payment-icon-box {
-    width: 48px;
-    height: 48px;
-    background-color: #dbeafe;
-    color: #2563eb;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-}
-
-.payment-header-text h1 {
-    font-size: 16px;
-    font-weight: 700;
-    color: #0f172a;
-    margin: 0 0 4px 0;
-}
-
-.payment-header-text p {
-    color: #64748b;
-    font-size: 12px;
-    margin: 0;
+@media (max-width: 900px) {
+    .payment-container {
+        grid-template-columns: 1fr;
+    }
 }
 
 .payment-table-card {
     background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    margin-bottom: 24px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
     overflow: hidden;
 }
 
 .payment-card-header {
-    padding: 20px;
-    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 18px;
+    border-bottom: 1px solid #eef2f7;
+    font-weight: 800;
+    font-size: 14px;
+    color: #0f172a;
+}
+
+.payment-card-header::before {
+    content: "";
+    width: 4px;
+    height: 16px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #2563eb, #60a5fa);
+}
+
+.payment-card-count {
+    margin-left: auto;
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #dbeafe;
+    font-size: 11px;
     font-weight: 700;
-    font-size: 18px;
-    background-color: #ffffff;
+    padding: 2px 9px;
+    border-radius: 999px;
 }
 
 .payment-table-responsive {
     overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
 }
 
 .payment-custom-table {
     width: 100%;
     border-collapse: collapse;
     text-align: left;
+    font-size: 12.5px;
 }
 
-.payment-custom-table th, .payment-custom-table td {
-    padding: 16px;
+.payment-custom-table th,
+.payment-custom-table td {
+    padding: 12px 14px;
     border-bottom: 1px solid #f1f5f9;
 }
 
 .payment-custom-table th {
     background-color: #f8fafc;
-    color: #475569;
-    font-weight: 600;
-    font-size: 14px;
+    color: #64748b;
+    font-weight: 700;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.payment-custom-table tbody tr {
+    transition: background-color 0.15s ease;
 }
 
 .payment-custom-table tbody tr:hover {
-    background-color: #f8fafc;
-    transition: background-color 0.2s;
+    background-color: #f8fbff;
+}
+
+.payment-custom-table tbody tr:last-child td {
+    border-bottom: none;
 }
 
 .payment-text-center { text-align: center; }
-.payment-font-medium { font-weight: 500; color: #1e293b; }
-.payment-text-muted { color: #475569; }
+.payment-font-medium { font-weight: 600; color: #1e293b; }
+.payment-text-muted { color: #64748b; }
 
 .payment-custom-checkbox {
-    width: 18px;
-    height: 18px;
+    width: 17px;
+    height: 17px;
     cursor: pointer;
     accent-color: #2563eb;
 }
 
+/* Panel tổng kết */
 .payment-summary-card {
     background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 14px 14px 14px 18px;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    padding: 18px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    flex-wrap: wrap;
-    gap: 16px;
+    flex-direction: column;
+    gap: 14px;
+    position: sticky;
+    top: 16px;
+}
+
+@media (max-width: 900px) {
+    .payment-summary-card {
+        position: static;
+    }
 }
 
 .payment-summary-left {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
 }
 
 .payment-icon-box-sm {
-    width: 40px;
-    height: 40px;
-    background-color: #dbeafe;
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
     color: #2563eb;
-    border-radius: 8px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+    font-size: 15px;
 }
 
 .payment-summary-left h2 {
-    font-size: 18px;
-    font-weight: 700;
+    font-size: 14px;
+    font-weight: 800;
     margin: 0;
+    color: #0f172a;
 }
 
 .payment-summary-right {
     display: flex;
-    align-items: center;
-    gap: 32px;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .payment-summary-item {
-    border-left: 2px solid #f1f5f9;
-    padding-left: 24px;
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    border: none;
+    padding: 0;
 }
 
 .payment-summary-label {
     color: #64748b;
-    font-size: 14px;
-    margin-bottom: 4px;
+    font-size: 12px;
+    margin: 0;
 }
 
 .payment-summary-value {
-    font-size: 20px;
+    font-size: 13.5px;
     font-weight: 700;
+    color: #0f172a;
 }
 
 .payment-text-blue {
-    color: #2563eb;
-    font-size: 24px;
+    color: #1d4ed8;
+    font-size: 20px;
+    font-weight: 800;
 }
 
 .payment-btn-primary {
-    padding: 12px 32px;
-    border-radius: 8px;
+    width: 100%;
+    justify-content: center;
+    padding: 11px 16px;
+    border-radius: 10px;
     border: none;
-    font-weight: 600;
-    font-size: 16px;
-    display: flex;
+    font-weight: 700;
+    font-size: 13px;
+    display: inline-flex;
     align-items: center;
     gap: 8px;
     transition: all 0.2s;
     cursor: pointer;
+    margin-top: 2px;
 }
 
 .payment-btn-primary:not(:disabled) {
     background-color: #2563eb;
     color: #ffffff;
-    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+    box-shadow: 0 6px 14px rgba(37, 99, 235, 0.28);
 }
 
 .payment-btn-primary:not(:disabled):hover {

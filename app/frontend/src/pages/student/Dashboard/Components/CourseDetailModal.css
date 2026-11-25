@@ -102,6 +102,7 @@
 .cdm-body {
     padding: 18px;
     overflow-y: auto;
+    overscroll-behavior: contain;
     scrollbar-width: thin;
     scrollbar-color: #cbd5e1 #f1f5f9;
 }
@@ -137,6 +138,13 @@
 
 .cdm-meta span { font-size: 11px; color: #64748b; }
 .cdm-meta strong { font-size: 14px; color: #0f172a; }
+
+.cdm-meta .cdm-meta-total {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+}
+
+.cdm-meta .cdm-meta-total strong { color: #1d4ed8; }
 
 /* Tab 2: bài tập */
 .cdm-assignments {

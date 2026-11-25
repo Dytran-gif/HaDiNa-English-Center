@@ -1,17 +1,16 @@
-/* CourseBottom.css */
+/* CourseBottom.css — tab "My Courses" của trang Courses */
 
 .course-bottom-section {
     display: flex;
     gap: 24px;
-    margin-top: 32px;
-    padding-top: 24px;
-    border-top: 2px dashed #e5e7eb; /* Đường kẻ phân cách Khu vực 1 và Khu vực 2 */
     align-items: flex-start;
+    flex-wrap: wrap;
 }
 
 /* --- CỘT TRÁI: DANH SÁCH KHÓA HỌC --- */
 .cb-left-panel {
-    flex: 1;
+    flex: 1 1 420px;
+    min-width: 0;
     background-color: #ffffff;
     border: 1px solid #e5e7eb;
     border-radius: 16px;
@@ -26,9 +25,14 @@
     margin: 0 0 16px 0;
 }
 
-/* Khung bọc danh sách để tạo scrollbar nếu > 10 khóa (Giả sử 1 thẻ cao ~120px) */
+.cb-panel-title i {
+    color: #2563eb;
+    margin-right: 8px;
+}
+
+/* Khung bọc danh sách để tạo scrollbar nếu dài */
 .cb-list-wrapper {
-    max-height: 300px; 
+    max-height: 420px; 
     overflow-y: auto;
     padding-right: 12px;
     display: flex;
@@ -104,13 +108,36 @@
     font-size: 12px;
     color: #6b7280;
     display: flex;
-    gap: 12px;
+    flex-wrap: wrap;
+    gap: 6px 12px;
     align-items: center;
 }
 
 .cb-price-item {
-    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.cb-price-original {
+    font-size: 11px;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.cb-price-final {
+    font-weight: 700;
     color: #1e3a8a;
+}
+
+.cb-discount-chip {
+    background-color: #dcfce7;
+    color: #15803d;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 999px;
 }
 
 /* 2. Chọn lớp học */
@@ -192,6 +219,33 @@
     margin-bottom: 8px;
 }
 
+.cb-summary-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px dashed #e2e8f0;
+}
+
+.cb-summary-breakdown > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 12px;
+    color: #64748b;
+}
+
+.cb-summary-breakdown strong {
+    color: #334155;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.cb-summary-discount-row strong {
+    color: #047857;
+}
+
 .cb-summary-price {
     font-size: 24px;
     font-weight: 700;
@@ -233,4 +287,68 @@
     border-radius: 9999px;
     align-self: flex-start;
     margin-bottom: 4px;
+}
+
+/* --- EMPTY STATE: chưa đăng ký khóa nào --- */
+.cb-empty {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    padding: 44px 24px;
+    text-align: center;
+}
+
+.cb-empty-icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 14px;
+    border-radius: 16px;
+    background-color: #eff6ff;
+    color: #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+}
+
+.cb-empty h3 {
+    margin: 0 0 6px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.cb-empty p {
+    margin: 0 auto 18px;
+    max-width: 380px;
+    font-size: 13px;
+    color: #64748b;
+    line-height: 1.55;
+}
+
+.cb-browse-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #2563eb;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cb-browse-btn:hover {
+    background-color: #1d4ed8;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.28);
+}
+
+@media (max-width: 900px) {
+    .cb-right-panel {
+        width: 100%;
+    }
 }

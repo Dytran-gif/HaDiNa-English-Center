@@ -1,249 +1,248 @@
-/* ContinueLearning.css */
+/* Present Lessons — grid card khóa đang học (v2) */
 
-.cf-continue-learning-section {
+.cf-section {
     width: 100%;
-    background-color: #fff;
-    border-radius: 24px;
-    padding: 24px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 22px;
+    padding: 22px 24px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
 }
 
-/* HEADER STYLES */
 .cf-section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 24px;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
 }
 
 .cf-header-left {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
 }
 
 .cf-header-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 48px;
-    height: 48px;
-    background-color: #eff6ff;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
     border-radius: 12px;
     color: #2563eb;
-    font-size: 30px;
-}
-
-.cf-icon-svg {
-    width: 24px;
-    height: 24px;
-    fill: currentColor;
-}
-
-.cf-header-text {
-    display: flex;
-    flex-direction: column;
+    font-size: 16px;
 }
 
 .cf-section-title {
-    font-size: 15px;
-    font-weight: 700;
-    color: #1f2937;
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f172a;
     margin: 0;
 }
 
 .cf-section-subtitle {
-    font-size: 10px;
-    color: #6b7280;
-    margin: 4px 0 0 0;
+    font-size: 12px;
+    color: #64748b;
+    margin: 2px 0 0 0;
 }
 
 .cf-view-all-link {
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 12.5px;
+    font-weight: 700;
     color: #2563eb;
     text-decoration: none;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    border: 1px solid #bfdbfe;
+    background: #eff6ff;
+    transition: background-color 0.18s ease, border-color 0.18s ease;
 }
 
 .cf-view-all-link:hover {
-    color: #1d4ed8;
-    text-decoration: underline;
+    background: #dbeafe;
+    border-color: #93c5fd;
 }
 
-/* GRID LAYOUT CHO CARDS */
-.cf-cards-grid {
+.cf-grid {
     display: grid;
-    grid-template-columns: repeat(1, 1fr);
-    gap: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
 }
 
-@media (min-width: 768px) {
-    .cf-cards-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (min-width: 1024px) {
-    .cf-cards-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-/* COURSE CARD STYLES - ĐÃ ĐƯỢC LÀM NHỎ LẠI */
-.cf-course-card {
-    background-color: #ffffff;
+.cf-card {
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
     border: 1px solid #e5e7eb;
     border-radius: 16px;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    min-width: 0;
+}
 
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+.cf-card:hover {
+    transform: translateY(-3px);
+    border-color: #bfdbfe;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.09);
+}
 
+.cf-card:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+.cf-card-media {
     position: relative;
-    overflow: hidden;
-    z-index: 0;
-    padding: 40px 0px 0px 0px;
+    height: 96px;
 }
 
-.cf-course-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-}
-
-.cf-course-content {
-    padding: 12px 16px;
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    background-color: rgb(255, 255, 255);
-    border-radius: 15px 15px 0px 0px;
-}
-
-.cf-course-title {
-    font-size: 12px;
-    font-weight: 700;
-    color: #4e8be0;
-    margin: 0 0 4px 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.cf-course-info {
-    margin: 8px 0 16px 0;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-/* Khối chứa Level và Time */
-.cf-course-meta {
-    font-size: 10px;
-    color: #6d6f71;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.cf-info-level {
-    font-weight: 700;
-    color: #0f1011;
-    font-size: 10px;
-}
-
-.cf-meta-divider {
-    color: #9ca3af;
-    font-size: 10px;
-}
-
-.cf-info-time {
-    font-size: 10px;
-    color: #6d6f71;
-}
-
-/* Container bọc các thẻ Tag */
-.cf-info-skills {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-}
-
-/* Kiểu dáng từng Tag */
-.cf-skill-tag {
-    background-color: #eff6ff;
-    color: #2563eb;
-    font-size: 8px;
-    font-weight: 600;
-    padding: 4px 10px;
-    border-radius: 9999px;
-}
-
-.cf-discount-tag {
-    /* inherits styles */
-}
-
-.cf-horizontal-scroll-wrapper {
-    display: flex !important;
-    flex-wrap: nowrap;
-    gap: 24px;
-    overflow-x: auto;
-    padding-bottom: 16px;
-    scroll-behavior: smooth;
-}
-
-/* --- LÀM ĐẸP THANH TRƯỢT --- */
-.cf-horizontal-scroll-wrapper::-webkit-scrollbar {
-    height: 6px;
+.cf-card-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     display: block;
 }
 
-.cf-horizontal-scroll-wrapper::-webkit-scrollbar-track {
-    background: #f1f5f9;
-    border-radius: 8px;
+.cf-card-media::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0) 40%, rgba(15, 23, 42, 0.35));
 }
 
-.cf-horizontal-scroll-wrapper::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 8px;
+.cf-band {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    z-index: 1;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    color: #1d4ed8;
+    font-size: 10.5px;
+    font-weight: 700;
 }
 
-.cf-horizontal-scroll-wrapper::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
+.cf-card-body {
+    padding: 12px 14px 6px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
-/* --- Kích thước card --- */
-.cf-scroll-item {
-    flex: 0 0 260px !important;
-    min-width: 260px;
+.cf-card-title {
+    margin: 0 0 5px;
+    font-size: 13.5px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
-@media (max-width: 768px) {
-    .cf-scroll-item {
-        flex: 0 0 220px !important;
-        min-width: 220px;
+.cf-card-desc {
+    margin: 0 0 8px;
+    font-size: 11.5px;
+    color: #64748b;
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.cf-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    font-size: 11px;
+    color: #475569;
+    margin-top: auto;
+}
+
+.cf-card-meta i {
+    margin-right: 4px;
+    color: #94a3b8;
+}
+
+.cf-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.cf-price-box {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+
+.cf-price {
+    font-size: 11.5px;
+    font-weight: 800;
+    color: #1e3a8a;
+    white-space: nowrap;
+}
+
+.cf-chip.discount {
+    background: #dcfce7;
+    color: #15803d;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 999px;
+}
+
+.cf-view-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #2563eb;
+    white-space: nowrap;
+}
+
+.cf-view-link i {
+    font-size: 9px;
+    transition: transform 0.18s ease;
+}
+
+.cf-card:hover .cf-view-link i {
+    transform: translateX(3px);
+}
+
+.cf-empty {
+    text-align: center;
+    padding: 34px 0 26px;
+}
+
+.cf-empty i {
+    font-size: 32px;
+    color: #cbd5e1;
+}
+
+.cf-empty p {
+    margin: 10px 0 0;
+    font-size: 13px;
+    color: #94a3b8;
+}
+
+@media (max-width: 576px) {
+    .cf-section {
+        padding: 18px 16px;
     }
-}
-
-/* --- TRẠNG THÁI KÉO THẢ CHUỘT --- */
-/* Lưu ý: KHÔNG đặt pointer-events:none cho card khi kéo, vì nó chặn cả sự kiện click
-   -> bấm vào card sẽ không mở popup. Chỉ tắt chọn text (user-select) khi kéo. */
-.cf-horizontal-scroll-wrapper {
-    cursor: default;
-}
-
-.cf-horizontal-scroll-wrapper.cf-active-drag {
-    cursor: default;
-    scroll-behavior: auto;
-}
-
-.cf-horizontal-scroll-wrapper.cf-active-drag .cf-course-card {
-    user-select: none;
 }

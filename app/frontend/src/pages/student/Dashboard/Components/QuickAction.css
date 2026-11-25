@@ -1,65 +1,100 @@
-/* QuickAction.css */
+/* Quick Actions — cột phải dashboard, tile chiếm đều chiều cao */
 
 .quick-action-card {
     background-color: #ffffff;
     border: 1px solid #e5e7eb;
-    border-radius: 16px;
+    border-radius: 22px;
     padding: 20px;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-    width: 100%;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-width: 0;
 }
 
-/* HEADER */
 .qa-header-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 800;
+    color: #0f172a;
     margin: 0 0 16px 0;
 }
 
-/* LIST & ITEMS */
+.qa-header-title::before {
+    content: "";
+    width: 4px;
+    height: 16px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #2563eb, #60a5fa);
+}
+
 .qa-list {
     display: flex;
     flex-direction: column;
-    gap: 12px; /* Khoảng cách giữa các nút */
+    gap: 12px;
+    flex: 1;
 }
 
 .qa-item-btn {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 14px;
     width: 100%;
-    padding: 12px;
-    background-color: #f2f1ff;
-    border: 1px solid #f3f4f6; /* Viền rất nhạt */
-    border-radius: 12px;
+    flex: 1;
+    min-height: 58px;
+    padding: 14px 16px;
+    background-color: #f8fafc;
+    border: 1px solid #eef2f7;
+    border-radius: 14px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
     text-align: left;
 }
 
 .qa-item-btn:hover {
-    background-color: #f8fafc; /* Nền xám nhạt khi hover */
-    border-color: #e2e8f0;
+    background-color: #eff6ff;
+    border-color: #bfdbfe;
     transform: translateY(-2px);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.12);
 }
 
 .qa-icon-wrapper {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
-    background-color: #eff6ff; /* Nền xanh nhạt */
-    color: #2563eb; /* Icon xanh đậm */
-    border-radius: 50%;
+    width: 42px;
+    height: 42px;
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    color: #ffffff;
+    border-radius: 12px;
     font-size: 16px;
     flex-shrink: 0;
+    box-shadow: 0 6px 12px rgba(37, 99, 235, 0.24);
 }
 
 .qa-label {
-    font-size: 14px;
-    font-weight: 600;
-    color: #374151; /* Màu xám đậm */
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #1f2937;
+    flex: 1;
+    min-width: 0;
+}
+
+.qa-chevron {
+    font-size: 11px;
+    color: #94a3b8;
+    transition: transform 0.18s ease, color 0.18s ease;
+}
+
+.qa-item-btn:hover .qa-chevron {
+    transform: translateX(3px);
+    color: #2563eb;
+}
+
+@media (max-width: 1100px) {
+    .qa-item-btn {
+        flex: initial;
+    }
 }

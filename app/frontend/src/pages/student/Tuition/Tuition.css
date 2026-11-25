@@ -1,0 +1,63 @@
+/* Trang Tuition — hero + section heading */
+
+.tuition-hero {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 22px;
+    padding: 22px 24px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    margin-bottom: 12px;
+}
+
+.tuition-hero-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    box-shadow: 0 6px 14px rgba(37, 99, 235, 0.28);
+}
+
+.tuition-hero h1 {
+    margin: 0 0 3px;
+    font-size: 20px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.tuition-hero p {
+    margin: 0;
+    font-size: 12.5px;
+    color: #64748b;
+}
+
+.tuition-section-head {
+    margin: 10px 2px 10px;
+}
+
+.tuition-section-head h2 {
+    margin: 0 0 2px;
+    font-size: 15px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.tuition-section-head p {
+    margin: 0;
+    font-size: 12px;
+    color: #64748b;
+}
+
+@media (max-width: 576px) {
+    .tuition-hero {
+        padding: 18px 16px;
+    }
+}

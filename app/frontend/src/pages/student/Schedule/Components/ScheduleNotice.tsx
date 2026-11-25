@@ -1,4 +1,5 @@
 import type { StudentScheduleNotice } from "../../../../services/student/useStudentApi";
+import { useLang } from "../../../../i18n/LanguageContext";
 import './ScheduleNotice.css';
 
 interface ScheduleNoticeProps {
@@ -6,6 +7,8 @@ interface ScheduleNoticeProps {
 }
 
 export default function ScheduleNoticeFE({ notices }: ScheduleNoticeProps) {
+    const { t } = useLang();
+
     if (notices.length === 0) return null;
 
     const notice = notices[0];
@@ -18,8 +21,8 @@ export default function ScheduleNoticeFE({ notices }: ScheduleNoticeProps) {
                         <i className="fa-solid fa-bullhorn"></i>
                     </div>
                     <div>
-                        <h3 className="notice-main-title">Class Cancellations & Notices</h3>
-                        <p className="notice-sub-title">Important updates about your classes today.</p>
+                        <h3 className="notice-main-title">{t("notice.title")}</h3>
+                        <p className="notice-sub-title">{t("notice.sub")}</p>
                     </div>
                 </div>
             </div>
@@ -30,7 +33,7 @@ export default function ScheduleNoticeFE({ notices }: ScheduleNoticeProps) {
                         <i className="fa-solid fa-circle-exclamation"></i>
                     </span>
                     <p className="cancellation-text">
-                        <strong>{notice.title}</strong> on <span>{notice.dateStr}</span>: {notice.message}.
+                        {t("notice.line", { title: notice.title, date: notice.dateStr, message: notice.message })}
                     </p>
                 </div>
             </div>

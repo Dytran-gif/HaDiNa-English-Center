@@ -1,14 +1,25 @@
-import { useState, useMemo, type ChangeEvent } from 'react';
+import { useState, useMemo, useEffect, useRef, type ChangeEvent } from 'react';
 import type { StudentTuitionItem } from "../../../../services/student/useStudentApi";
+import { useLang } from "../../../../i18n/LanguageContext";
 import './Payment.css';
 
 interface PaymentProps {
     items: StudentTuitionItem[]; // Các ghi danh chưa thanh toán (đọc từ BE)
     onPay: (enrollmentIds: number[]) => void; // Hàm thanh toán (gọi BE, lưu phiếu thu xuống DB)
+    autoSelectAll?: boolean; // Từ trang Courses: tự tích tất cả khóa khi danh sách tải xong
 }
 
-const PaymentFE = ({ items, onPay }: PaymentProps) => {
+const PaymentFE = ({ items, onPay, autoSelectAll }: PaymentProps) => {
+    const { t, money } = useLang();
     const [selectedEnrollmentIds, setSelectedEnrollmentIds] = useState<number[]>([]);
+    const autoSelectedRef = useRef(false);
+
+    // Chỉ tự tích một lần sau khi danh sách khóa chưa thanh toán tải xong
+    useEffect(() => {
+        if (!autoSelectAll || autoSelectedRef.current || items.length === 0) return;
+        autoSelectedRef.current = true;
+        setSelectedEnrollmentIds(items.map(item => item.enrollmentId));
+    }, [autoSelectAll, items]);
 
     const handleSelect = (enrollmentId: number) => {
         setSelectedEnrollmentIds(prev =>
@@ -30,23 +41,14 @@ const PaymentFE = ({ items, onPay }: PaymentProps) => {
             .reduce((sum, item) => sum + item.finalTuitionFee, 0);
     }, [items, selectedEnrollmentIds]);
 
-    const formatCurrency = (amount: number) => {
-        return amount.toLocaleString('vi-VN') + ' VNĐ';
-    };
-
     return (
         <div className="payment-container">
-            {/* Unified Card: Tuition Title + My Courses Table */}
+            {/* Bảng khóa học cần thanh toán */}
             <div className="payment-table-card">
-                <div className="payment-header-section">
-                    <div className="payment-icon-box"><i className="fa-solid fa-file-invoice-dollar"></i></div>
-                    <div className="payment-header-text">
-                        <h1>Tuition</h1>
-                        <p>Select courses to review and pay your tuition fees.</p>
-                    </div>
+                <div className="payment-card-header">
+                    {t("tuition.myCourses")}
+                    <span className="payment-card-count">{items.length}</span>
                 </div>
-
-                <div className="payment-card-header">My Courses</div>
                 <div className="payment-table-responsive">
                     <table className="payment-custom-table">
                         <thead>
@@ -59,11 +61,11 @@ const PaymentFE = ({ items, onPay }: PaymentProps) => {
                                         onChange={handleSelectAll}
                                     />
                                 </th>
-                                <th>Course Name</th>
-                                <th>Class</th>
-                                <th>Level</th>
-                                <th>Duration</th>
-                                <th>Tuition Fee</th>
+                                <th>{t("tuition.colCourse")}</th>
+                                <th>{t("tuition.colClass")}</th>
+                                <th>{t("tuition.colLevel")}</th>
+                                <th>{t("tuition.colDuration")}</th>
+                                <th>{t("tuition.colFee")}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -80,14 +82,14 @@ const PaymentFE = ({ items, onPay }: PaymentProps) => {
                                     <td className="payment-font-medium">{item.courseName}</td>
                                     <td className="payment-text-muted">{item.className}</td>
                                     <td className="payment-text-muted">{item.bandFrom} - {item.bandTo}</td>
-                                    <td className="payment-text-muted">{item.totalSessions} sessions</td>
-                                    <td className="payment-font-medium">{formatCurrency(item.finalTuitionFee)}</td>
+                                    <td className="payment-text-muted">{t("common.sessions", { n: item.totalSessions })}</td>
+                                    <td className="payment-font-medium">{money(item.finalTuitionFee)}</td>
                                 </tr>
                             ))}
                             {items.length === 0 && (
                                 <tr>
                                     <td colSpan={6} className="payment-text-center payment-text-muted" style={{ padding: '32px' }}>
-                                        Không có khóa học nào cần thanh toán.
+                                        {t("tuition.none")}
                                     </td>
                                 </tr>
                             )}
@@ -100,20 +102,20 @@ const PaymentFE = ({ items, onPay }: PaymentProps) => {
             <div className="payment-summary-card">
                 <div className="payment-summary-left">
                     <div className="payment-icon-box-sm"><i className="fa-regular fa-rectangle-list"></i></div>
-                    <h2>Payment Summary</h2>
+                    <h2>{t("tuition.summary")}</h2>
                 </div>
 
                 <div className="payment-summary-right">
                     <div className="payment-summary-item">
-                        <span className="payment-summary-label">Selected Courses</span>
+                        <span className="payment-summary-label">{t("tuition.selected")}</span>
                         <span className="payment-summary-value">
-                            {selectedEnrollmentIds.length} course{selectedEnrollmentIds.length > 1 ? 's' : ''}
+                            {t("tuition.courseCount", { n: selectedEnrollmentIds.length })}
                         </span>
                     </div>
 
                     <div className="payment-summary-item">
-                        <span className="payment-summary-label">Total Amount</span>
-                        <span className="payment-summary-value payment-text-blue">{formatCurrency(totalAmount)}</span>
+                        <span className="payment-summary-label">{t("tuition.total")}</span>
+                        <span className="payment-summary-value payment-text-blue">{money(totalAmount)}</span>
                     </div>
 
                     <button
@@ -121,7 +123,7 @@ const PaymentFE = ({ items, onPay }: PaymentProps) => {
                         disabled={selectedEnrollmentIds.length === 0}
                         onClick={() => onPay(selectedEnrollmentIds)}
                     >
-                        Payment Now
+                        {t("my.payNow")}
                     </button>
                 </div>
             </div>
