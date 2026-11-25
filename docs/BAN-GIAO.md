@@ -1,4 +1,12 @@
 # Nhật ký bàn giao
+## [2026-11-25] Public Teacher lấy từ database, bỏ đánh giá sao
+
+- Tạo PublicTeacherProfiles và API GET /api/public/teachers, /api/public/teachers/{slug}; nhập 5 hồ sơ/ảnh từ website, giữ slug cũ. Không tạo tài khoản đăng nhập hoặc thay đổi 2 Teachers vận hành.
+- Public Teachers/About/Header/TeacherDetail/CourseDetail dùng API; bỏ data/teachers.ts và sao đánh giá public.
+- DB local đã backup, áp migration và import; BE đã khởi động lại. FE build/lint và BE build đạt (FE còn warning cũ); live API kiểm tra đủ 5 hồ sơ và ảnh.
+- Máy khác: xem docs/api/PUBLIC-TEACHERS.md và tools/db/public-teachers/install.ps1. Commit migration + snapshot + script + ảnh cùng nhau.
+- Hồ sơ public là nội dung giới thiệu riêng, chưa có UI quản lý; Admin Teachers không tự sửa các hồ sơ này. Chi tiết: reports/2026-11-25-public-teachers.md.
+
 ## [2026-11-14] Duy (Claude) — Bỏ bảng Teacher, DB chung theo bản của Hải, DB tự dựng
 
 **Đã xong**

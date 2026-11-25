@@ -23,7 +23,6 @@ export default function TeacherCard({ teacher }: TeacherCardProps) {
       <div className="teacher-card__body">
         <h3 className="teacher-card__name">{teacher.full_name}</h3>
         <p className="teacher-card__title">{teacher.title}</p>
-        <p className="teacher-card__rating">★ {teacher.rating_avg.toFixed(1)} / 5.0</p>
         <Button to={`/giao-vien/${teacher.slug}`} variant="ghost">
           Xem hồ sơ →
         </Button>

@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { siteName, primaryNav, footerCoursesNav } from "../../data/siteConfig";
 import Button from "../ui/Button";
-import { teachers } from "../../data/teachers";
+import usePublicTeachers from "../../services/usePublicTeachers";
 import usePublicPosts from "../../services/usePublicPosts";
 import "./Header.css";
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const posts = usePublicPosts();
+  const { teachers } = usePublicTeachers();
   const submenus: Record<string, { label: string; to: string }[]> = {
     "/khoa-hoc": footerCoursesNav,
     "/giao-vien": teachers.map(teacher => ({ label: teacher.full_name, to: `/giao-vien/${teacher.slug}` })),

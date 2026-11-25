@@ -2,14 +2,17 @@ import { useParams } from "react-router-dom";
 import PageShell from "../components/layout/PageShell";
 import Button from "../components/ui/Button";
 import InitialsBlock from "../components/ui/InitialsBlock";
-import { getTeacherBySlug } from "../data/teachers";
+import usePublicTeachers from "../services/usePublicTeachers";
+import TeacherLoadState from "../components/ui/TeacherLoadState";
 import { getCoursesByTeacher, formatPrice } from "../data/courses";
 import NotFound from "./NotFound";
 import "./TeacherDetail.css";
 
 export default function TeacherDetail() {
   const { slug = "" } = useParams();
-  const teacher = getTeacherBySlug(slug);
+  const { teachers, loading, error, reload } = usePublicTeachers();
+  const teacher = teachers.find(t => t.slug === slug);
+  if (loading || error) return <PageShell><div className="container teacher-detail"><TeacherLoadState loading={loading} error={error} empty={false} reload={reload}/></div></PageShell>;
 
   if (!teacher) {
     return <NotFound />;
@@ -38,7 +41,6 @@ export default function TeacherDetail() {
           <div>
             <h1>{teacher.full_name}</h1>
             <p className="teacher-detail__title">{teacher.title}</p>
-            <p className="teacher-detail__rating">★ {teacher.rating_avg.toFixed(1)} / 5.0</p>
           </div>
         </div>
 
