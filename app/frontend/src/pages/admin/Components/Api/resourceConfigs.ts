@@ -1,8 +1,8 @@
 import type { ResourceConfig } from "./ResourcePage";
 export const teachersConfig: ResourceConfig = {
   path:"teachers", title:"Giáo viên", singular:"giáo viên", paged:true, search:true, status:["Teaching","OnLeave"],
-  columns:[{key:"fullName",label:"Họ tên"},{key:"phone",label:"SĐT"},{key:"specialty",label:"Chuyên môn"},{key:"status",label:"Trạng thái"},{key:"classCount",label:"Số lớp"},{key:"isLocked",label:"Tài khoản"}],
-  fields:[{key:"fullName",label:"Họ tên",required:true,maxLength:150},{key:"phone",label:"Số điện thoại",type:"tel",required:true,maxLength:20},{key:"email",label:"Email",type:"email",required:true,createOnly:true,maxLength:255},{key:"specialty",label:"Chuyên môn",required:true,maxLength:100},{key:"degree",label:"Bằng cấp",maxLength:200},{key:"hireDate",label:"Ngày vào làm",type:"date"},{key:"status",label:"Trạng thái",options:["Teaching","OnLeave"]},{key:"tempPassword",label:"Mật khẩu tạm (ít nhất 8 ký tự)",type:"password",required:true,createOnly:true}]
+  columns:[{key:"avatarUrl",label:"Ảnh"},{key:"fullName",label:"Họ tên"},{key:"phone",label:"SĐT"},{key:"specialty",label:"Chuyên môn"},{key:"status",label:"Trạng thái"},{key:"classCount",label:"Số lớp"},{key:"isLocked",label:"Tài khoản"}],
+  fields:[{key:"fullName",label:"Họ tên",required:true,maxLength:150},{key:"phone",label:"Số điện thoại",type:"tel",required:true,maxLength:20},{key:"email",label:"Email",type:"email",required:true,createOnly:true,maxLength:255},{key:"specialty",label:"Chuyên môn",required:true,maxLength:100},{key:"degree",label:"Bằng cấp",maxLength:200},{key:"teachingExperience",label:"Kinh nghiệm giảng dạy",maxLength:1000},{key:"hireDate",label:"Ngày vào làm",type:"date"},{key:"status",label:"Trạng thái",options:["Teaching","OnLeave"]},{key:"tempPassword",label:"Mật khẩu tạm (ít nhất 8 ký tự)",type:"password",required:true,createOnly:true}]
 };
 export const studentsConfig: ResourceConfig = {
   path:"students",title:"Học viên",singular:"học viên",paged:true,search:true,status:["Studying","OnHold","Dropped"],

@@ -49,6 +49,7 @@ public partial class AppDbContext : DbContext
             e.Property(x => x.Phone).HasMaxLength(20).IsRequired();
             e.Property(x => x.Specialty).HasMaxLength(100).IsRequired();
             e.Property(x => x.Degree).HasMaxLength(200);
+            e.Property(x => x.TeachingExperience).HasMaxLength(1000);
             e.Property(x => x.Status).HasMaxLength(20).IsRequired();
 
             e.HasOne(x => x.User).WithOne(u => u.Teacher)

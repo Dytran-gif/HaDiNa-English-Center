@@ -14,6 +14,7 @@ import ConfirmDialog from "../Ui/ConfirmDialog";
 import { SelectField } from "../Ui/FormField";
 import useToast from "../Ui/useToast";
 import "./AdminApi.css";
+import TeacherPhoto from "./TeacherPhoto";
 
 function PaymentHistory({ id }: { id: number }) {
   const { data, loading, error, reload } = useAdminQuery<{ items: PaymentResponse[]; totalPaid: number }>(`students/${id}/payments`);
@@ -62,6 +63,7 @@ export default function AccountProfile({ kind }: { kind: "teachers" | "students"
     <SectionCard title={query.loading ? "Đang tải hồ sơ…" : String(query.data?.fullName ?? `Hồ sơ ${config.singular}`)} action={query.data && <Badge status={String(query.data.status)}/>}>
       <nav className="admin-management-tabs" aria-label={`Các phần hồ sơ ${config.singular}`}>{tabs.map(item => <Link key={item.key} to={`?tab=${item.key}`} state={location.state} aria-current={tab === item.key ? "page" : undefined}>{item.label}</Link>)}</nav>
       {query.error ? <Notice tone="error" action={<Button onClick={query.reload}>Thử lại</Button>}>{query.error}</Notice> : query.loading ? <p role="status">Đang tải thông tin…</p> : query.data && <>
+        {kind === "teachers" && tab === "profile" && <TeacherPhoto id={Number(id)} name={String(query.data.fullName)} initialUrl={typeof query.data.avatarUrl === "string" ? query.data.avatarUrl : null}/>}
         {tab === "profile" && <dl className="admin-management-fields">{config.fields.filter(field => field.type !== "password").map(field => <div key={field.key}><dt>{field.label}</dt><dd>{display(query.data![field.key])}</dd></div>)}</dl>}
         {tab === "classes" && (kind === "students" ? <Enrollments student={query.data as StudentResponse} onChanged={query.reload}/> : classes.length ? <div className="admin-api-table"><table className="admin-table"><thead><tr><th>Lớp</th><th>Khóa học</th><th>Trạng thái</th></tr></thead><tbody>{classes.map(item => <tr key={item.id}><td><Link className="admin-management-name" to={`/admin/classes/${item.id}`}>{display(item.name ?? item.className)}</Link></td><td>{display(item.courseName)}</td><td><Badge status={String(item.status ?? item.classStatus ?? "")}/></td></tr>)}</tbody></table></div> : <EmptyState title="Chưa có lớp phụ trách" description="Các lớp được phân công sẽ xuất hiện tại đây." icon="classes"/>)}
         {tab === "payments" && <PaymentHistory id={Number(id)}/>}

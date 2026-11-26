@@ -23,6 +23,8 @@ public class TeacherCreateRequest
 
     [StringLength(200)]
     public string? Degree { get; set; }
+    [StringLength(1000)]
+    public string? TeachingExperience { get; set; }
 
     public DateOnly? HireDate { get; set; }
 

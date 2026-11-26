@@ -1,4 +1,3 @@
-using System.Text.Json;
 using EnglishCenter.Api.Data;
 using EnglishCenter.Api.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -9,24 +8,25 @@ namespace EnglishCenter.Api.Controllers.Public;
 
 // Trang Giáo viên của website. Hồ sơ gắn giáo viên thật (TeacherId) lấy tên/ảnh từ tài khoản giáo viên,
 // khóa phụ trách từ các lớp thật, điểm đánh giá từ TeacherReviews đã duyệt — cùng nguồn với cổng Giáo viên.
-// Hồ sơ giới thiệu cũ chưa gắn tài khoản (TeacherId NULL) vẫn hiện như trước, không có khóa/đánh giá.
+// Only linked operational teachers are public; orphan/legacy profiles never appear.
 [ApiController]
 [AllowAnonymous]
 [Route("api/public/teachers")]
 public class TeachersController(AppDbContext db) : ControllerBase
 {
-    private record Row(int Id, int? TeacherId, string Slug, string FullName, string Title, string Bio, string CredentialsJson,
-        string? AvatarUrl);
+    private record Row(int Id, int? TeacherId, string Slug, string FullName, string Title, string Bio, string Degree,
+        string? AvatarUrl, string Specialty, string? TeachingExperience);
 
     private async Task<List<object>> BuildAsync(IQueryable<EnglishCenter.Api.Entities.PublicTeacherProfile> query, CancellationToken ct)
     {
         var rows = await query.AsNoTracking()
-            .Where(p => p.IsPublished && (p.TeacherId == null || p.Teacher!.Status == "Teaching"))
+            .Where(p => p.IsPublished && p.TeacherId != null && p.Teacher!.Status == "Teaching" && !p.Teacher.User.IsLocked)
             .OrderBy(p => p.TeacherId == null).ThenBy(p => p.Id)
             .Select(p => new Row(p.Id, p.TeacherId, p.Slug,
-                p.Teacher != null ? p.Teacher.FullName : p.FullName,
-                p.Title, p.Bio, p.CredentialsJson,
-                p.Teacher != null && p.Teacher.User.AvatarUrl != null ? p.Teacher.User.AvatarUrl : p.AvatarUrl))
+                p.Teacher!.FullName,
+                string.IsNullOrEmpty(p.Teacher!.Degree) ? p.Teacher.Specialty : p.Teacher.Degree, p.Bio,
+                p.Teacher.Degree != null ? p.Teacher.Degree : "",
+                p.Teacher.User.AvatarUrl, p.Teacher.Specialty, p.Teacher.TeachingExperience))
             .ToListAsync(ct);
 
         var teacherIds = rows.Where(r => r.TeacherId != null).Select(r => r.TeacherId!.Value).ToList();
@@ -47,13 +47,16 @@ public class TeachersController(AppDbContext db) : ControllerBase
             ratings.TryGetValue(p.TeacherId ?? 0, out var rating);
             return (object)new
             {
-                teacher_id = p.Id,
+                teacher_id = p.TeacherId!.Value,
                 account_teacher_id = p.TeacherId,
                 slug = p.Slug,
                 full_name = p.FullName,
                 title = p.Title,
+                degree = p.Degree,
+                specialty = p.Specialty,
+                teaching_experience = p.TeachingExperience,
                 bio = p.Bio,
-                credentials = ParseCredentials(p.CredentialsJson),
+                credentials = string.IsNullOrWhiteSpace(p.Degree) ? Array.Empty<string>() : new[] { p.Degree },
                 initials = Codes.Initials(p.FullName),
                 avatar = p.AvatarUrl,
                 courses = mine.GroupBy(c => c.CourseId).Select(g => new
@@ -77,9 +80,4 @@ public class TeachersController(AppDbContext db) : ControllerBase
         return items.Count == 0 ? NotFound(new { message = "Không tìm thấy hồ sơ giáo viên." }) : Ok(items[0]);
     }
 
-    private static string[] ParseCredentials(string json)
-    {
-        try { return JsonSerializer.Deserialize<string[]>(json) ?? []; }
-        catch (JsonException) { return []; }
-    }
 }

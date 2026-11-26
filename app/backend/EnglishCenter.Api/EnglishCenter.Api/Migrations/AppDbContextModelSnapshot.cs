@@ -830,6 +830,10 @@ namespace EnglishCenter.Api.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<string>("TeachingExperience")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 

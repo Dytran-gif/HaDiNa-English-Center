@@ -8,6 +8,7 @@ public class Teacher
     public string Phone { get; set; } = "";
     public string Specialty { get; set; } = "";
     public string? Degree { get; set; }
+    public string? TeachingExperience { get; set; }
     public DateOnly? HireDate { get; set; }
     public string Status { get; set; } = "Teaching";   // Teaching | OnLeave
 

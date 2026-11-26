@@ -8,6 +8,8 @@ import Button from "../Ui/Button";
 import Modal from "../Ui/Modal";
 import RowActions from "../Ui/RowActions";
 import ActionMenu from "../Ui/ActionMenu";
+import TeacherPhoto from "./TeacherPhoto";
+import { notifyTeachersChanged } from "../../../../services/usePublicTeachers";
 import Badge from "../Ui/Badge";
 import ConfirmDialog from "../Ui/ConfirmDialog";
 import EmptyState from "../Ui/EmptyState";
@@ -65,7 +67,7 @@ export default function ResourcePage({ config }: { config: ResourceConfig }) {
   function updateField(key:string,value:string) { setForm(previous => ({...previous,[key]:value})); setFieldErrors(previous => {const next={...previous};delete next[key.toLowerCase()];return next;}); }
   async function mutate(action:()=>Promise<unknown>,success:string,deleted=false,rethrow=false) {
     if(busy)return false;setBusy(true);setActionError("");setFieldErrors({});
-    try {await action();list.reload();notify({title:success});if(deleted&&rows.length===1&&page>1)changeParam("page",String(page-1));return true;}
+    try {await action();list.reload();if(config.path==="teachers")notifyTeachersChanged();notify({title:success});if(deleted&&rows.length===1&&page>1)changeParam("page",String(page-1));return true;}
     catch(reason){setActionError(errorText(reason));if(reason instanceof ApiError)setFieldErrors(Object.fromEntries(Object.entries(reason.fieldErrors).map(([key,errors])=>[key.split(".").at(-1)!.toLowerCase(),errors.join(" ")])));if(rethrow)throw reason;return false;}
     finally{setBusy(false);}
   }
@@ -103,13 +105,15 @@ export default function ResourcePage({ config }: { config: ResourceConfig }) {
         <footer>{actions(row)}</footer>
       </Card>)}
     </div>:<Card><div className="admin-api-table" role="region" aria-label={`Danh sách ${config.title.toLowerCase()}`} tabIndex={0}><table className="admin-table" aria-busy={list.loading}><thead><tr>{config.columns.map(column=><th scope="col" key={column.key}>{column.label}</th>)}<th scope="col">Thao tác</th></tr></thead><tbody>
-      {list.loading?<TableSkeleton columns={config.columns.length+1}/>:rows.map(row=><tr key={row.id}>{config.columns.map(column=><td key={column.key}>{column.key==="fullName"&&accounts?<Link className="admin-management-name" to={`/admin/${config.path}/${row.id}`} state={{returnTo:location.pathname+location.search}}>{display(row[column.key])}</Link>:column.key==="status"?<Badge status={String(row.status)}/>:column.key==="isLocked"?<Badge tone={row.isLocked?"warning":"success"}>{display(row.isLocked)}</Badge>:column.currency?money(row[column.key]):display(row[column.key])}</td>)}<td>{actions(row)}</td></tr>)}
+      {list.loading?<TableSkeleton columns={config.columns.length+1}/>:rows.map(row=><tr key={row.id}>{config.columns.map(column=><td key={column.key}>{column.key==="avatarUrl"?<TeacherPhoto key={row.id} id={row.id} name={nameOf(row)} initialUrl={typeof row.avatarUrl==="string"?row.avatarUrl:null} onChanged={list.reload}/>:column.key==="fullName"&&accounts?<Link className="admin-management-name" to={`/admin/${config.path}/${row.id}`} state={{returnTo:location.pathname+location.search}}>{display(row[column.key])}</Link>:column.key==="status"?<Badge status={String(row.status)}/>:column.key==="isLocked"?<Badge tone={row.isLocked?"warning":"success"}>{display(row.isLocked)}</Badge>:column.currency?money(row[column.key]):display(row[column.key])}</td>)}<td>{actions(row)}</td></tr>)}
     </tbody></table></div></Card>)}
     {!list.loading&&!list.error&&!rows.length&&<EmptyState title={filtered?`Không tìm thấy ${config.singular} phù hợp`:`Chưa có ${config.singular}`} description={filtered?"Thử từ khóa khác hoặc xóa bộ lọc để xem lại danh sách.":`Thêm ${config.singular} đầu tiên để bắt đầu quản lý.`} action={filtered?<Button onClick={()=>setParams({})}>Xóa bộ lọc</Button>:<Button variant="primary" onClick={()=>edit()}>Thêm {config.singular}</Button>}/>}
     {config.paged&&total>pageSize&&<Pager page={page} pageSize={pageSize} total={total} loading={list.loading} onChange={value=>{changeParam("page",String(value));document.getElementById("admin-main-content")?.scrollIntoView({block:"start"});}}/>}
     <Modal open={open} title={`${editing===null?"Thêm":"Sửa"} ${config.singular}`} busy={busy} onClose={closeEditor}>
       {editorLoading?<p role="status">Đang tải hồ sơ để chỉnh sửa…</p>:<form className="admin-api-stack" onSubmit={save}>
         {actionError&&<Notice tone="error">{actionError}</Notice>}
+        {config.path === "teachers" && editing !== null && <TeacherPhoto key={editing} id={editing} name={form.fullName || "Giáo viên"} initialUrl={rows.find(row=>row.id===editing)?.avatarUrl as string | null | undefined} onChanged={list.reload}/>}
+        {config.path === "teachers" && editing === null && <p className="admin-api-muted">Sau khi tạo giáo viên, mở Sửa hồ sơ để tải ảnh đại diện.</p>}
         {config.fields.filter(field=>editing===null||!field.createOnly).map(field=>field.options?<SelectField key={field.key} label={field.label} required={field.required} disabled={busy} error={fieldErrors[field.key.toLowerCase()]} value={form[field.key]??""} onChange={event=>updateField(field.key,event.target.value)} help={field.help} options={field.options.map(value=>({value,label:field.optionLabels?.[value]??display(value)}))}/>:field.type==="textarea"?<TextareaField key={field.key} label={field.label} disabled={busy} error={fieldErrors[field.key.toLowerCase()]} maxLength={field.maxLength} value={form[field.key]??""} onChange={event=>updateField(field.key,event.target.value)}/>:<InputField key={field.key} label={field.label} help={field.help} placeholder={`Nhập ${field.label.toLowerCase()}`} type={field.type??"text"} required={field.required} disabled={busy} error={fieldErrors[field.key.toLowerCase()]} min={field.min} max={field.max} step={field.step} maxLength={field.maxLength} minLength={field.type==="password"?8:undefined} value={form[field.key]??""} onChange={event=>updateField(field.key,event.target.value)}/>)}
         {isCourse&&<><p>Học phí sau giảm: <strong>{money(Number(form.tuition||0)*(1-Number(form.discountPercent||0)/100))}</strong></p>{editing!==null&&<Notice tone="info">Thay đổi học phí và giảm giá chỉ áp dụng cho học viên ghi danh từ bây giờ.</Notice>}</>}
         {editing!==null&&accounts&&<p className="admin-api-muted">Email đăng nhập được giữ nguyên khi sửa hồ sơ.</p>}

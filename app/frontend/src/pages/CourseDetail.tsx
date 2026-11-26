@@ -21,7 +21,7 @@ export default function CourseDetail() {
   }
 
   const category = getCategoryById(course.category_id);
-  const teacher = teachers.find(t => t.teacher_id === course.teacher_id);
+  const teacher = teachers.find(t => live?.open_classes.some(c => c.teacher_slug === t.slug));
 
   return (
     <PageShell>

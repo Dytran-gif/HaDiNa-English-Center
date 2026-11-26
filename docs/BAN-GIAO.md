@@ -1,4 +1,23 @@
 # Nhật ký bàn giao
+## [2026-11-26] Ảnh giáo viên trong Admin, đồng bộ public và kiểm tra khóa/xóa
+
+- Bảng Giáo viên có cột ảnh; Sửa/Hồ sơ có uploadJPG/PNG/WebP5MB. Tạo giáo viên trước rồi tải ảnh. APIAdmin lưu Users.AvatarUrl, public dùng cùng URL; không migration.
+- usePublicTeachers cập nhật khi focus và tín hiệu mutation/upload cùng tab/khác tab. Lock/OnLeaveẩn, unlockhiện, delete thành côngẩn; guard giáo viên có lớp vẫn giữ nguyên.
+- HTTP+DB QA: photo200/URLkhớp, bad400/anon401, lockdetail404/unlockhiện, deleteẩn. Đã dọn user/teacher/profile/photo thử, không đổi2GV thật. BuildFE/BE đạt, lintwarning cũ. docs/api/PUBLIC-TEACHERS.md.
+
+## [2026-11-26] Hồ sơ giáo viên chỉ hiển thị chuyên môn và kinh nghiệm
+
+- TeacherDetail giữ ảnh/tên, chỉ3mục Bằng cấp, Trình độ/chuyên môn, Kinh nghiệm giảng dạy; gỡ khối khóa phụ trách/giới thiệu/đánh giá khỏi trang này.
+- Bổ sung Teachers.TeachingExperience nullable1000ký tự, migration TeacherTeachingExperience, API Admin/Public và form Sửa/Thêm giáo viên. Không tự tạo số năm kinh nghiệm; thiếu dữ liệu hiện Chưa cập nhật.
+- Backup trước áp migrationDB; live Adminsave/publicread và maxLength400 đạt, đã khôi phục dữ liệu QA. FE/BE build đạt; lintwarning cũ. BE chạy5220 AutoSetup=false. Xem docs/api/PUBLIC-TEACHERS.md.
+
+## [2026-11-26] Đồng bộ giáo viên Admin và public, gỡ mock
+
+- Public trước đó hiện5hồ sơ mẫu TeacherIdNULL, Admin có2Teachers thật. Migration AlignPublicTeachers xóa đúng5mock, tạo2profile liên kết, ẩn orphan. DB đã backup/verify trước áp dụng.
+- Public chỉ hiện Teaching+unlocked+linked+published. Tên/chuyên môn/bằng cấp/avatar từ Teachers/Users; teacher_id là ID thật. Tạo GV Admin tự tạo linked profile cùng transaction; sửa/status tự phản ánh public.
+- Gỡ importer và5ảnh mock tools/db/public-teachers; dọn ảnh seed đã chép ở uploads/public-teachers. Không xóa avatar người dùng. CourseDetail dùng teacher_slug từ lớp thật thay vì local course teacher_id.
+- API so khớp2GV thật,5slugmock404. QA create/update/OnLeave/Teaching/delete đạt; đã dọn dữ liệu QA, public còn2GV. BuildFE/BE đạt, lint warning cũ. Xem docs/api/PUBLIC-TEACHERS.md; máy khác cần pull migration rồi update DB.
+
 ## [2026-11-26] Pull về là chạy
 
 - `chay-du-an.bat` (gốc repo): double-click mở backend + frontend + trình duyệt.
