@@ -99,7 +99,7 @@ public partial class AppDbContext : DbContext
 
             e.ToTable(t =>
             {
-                t.HasCheckConstraint("CK_Courses_Band", "[BandFrom] >= 0 AND [BandTo] <= 9 AND [BandFrom] <= [BandTo]");
+                t.HasCheckConstraint("CK_Courses_Band", "[BandFrom] >= 0 AND [BandTo] <= 9 AND [BandFrom] < [BandTo] AND [BandFrom] % 0.5 = 0 AND [BandTo] % 0.5 = 0");
                 t.HasCheckConstraint("CK_Courses_Sessions", "[TotalSessions] > 0 AND [SessionsPerWeek] BETWEEN 1 AND 7 AND [SessionsPerWeek] <= [TotalSessions]");
                 t.HasCheckConstraint("CK_Courses_Tuition", "[Tuition] >= 0");
                 t.HasCheckConstraint("CK_Courses_Discount", "[DiscountPercent] BETWEEN 0 AND 50");

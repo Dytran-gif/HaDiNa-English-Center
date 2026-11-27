@@ -329,7 +329,7 @@ namespace EnglishCenter.Api.Migrations
 
                     b.ToTable("Courses", t =>
                         {
-                            t.HasCheckConstraint("CK_Courses_Band", "[BandFrom] >= 0 AND [BandTo] <= 9 AND [BandFrom] <= [BandTo]");
+                            t.HasCheckConstraint("CK_Courses_Band", "[BandFrom] >= 0 AND [BandTo] <= 9 AND [BandFrom] < [BandTo] AND [BandFrom] % 0.5 = 0 AND [BandTo] % 0.5 = 0");
 
                             t.HasCheckConstraint("CK_Courses_Discount", "[DiscountPercent] BETWEEN 0 AND 50");
 

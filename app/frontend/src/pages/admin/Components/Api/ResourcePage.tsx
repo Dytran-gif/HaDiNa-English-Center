@@ -1,3 +1,4 @@
+import { validateCourseForm } from "./courseValidation";
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import Card from "../../../../components/ui/Card";
@@ -64,7 +65,7 @@ export default function ResourcePage({ config }: { config: ResourceConfig }) {
   function changeParam(key:string,value:string) { setParams(previous => { const next = new URLSearchParams(previous); if(value)next.set(key,value);else next.delete(key); if(key!=="page")next.set("page","1"); return next; }); }
   function closeEditor() { if(busy)return; setOpen(false); setEditorLoading(false); setParams(previous => { const next = new URLSearchParams(previous); next.delete("edit"); next.delete("action"); return next; },{replace:true}); }
   function edit(row?:AdminRecord) { setEditorLoading(false); setParams(previous => { const next = new URLSearchParams(previous); next.delete("edit"); next.delete("action"); return next; },{replace:true}); setEditing(row?.id ?? null); setForm(makeForm(row)); setFieldErrors({}); setActionError(""); setOpen(true); }
-  function updateField(key:string,value:string) { setForm(previous => ({...previous,[key]:value})); setFieldErrors(previous => {const next={...previous};delete next[key.toLowerCase()];return next;}); }
+  function updateField(key:string,value:string) { setForm(previous => ({...previous,[key]:value})); setFieldErrors(previous => {const next={...previous};delete next[key.toLowerCase()];if(key==="bandFrom"||key==="bandTo"){delete next.bandfrom;delete next.bandto;}return next;}); }
   async function mutate(action:()=>Promise<unknown>,success:string,deleted=false,rethrow=false) {
     if(busy)return false;setBusy(true);setActionError("");setFieldErrors({});
     try {await action();list.reload();if(config.path==="teachers")notifyTeachersChanged();notify({title:success});if(deleted&&rows.length===1&&page>1)changeParam("page",String(page-1));return true;}
@@ -73,7 +74,7 @@ export default function ResourcePage({ config }: { config: ResourceConfig }) {
   }
   async function save(event:FormEvent) {
     event.preventDefault();if(busy||editorLoading)return;
-    if(isCourse){const errors:Record<string,string>={};if(Number(form.bandFrom)>Number(form.bandTo))errors.bandfrom="Band từ phải nhỏ hơn hoặc bằng band đến.";if(Number(form.sessionsPerWeek)>Number(form.totalSessions))errors.sessionsperweek="Số buổi mỗi tuần không được lớn hơn tổng số buổi.";if(Object.keys(errors).length){setFieldErrors(errors);return;}}
+    if(isCourse){const errors=validateCourseForm(form);if(Object.keys(errors).length){setFieldErrors(errors);return;}}
     const body=Object.fromEntries(config.fields.filter(field=>editing===null||!field.createOnly).map(field=>[field.key,field.type==="number"?Number(form[field.key]):field.type==="boolean"?form[field.key]==="true":form[field.key]||null]));
     if(await mutate(()=>api.send(editing===null?"POST":"PUT",config.path+(editing===null?"":`/${editing}`),body),"Đã lưu thay đổi.")) {setOpen(false);setParams(previous=>{const next=new URLSearchParams(previous);next.delete("edit");next.delete("action");return next;},{replace:true});}
   }

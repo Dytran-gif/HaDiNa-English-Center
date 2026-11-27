@@ -21,9 +21,14 @@ Check(!overflow.Any(), "extreme page returns empty without int overflow");
 var ordinary = (IQueryable<int>)paging.Invoke(null, [numbers, 2, 2, 5])!;
 Check(ordinary.SequenceEqual([3,4]), "normal page slicing remains correct");
 var jsonOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
-var valid = "{\"name\":\"Test\",\"bandFrom\":0,\"bandTo\":0,\"totalSessions\":1,\"sessionsPerWeek\":1,\"tuition\":0}";
+var valid = "{\"name\":\"Test\",\"bandFrom\":0,\"bandTo\":0.5,\"totalSessions\":1,\"sessionsPerWeek\":1,\"tuition\":0}";
 var course = JsonSerializer.Deserialize<CourseRequest>(valid, jsonOptions)!;
-Check(Validator.TryValidateObject(course, new ValidationContext(course), new List<ValidationResult>(), true), "zero bands and free tuition allowed when explicitly supplied");
+Check(Validator.TryValidateObject(course, new ValidationContext(course), new List<ValidationResult>(), true), "valid increasing bands and free tuition allowed");
+foreach (var (from, to) in new[] { (5m,5m), (6m,5m), (5.2m,6m), (-0.5m,6m), (5m,9.5m) }) {
+    course.BandFrom=from; course.BandTo=to;
+    Check(!Validator.TryValidateObject(course,new ValidationContext(course),new List<ValidationResult>(),true), $"invalid bands {from} to {to} rejected");
+}
+Check(typeof(CoursesController).GetCustomAttribute<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>()?.Roles == "admin", "all course mutations require admin");
 foreach (var key in new[] { "bandFrom", "bandTo", "tuition" }) {
     var fields = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(valid)!;
     fields.Remove(key);
@@ -49,7 +54,7 @@ Check(query.ToQueryString().Contains("Vietnamese_CI_AI"), "accent-insensitive se
 var revenueQuery = typeof(DashboardController).GetMethod("RevenueQuery", BindingFlags.Static|BindingFlags.NonPublic)!;
 var revenue = (IQueryable<RevenueBucket>)revenueQuery.Invoke(null,[db,new DateOnly(2026,1,1),new DateOnly(2027,1,1)])!;
 var sql = revenue.ToQueryString();
-Check(sql.Contains("SUM(") && sql.Contains("GROUP BY") && sql.Contains("PaidDate"), "revenue aggregation translates to SQL without connecting to DB");
+Check(sql.Contains("SUM(") && sql.Contains("GROUP BY") && sql.Contains("ConfirmedAt"), "revenue aggregation translates to SQL without connecting to DB");
 var controller = new DashboardController(db);
 var fill = typeof(DashboardController).GetMethod("FillMonths",BindingFlags.Static|BindingFlags.NonPublic)!;
 var months = (RevenueMonthResponse[])fill.Invoke(null,[new DateOnly(2025,12,1),3,new[] {new RevenueBucket(2026,1,1250000m)}])!;

@@ -1,4 +1,10 @@
 # Nhật ký bàn giao
+
+## [2026-11-27] Band kh?a h?c v? quy?n h?c ph?
+
+- FE/API/SQL b?t bu?c Band t? < Band ??n, 0?9, b??c 0.5. S?a Range decimal tr?nh l?t gi? tr? s?t bi?n.
+- Gi? quy?n Admin cho m?i API ghi kh?a h?c; live test kh?ch401, teacher/student403; admin s?a gi? th?nh c?ng. Ghi danh ??c gi? DB, gi? snapshot c?.
+- ?? backup/verify DB, ?p d?ng StrictCourseBands; hai kh?a ID17/18 ?? ??i 5?6 theo x?c nh?n. QA course/student ?? x?a. Xem docs/api/COURSE-FORM.md; c?n commit migration k?m snapshot.
 ## [2026-11-27] Rút gọn form Khóa học Admin
 
 - Bỏ Mã khóa/Đường dẫn website/Hiển thị website/Ảnh URL khỏi form theo yêu cầu. Metadata giữ ở DB vì mã lớp/public/ảnh phụ thuộc; tạo mới tự sinh, sửa giữ mã/slug cũ.

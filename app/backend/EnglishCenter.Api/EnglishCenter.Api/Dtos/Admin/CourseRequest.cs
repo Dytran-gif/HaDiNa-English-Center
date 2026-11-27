@@ -32,11 +32,11 @@ public class CourseRequest : IValidatableObject
     public bool? IsPublished { get; set; }
 
     [System.Text.Json.Serialization.JsonRequired]
-    [Range(0, 9, ErrorMessage = "Band từ phải trong khoảng 0.0-9.0")]
+    [Range(typeof(decimal), "0", "9", ErrorMessage = "Band từ phải trong khoảng 0.0-9.0")]
     public decimal BandFrom { get; set; }
 
     [System.Text.Json.Serialization.JsonRequired]
-    [Range(0, 9, ErrorMessage = "Band đến phải trong khoảng 0.0-9.0")]
+    [Range(typeof(decimal), "0", "9", ErrorMessage = "Band đến phải trong khoảng 0.0-9.0")]
     public decimal BandTo { get; set; }
 
     [Range(1, 1000, ErrorMessage = "Tổng số buổi phải lớn hơn 0")]
@@ -46,17 +46,17 @@ public class CourseRequest : IValidatableObject
     public int SessionsPerWeek { get; set; }
 
     [System.Text.Json.Serialization.JsonRequired]
-    [Range(0, 1000000000, ErrorMessage = "Học phí không hợp lệ")]
+    [Range(typeof(decimal), "0", "1000000000", ErrorMessage = "Học phí không hợp lệ")]
     public decimal Tuition { get; set; }
 
-    [Range(0, 50, ErrorMessage = "Giảm giá phải trong khoảng 0-50%")]
+    [Range(typeof(decimal), "0", "50", ErrorMessage = "Giảm giá phải trong khoảng 0-50%")]
     public decimal DiscountPercent { get; set; }
 
     // Các luật cần so sánh giữa nhiều trường
     public IEnumerable<ValidationResult> Validate(ValidationContext ctx)
     {
-        if (BandFrom > BandTo)
-            yield return new ValidationResult("Band từ phải nhỏ hơn hoặc bằng band đến", new[] { nameof(BandFrom) });
+        if (BandFrom >= BandTo)
+            yield return new ValidationResult("Band từ phải nhỏ hơn band đến", new[] { nameof(BandFrom), nameof(BandTo) });
 
         if (BandFrom % 0.5m != 0 || BandTo % 0.5m != 0)
             yield return new ValidationResult("Band tăng theo bước 0.5", new[] { nameof(BandFrom), nameof(BandTo) });
