@@ -63,7 +63,6 @@ export default function StudentSchedule() {
                 <SessionDetail
                     session={{
                         courseName: selected.courseName,
-                        classCode: selected.classCode,
                         className: selected.className,
                         dateStr: selected.dateStr,
                         startTime: selected.startTime,
@@ -72,7 +71,6 @@ export default function StudentSchedule() {
                         totalSessions: selected.totalSessions,
                         teacherName: selected.teacherName,
                         roomName: selected.roomName,
-                        meetingUrl: selected.meetingUrl,
                         attendanceStatus: selected.attendanceStatus ?? null,
                         newAssignments: selected.newAssignments,
                     }}

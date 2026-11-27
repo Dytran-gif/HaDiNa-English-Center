@@ -118,10 +118,7 @@ public partial class AppDbContext : DbContext
         b.Entity<CourseClass>(e =>
         {
             e.ToTable("Classes");
-            e.Property(x => x.Code).HasMaxLength(20).IsRequired();
-            e.HasIndex(x => x.Code).IsUnique();
             e.Property(x => x.Name).HasMaxLength(150).IsRequired();
-            e.Property(x => x.MeetingUrl).HasMaxLength(500);
 
             e.HasOne(x => x.Course).WithMany(c => c.Classes)
                 .HasForeignKey(x => x.CourseId)

@@ -29,18 +29,6 @@ public class ClassesController : ControllerBase
 
     private static string StatusOf(DateOnly start, DateOnly end, DateOnly today) => ClassCalendar.Status(start, end, today);
 
-    // Mã lớp: chuẩn hóa mã Admin nhập, hoặc tự sinh; trả lỗi nếu trùng lớp khác
-    private async Task<(string? code, string? error)> ResolveCodeAsync(string? requested, int courseId, DateOnly start, int? classId)
-    {
-        if (string.IsNullOrWhiteSpace(requested))
-            return (await Codes.NextClassCodeAsync(_db, courseId, start, classId), null);
-        var code = Codes.NormalizeClassCode(requested);
-        if (code.Length < 3) return (null, "Mã lớp tối thiểu 3 ký tự (chữ, số, dấu -)");
-        if (await _db.Classes.AnyAsync(c => c.Code == code && c.Id != (classId ?? 0)))
-            return (null, $"Mã lớp {code} đã được dùng");
-        return (code, null);
-    }
-
     private async Task<string?> TeacherAvailabilityError(int teacherId, int? currentTeacherId)
     {
         var status = await _db.Teachers.Where(t => t.Id == teacherId).Select(t => t.Status).FirstOrDefaultAsync();
@@ -54,7 +42,6 @@ public class ClassesController : ControllerBase
         return query.Select(c => new ClassResponse
         {
             Id = c.Id,
-            Code = c.Code,
             Name = c.Name,
             CourseId = c.CourseId,
             CourseName = c.Course.Name,
@@ -63,7 +50,6 @@ public class ClassesController : ControllerBase
             StartDate = c.StartDate,
             EndDate = c.EndDate,
             MaxStudents = c.MaxStudents,
-            MeetingUrl = c.MeetingUrl,
             EnrolledCount = c.Enrollments.Count(e => e.Status == "Active"),
             Schedules = c.Schedules
                 .OrderBy(s => s.DayOfWeek).ThenBy(s => s.StartTime)
@@ -126,7 +112,7 @@ public class ClassesController : ControllerBase
 
         var today = Today();
         var query = _db.Classes.AsQueryable()
-            .WhereContains(search, c => c.Code, c => c.Name, c => c.Course.Name);
+            .WhereContains(search, c => c.Name, c => c.Course.Name);
 
         if (courseId != null)
             query = query.Where(c => c.CourseId == courseId);
@@ -175,12 +161,11 @@ public class ClassesController : ControllerBase
         var today = AppTime.Today;
         var items = await _db.Classes.AsNoTracking()
             .Where(c => c.EndDate >= today && c.Enrollments.Count(e => e.Status == "Active") < c.MaxStudents)
-            .WhereContains(search, c => c.Code, c => c.Name, c => c.Course.Name)
+            .WhereContains(search, c => c.Name, c => c.Course.Name)
             .OrderBy(c => c.Name).ThenBy(c => c.Id)
             .Select(c => new AvailableClassResponse
             {
                 Id = c.Id,
-                Code = c.Code,
                 Name = c.Name,
                 CourseId = c.CourseId,
                 CourseName = c.Course.Name,
@@ -223,20 +208,14 @@ public class ClassesController : ControllerBase
         if (check.Error != null)
             return StatusCode(check.StatusCode, new { message = check.Error });
 
-        var (code, codeError) = await ResolveCodeAsync(req.Code, req.CourseId, req.StartDate, null);
-        if (codeError != null)
-            return Conflict(new { message = codeError, errors = new { code = new[] { codeError } } });
-
         var cls = new CourseClass
         {
-            Code = code!,
             Name = req.Name.Trim(),
             CourseId = req.CourseId,
             TeacherId = req.TeacherId,
             StartDate = req.StartDate,
             EndDate = check.EndDate,
             MaxStudents = req.MaxStudents,
-            MeetingUrl = req.MeetingUrl?.Trim(),
             Schedules = req.Schedules.Select(s => new ClassSchedule
             {
                 RoomId = s.RoomId,
@@ -279,10 +258,6 @@ public class ClassesController : ControllerBase
         if (check.Error != null)
             return StatusCode(check.StatusCode, new { message = check.Error });
 
-        var (code, codeError) = await ResolveCodeAsync(req.Code ?? cls.Code, req.CourseId, req.StartDate, id);
-        if (codeError != null)
-            return Conflict(new { message = codeError, errors = new { code = new[] { codeError } } });
-
         // Lịch mới có làm học viên trong lớp bị trùng với lớp khác họ đang học không
         if (!req.Force)
         {
@@ -302,14 +277,12 @@ public class ClassesController : ControllerBase
         // Xóa lịch cũ rồi thêm lịch mới, làm trong một transaction
         await using var tx = await _db.Database.BeginTransactionAsync();
 
-        cls.Code = code!;
         cls.Name = req.Name.Trim();
         cls.CourseId = req.CourseId;
         cls.TeacherId = req.TeacherId;
         cls.StartDate = req.StartDate;
         cls.EndDate = check.EndDate;
         cls.MaxStudents = req.MaxStudents;
-        cls.MeetingUrl = req.MeetingUrl?.Trim();
 
         _db.ClassSchedules.RemoveRange(cls.Schedules.ToList());
         await _db.SaveChangesAsync();

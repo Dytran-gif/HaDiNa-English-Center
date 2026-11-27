@@ -24,11 +24,9 @@ export interface StudentDashboardResponse {
     endTime?: string;
     // chi tiết buổi để mở popup buổi học
     classId?: number;
-    classCode?: string;
-    className?: string;
+    className: string;
     teacherName?: string;
     roomName?: string;
-    meetingUrl?: string;
     sessionNo?: number;
     classTotalSessions?: number;
   };
@@ -55,12 +53,9 @@ export interface StudentDashboardResponse {
     imageUrl?: string;
     teacherName?: string;
     classId?: number;
-    classCode?: string;
-    className?: string;
     classStatus?: ClassStatus;
     startDate?: string;
     endDate?: string;
-    meetingUrl?: string;
     sessionsDone?: number;
     classTotalSessions?: number;
   }>;
@@ -176,7 +171,6 @@ export interface StudentEnrollmentItem {
   finalTuitionFee: number;  // số tiền thực phải thanh toán
   // Lớp + trạng thái theo ngày của lớp
   classId: number;
-  classCode: string;
   className: string;
   classStatus: ClassStatus;
   startDate: string;
@@ -249,7 +243,7 @@ export interface StudentPayment {
 export interface StudentTuitionItem {
   enrollmentId: number;
   classId: number;
-  classCode: string;
+  className: string;
   enrollmentStatus: string;
   extraDiscountAmount: number;
   discountNote?: string;
@@ -257,7 +251,6 @@ export interface StudentTuitionItem {
   remainingAmount: number;
   paymentStatus: PaymentStatus;
   payments: StudentPayment[];
-  className: string;
   courseName: string;
   bandFrom: string;
   bandTo: string;
@@ -319,12 +312,10 @@ export interface StudentScheduleDay {
 
 export interface StudentScheduleSession {
   classId: string;
-  classCode?: string;
-  meetingUrl?: string;
+  className: string;
   attendanceStatus?: "Present" | "Late" | "Absent" | "Excused" | null;
   attendanceNote?: string;
   newAssignments?: number;
-  className: string;
   courseName: string;
   bandFrom: string;
   bandTo: string;
@@ -395,7 +386,7 @@ export interface StudentScheduleHistoryItem {
   enrollmentId: number;
   status: string;
   classStatus: ClassStatus;
-  classCode: string;
+  className: string;
   year: number;
   attendedSessions: number;
   markedSessions: number;
@@ -405,7 +396,6 @@ export interface StudentScheduleHistoryItem {
   lastFeedbackAt?: string;
   registeredAt: string;
   classId: string;
-  className: string;
   startDate: string;
   endDate: string;
   courseName: string;
@@ -766,7 +756,6 @@ export function useStudentQuery<T>(path: string | null) {
 
 export interface StudentClassOption {
   id: number;
-  code: string;
   name: string;
   teacherName: string;
   startDate: string;
@@ -794,7 +783,7 @@ export const useStudentBankInfo = () => useStudentQuery<StudentBankInfo>("tuitio
 
 export interface StudentReviewClass {
   classId: number;
-  classCode: string;
+  className: string;
   courseName: string;
   teacherId: number;
   teacherName: string;

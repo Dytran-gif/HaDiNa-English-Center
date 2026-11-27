@@ -45,7 +45,7 @@ public class StudentsController : ControllerBase
             CurrentClass = s.Enrollments
                 .Where(e => e.Status == "Active" && e.Class.EndDate >= today)
                 .OrderBy(e => e.Class.StartDate)
-                .Select(e => e.Class.Code + " · " + e.Class.Name)
+                .Select(e => e.Class.Name)
                 .FirstOrDefault()
         });
     }
@@ -66,7 +66,6 @@ public class StudentsController : ControllerBase
             {
                 Id = e.Id,
                 ClassId = e.ClassId,
-                ClassCode = e.Class.Code,
                 ClassName = e.Class.Name,
                 CourseName = e.Class.Course.Name,
                 ClassStartDate = e.Class.StartDate,

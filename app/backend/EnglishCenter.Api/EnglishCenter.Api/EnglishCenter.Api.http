@@ -218,7 +218,6 @@ Content-Type: application/json
   "teacherId": 2,
   "startDate": "2026-11-03",
   "maxStudents": 15,
-  "meetingUrl": "https://meet.google.com/abc-defg-hij",
   "schedules": [
     { "dayOfWeek": 2, "startTime": "18:00:00", "endTime": "20:00:00", "roomId": 1 },
     { "dayOfWeek": 4, "startTime": "18:00:00", "endTime": "20:00:00", "roomId": 1 }

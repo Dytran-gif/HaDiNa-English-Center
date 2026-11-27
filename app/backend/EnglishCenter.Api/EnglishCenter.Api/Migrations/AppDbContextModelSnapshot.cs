@@ -347,11 +347,6 @@ namespace EnglishCenter.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
                     b.Property<int>("CourseId")
                         .HasColumnType("int");
 
@@ -360,10 +355,6 @@ namespace EnglishCenter.Api.Migrations
 
                     b.Property<int>("MaxStudents")
                         .HasColumnType("int");
-
-                    b.Property<string>("MeetingUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -377,9 +368,6 @@ namespace EnglishCenter.Api.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Code")
-                        .IsUnique();
 
                     b.HasIndex("CourseId");
 

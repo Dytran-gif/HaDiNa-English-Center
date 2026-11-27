@@ -3,7 +3,6 @@ namespace EnglishCenter.Api.Dtos.Admin;
 public class ClassResponse
 {
     public int Id { get; set; }
-    public string Code { get; set; } = "";
     public string Name { get; set; } = "";
     public int CourseId { get; set; }
     public string CourseName { get; set; } = "";
@@ -13,7 +12,6 @@ public class ClassResponse
     public DateOnly EndDate { get; set; }
     public int MaxStudents { get; set; }
     public int EnrolledCount { get; set; }      // số ghi danh đang Active, hiển thị "12/20"
-    public string? MeetingUrl { get; set; }
     public string Status { get; set; } = "";    // Upcoming | Ongoing | Finished
 
     public List<ClassScheduleItem> Schedules { get; set; } = new();
@@ -34,9 +32,9 @@ public class ClassScheduleItem
 
 public class ClassStudentItem
 {
+    public string Code { get; set; } = "";
     public int EnrollmentId { get; set; }
     public int StudentId { get; set; }
-    public string Code { get; set; } = "";
     public string FullName { get; set; } = "";
     public string Phone { get; set; } = "";
     public string Status { get; set; } = "";    // Active | OnHold | Dropped

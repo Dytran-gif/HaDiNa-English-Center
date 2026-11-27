@@ -36,7 +36,6 @@ public class EnrollmentsController : StudentControllerBase
             DiscountNote = e.DiscountNote,
             FinalTuitionFee = e.FinalTuitionFee,
             ClassId = e.ClassId,
-            ClassCode = e.ClassCode,
             ClassName = e.ClassName,
             ClassStatus = classStatus,
             StartDate = e.StartDate,
@@ -67,12 +66,10 @@ public class EnrollmentsController : StudentControllerBase
                 ImageUrl = e.ImageUrl,
                 TeacherName = e.TeacherName,
                 ClassId = e.ClassId,
-                ClassCode = e.ClassCode,
                 ClassName = e.ClassName,
                 ClassStatus = classStatus,
                 StartDate = e.StartDate,
                 EndDate = e.EndDate,
-                MeetingUrl = e.MeetingUrl,
                 SessionsDone = e.DoneSessions(today),
                 ClassTotalSessions = e.TotalSessions
             }
@@ -97,7 +94,7 @@ public class EnrollmentsController : StudentControllerBase
 
         var today = AppTime.Today;
         var created = (await LoadMyEnrollmentsAsync(e => e.Id == result.EnrollmentId)).First();
-        return StatusCode(201, new { message = $"Đăng ký thành công lớp {created.ClassCode} ({created.CourseName})", enrollment = ToDto(created, today) });
+        return StatusCode(201, new { message = $"Đăng ký thành công lớp {created.ClassName} ({created.CourseName})", enrollment = ToDto(created, today) });
     }
 
     // DELETE api/student/enrollments/{enrollmentId} - hủy đăng ký của chính mình.

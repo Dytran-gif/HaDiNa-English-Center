@@ -87,7 +87,7 @@ public class TeacherPublicProfileController : TeacherControllerBase
     {
         var rows = await Db.TeacherReviews.AsNoTracking().Where(r => r.TeacherId == TeacherId)
             .OrderByDescending(r => r.CreatedAt)
-            .Select(r => new { r.Id, r.Rating, r.Comment, r.IsPublished, r.CreatedAt, StudentName = r.Student.FullName, ClassCode = r.Class.Code })
+            .Select(r => new { r.Id, r.Rating, r.Comment, r.IsPublished, r.CreatedAt, StudentName = r.Student.FullName, ClassName = r.Class.Name })
             .ToListAsync();
         return Ok(new
         {
@@ -95,7 +95,7 @@ public class TeacherPublicProfileController : TeacherControllerBase
             Count = rows.Count,
             Items = rows.Select(r => new
             {
-                r.Id, r.Rating, r.Comment, r.IsPublished, r.CreatedAt, r.ClassCode,
+                r.Id, r.Rating, r.Comment, r.IsPublished, r.CreatedAt, r.ClassName,
                 StudentName = Codes.ShortName(r.StudentName)
             })
         });

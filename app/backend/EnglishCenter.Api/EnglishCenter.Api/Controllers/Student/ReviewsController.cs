@@ -15,7 +15,7 @@ public class ReviewsController : StudentControllerBase
 {
     public ReviewsController(AppDbContext db) : base(db) { }
 
-    public record ReviewableClass(int ClassId, string ClassCode, string CourseName, int TeacherId, string TeacherName,
+    public record ReviewableClass(int ClassId, string ClassName, string CourseName, int TeacherId, string TeacherName,
         DateOnly StartDate, DateOnly EndDate, MyReview? Review);
     public record MyReview(int Id, int Rating, string Comment, bool IsPublished, DateTime CreatedAt);
 
@@ -42,7 +42,7 @@ public class ReviewsController : StudentControllerBase
             .OrderByDescending(e => e.Class.StartDate)
             .Select(e => new
             {
-                e.ClassId, e.Class.Code, CourseName = e.Class.Course.Name, e.Class.TeacherId, TeacherName = e.Class.Teacher.FullName,
+                e.ClassId, e.Class.Name, CourseName = e.Class.Course.Name, e.Class.TeacherId, TeacherName = e.Class.Teacher.FullName,
                 e.Class.StartDate, e.Class.EndDate
             })
             .ToListAsync();
@@ -51,7 +51,7 @@ public class ReviewsController : StudentControllerBase
             .Where(r => r.StudentId == StudentId && ids.Contains(r.ClassId))
             .ToDictionaryAsync(r => r.ClassId);
 
-        return Ok(classes.Select(c => new ReviewableClass(c.ClassId, c.Code, c.CourseName, c.TeacherId, c.TeacherName,
+        return Ok(classes.Select(c => new ReviewableClass(c.ClassId, c.Name, c.CourseName, c.TeacherId, c.TeacherName,
             c.StartDate, c.EndDate,
             reviews.TryGetValue(c.ClassId, out var r) ? new MyReview(r.Id, r.Rating, r.Comment, r.IsPublished, r.CreatedAt) : null)));
     }

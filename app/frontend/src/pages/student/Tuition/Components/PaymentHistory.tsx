@@ -10,7 +10,7 @@ interface PaymentHistoryProps {
 // Lịch sử thanh toán: mỗi phiếu một dòng, có số biên lai, trạng thái (chờ xác nhận / đã xác nhận / bị từ chối / đã hủy / hoàn tiền)
 export default function PaymentHistory({ items }: PaymentHistoryProps) {
     const { t, money, date } = useLang();
-    const rows = items.flatMap(i => i.payments.map(p => ({ ...p, classCode: i.classCode, courseName: i.courseName })))
+    const rows = items.flatMap(i => i.payments.map(p => ({ ...p, className: i.className, courseName: i.courseName })))
         .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
     if (rows.length === 0) {
@@ -23,7 +23,7 @@ export default function PaymentHistory({ items }: PaymentHistoryProps) {
                 <thead>
                     <tr>
                         <th>{t("sx.receiptNo")}</th>
-                        <th>{t("sx.classCode")}</th>
+                        <th>{t("sx.className")}</th>
                         <th>{t("sx.date")}</th>
                         <th>{t("sx.method")}</th>
                         <th>{t("sx.statusCol")}</th>
@@ -34,7 +34,7 @@ export default function PaymentHistory({ items }: PaymentHistoryProps) {
                     {rows.map(p => (
                         <tr key={p.id}>
                             <td>{p.receiptNo ?? <span className="sx-muted">—</span>}</td>
-                            <td><span className="sx-code">{p.classCode}</span><div className="sx-muted">{p.courseName}</div></td>
+                            <td><span className="sx-code">{p.className}</span><div className="sx-muted">{p.courseName}</div></td>
                             <td>{date(p.paidDate)}</td>
                             <td>{p.method === "Transfer" ? t("sx.transfer") : t("sx.cash")}{p.transferRef ? <div className="sx-muted">{p.transferRef}</div> : null}</td>
                             <td>

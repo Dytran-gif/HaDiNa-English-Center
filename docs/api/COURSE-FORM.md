@@ -2,10 +2,10 @@
 
 Removed from the Admin editor: Code, Slug, IsPublished, ImageUrl. Keep normal course name/bands/session counts/tuition/discount/description inputs.
 
-These metadata fields remain in the database and API because class codes, public course URLs/visibility and course pictures depend on them. No schema migration or data deletion.
+These metadata fields remain in the database and API because course search, public course URLs/visibility and course pictures depend on them. No schema migration or data deletion.
 
 - Create without metadata: existing generator assigns unique code/slug; publication defaults true, image defaults null.
-- Update without Code/Slug: existing values preserved, including on name change. Existing public URLs and class-code prefix remain stable; existing class codes are never regenerated.
+- Update without Code/Slug: existing values preserved, including on name change. Existing public URLs remain stable. Class codes were subsequently removed; see CLASS-FIELDS.md.
 - IsPublished is now nullable in CourseRequest: omitted/null preserves on update, defaults true on create. Explicit true/false remains supported for API clients.
 - ImageUrl setter tracks JSON property presence (flag JsonIgnored): omission preserves existing image; explicit null/empty clears it; a supplied URL updates it. Prevents simplified form from erasing pictures.
 - Existing class/enrollment references use IDs; tuition changes continue to affect only future enrollment snapshots. No class/public endpoints removed.

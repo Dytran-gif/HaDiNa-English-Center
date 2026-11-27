@@ -24,7 +24,7 @@ public class CoursesController(AppDbContext db) : ControllerBase
                 Classes = c.Classes.Where(x => x.EndDate >= today).OrderBy(x => x.StartDate)
                     .Select(x => new
                     {
-                        x.Code, x.Name, x.StartDate, x.EndDate, x.MaxStudents, TeacherName = x.Teacher.FullName,
+                        x.Id, x.Name, x.StartDate, x.EndDate, x.MaxStudents, TeacherName = x.Teacher.FullName,
                         TeacherSlug = db.PublicTeacherProfiles.Where(p => p.TeacherId == x.TeacherId && p.IsPublished)
                             .Select(p => p.Slug).FirstOrDefault(),
                         Enrolled = x.Enrollments.Count(e => e.Status == "Active"),
@@ -43,7 +43,7 @@ public class CoursesController(AppDbContext db) : ControllerBase
             image = c.ImageUrl,
             open_classes = c.Classes.Select(x => new
             {
-                code = x.Code, name = x.Name, start_date = x.StartDate, end_date = x.EndDate,
+                id = x.Id, name = x.Name, start_date = x.StartDate, end_date = x.EndDate,
                 status = ClassCalendar.Status(x.StartDate, x.EndDate, today),
                 teacher_name = x.TeacherName, teacher_slug = x.TeacherSlug,
                 seats_left = Math.Max(0, x.MaxStudents - x.Enrolled),

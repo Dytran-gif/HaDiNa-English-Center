@@ -32,7 +32,7 @@ export default function TestimonialCard({ review }: TestimonialCardProps) {
       <footer className="testimonial-card__author">
         <strong>{review.author_name}</strong>
         <span className="testimonial-card__meta">
-          {review.class_code ? `Học viên lớp ${review.class_code}` : "Học viên"}
+          {review.class_name ? `Học viên lớp ${review.class_name}` : "Học viên"}
           {review.teacher_name ? ` · đánh giá GV ${review.teacher_name}` : ""}
           {date ? ` · ${date}` : ""}
         </span>

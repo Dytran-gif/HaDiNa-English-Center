@@ -72,7 +72,6 @@ export default function ClassPicker({ course, onClose, onDone }: { course: Cours
                                 onClick={() => setSelected(c)}
                             >
                                 <div>
-                                    <span className="sx-code">{c.code}</span>
                                     <strong>{c.name}</strong>
                                     <span className="sx-muted">{t("common.teacher")} {c.teacherName}</span>
                                 </div>
@@ -104,7 +103,7 @@ export default function ClassPicker({ course, onClose, onDone }: { course: Cours
                 {step === 3 && selected && (
                     <>
                         <dl className="sx-dl">
-                            <dt>{t("sx.classCode")}</dt><dd><span className="sx-code">{selected.code}</span> {selected.name}</dd>
+                            <dt>{t("sx.className")}</dt><dd>{selected.name}</dd>
                             <dt>{t("sx.teacher")}</dt><dd>{selected.teacherName}</dd>
                             <dt>{t("sx.schedule")}</dt><dd>{scheduleText(selected)}</dd>
                             <dt>{t("sx.period")}</dt><dd>{date(selected.startDate)} → {date(selected.endDate)}</dd>
@@ -127,7 +126,7 @@ export default function ClassPicker({ course, onClose, onDone }: { course: Cours
 
                 {step === 4 && selected && (
                     <>
-                        <p className="sx-ok" role="status">{t("sx.registered", { code: selected.code })}</p>
+                        <p className="sx-ok" role="status">{t("sx.registered", { code: selected.name })}</p>
                         <div className="sx-modal-foot">
                             <button type="button" className="sx-btn" onClick={onClose}>{t("sx.close")}</button>
                             <button type="button" className="sx-btn is-primary" onClick={() => navigate("/student/tuition")}>

@@ -1,5 +1,7 @@
 # API chức năng Admin
 
+> 2026-11-27: Classes no longer store Code or MeetingUrl. Class responses use id/name; references use classId/className. Student/course codes remain separate. Public open_classes use id/name, not code. See CLASS-FIELDS.md.
+
 Tất cả cần token của tài khoản **admin** (`[Authorize(Roles = "admin")]`). Quy ước chung xem [README.md](./README.md).
 Doc này được **tổng hợp từ code hiện tại** (`Controllers/Admin/`). Ví dụ request đầy đủ: `EnglishCenter.Api.http`.
 
@@ -33,7 +35,7 @@ Luật: band 0–9 bước 0.5, `bandFrom ≤ bandTo`, `sessionsPerWeek` 1–7 v
 
 ```json
 { "name": "IELTS 6.5 - Tối 3-5", "courseId": 1, "teacherId": 1, "startDate": "2026-11-03",
-  "endDate": null, "maxStudents": 15, "meetingUrl": "https://meet.google.com/...",
+  "endDate": null, "maxStudents": 15,
   "schedules": [ { "dayOfWeek": 2, "startTime": "18:00:00", "endTime": "20:00:00", "roomId": 1 } ] }
 ```
 Luật: ít nhất 1 lịch/tuần, giờ bắt đầu < giờ kết thúc, các dòng lịch không trùng nhau.

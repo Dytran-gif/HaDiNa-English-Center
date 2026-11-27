@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { ApiError, request } from "./apiClient";
 
 export interface PublicOpenClass {
-  code: string;
+  id: number;
   name: string;
   start_date: string;
   end_date: string;

@@ -13,7 +13,7 @@ namespace EnglishCenter.Api.Controllers.Admin;
 public class ReviewsController(AppDbContext db) : ControllerBase
 {
     public record AdminReviewItem(int Id, int Rating, string Comment, bool IsPublished, DateTime CreatedAt,
-        int StudentId, string StudentCode, string StudentName, int ClassId, string ClassCode, string CourseName,
+        int StudentId, string StudentCode, string StudentName, int ClassId, string ClassName, string CourseName,
         int TeacherId, string TeacherName);
 
     // GET api/admin/reviews?status=pending|published&search=&page=1&pageSize=10
@@ -23,7 +23,7 @@ public class ReviewsController(AppDbContext db) : ControllerBase
         page = Math.Max(1, page);
         pageSize = pageSize < 1 ? 10 : Math.Min(100, pageSize);
         var query = db.TeacherReviews.AsNoTracking()
-            .WhereContains(search, r => r.Student.FullName, r => r.Teacher.FullName, r => r.Class.Code, r => r.Comment);
+            .WhereContains(search, r => r.Student.FullName, r => r.Teacher.FullName, r => r.Class.Name, r => r.Comment);
         if (status == "pending") query = query.Where(r => !r.IsPublished);
         else if (status == "published") query = query.Where(r => r.IsPublished);
 
@@ -31,7 +31,7 @@ public class ReviewsController(AppDbContext db) : ControllerBase
         var items = await query.OrderBy(r => r.IsPublished).ThenByDescending(r => r.CreatedAt)
             .Skip((page - 1) * pageSize).Take(pageSize)
             .Select(r => new AdminReviewItem(r.Id, r.Rating, r.Comment, r.IsPublished, r.CreatedAt,
-                r.StudentId, r.Student.Code, r.Student.FullName, r.ClassId, r.Class.Code, r.Class.Course.Name,
+                r.StudentId, r.Student.Code, r.Student.FullName, r.ClassId, r.Class.Name, r.Class.Course.Name,
                 r.TeacherId, r.Teacher.FullName))
             .ToListAsync();
         return Ok(new PagedResult<AdminReviewItem> { Items = items, TotalItems = total, Page = page, PageSize = pageSize });

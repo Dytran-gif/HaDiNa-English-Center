@@ -3,8 +3,8 @@
 export interface ScheduleSlot { dayOfWeek: number; startTime: string; endTime: string; roomName: string }
 
 export interface TeacherClass {
-  id: number; code: string; name: string; courseId: number; courseName: string; startDate: string; endDate: string;
-  maxStudents: number; meetingUrl?: string | null; enrolledCount: number; schedules: ScheduleSlot[];
+  id: number; name: string; courseId: number; courseName: string; startDate: string; endDate: string;
+  maxStudents: number; enrolledCount: number; schedules: ScheduleSlot[];
   status: "Ongoing" | "Upcoming" | "Finished";
 }
 
@@ -15,8 +15,8 @@ export interface ClassStudent {
 export interface TeacherClassDetail extends TeacherClass { totalSessions: number; sessionsDone: number; students: ClassStudent[] }
 
 export interface ScheduleEvent {
-  date: string; classId: number; classCode: string; className: string; courseName: string;
-  startTime: string; endTime: string; roomName: string; meetingUrl?: string | null; attendanceMarked: boolean;
+  date: string; classId: number; className: string; courseName: string;
+  startTime: string; endTime: string; roomName: string; attendanceMarked: boolean;
 }
 
 export interface RecentSubmission {
@@ -58,7 +58,7 @@ export interface TeacherStudentDetail {
 export interface CourseOption { id: number; name: string }
 
 /** Lớp mình dạy để chọn khi giao bài (GET assignments/classes) */
-export interface ClassOption { id: number; code: string; name: string; courseId: number; courseName: string; status: "Ongoing" | "Upcoming" | "Finished" }
+export interface ClassOption { id: number; name: string; courseId: number; courseName: string; status: "Ongoing" | "Upcoming" | "Finished" }
 
 /** Hồ sơ hiển thị trên website (GET/PUT profile/public) */
 export interface TeacherPublicProfile {
@@ -69,14 +69,14 @@ export interface TeacherPublicProfile {
 /** Đánh giá của học viên về mình (GET reviews) */
 export interface TeacherReviewList {
   average: number; count: number;
-  items: { id: number; rating: number; comment: string; isPublished: boolean; createdAt: string; classCode: string; studentName: string }[];
+  items: { id: number; rating: number; comment: string; isPublished: boolean; createdAt: string; className: string; studentName: string }[];
 }
 
 export interface TeacherAssignment {
   id: number; title: string; description?: string | null; fileName: string; hasFile: boolean;
   courseId?: number | null; courseName?: string | null; createdAt: string; submittedCount: number; studentCount: number;
   /** Lớp nhận bài; null = giao chung cho mọi lớp của mình trong khóa (hoặc bài cũ) */
-  classId?: number | null; classCode?: string | null;
+  classId?: number | null; className?: string | null;
 }
 
 export interface AssignmentSubmissions {

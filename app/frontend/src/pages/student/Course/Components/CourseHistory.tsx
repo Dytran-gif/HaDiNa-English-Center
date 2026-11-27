@@ -60,7 +60,7 @@ export default function CourseHistoryFE({ items }: CourseHistoryProps) {
                                     aria-current={selected?.enrollmentId === item.enrollmentId}
                                     onClick={() => setSelectedId(item.enrollmentId)}>
                                     <span><i className="fa-regular fa-folder"></i> {item.courseName}</span>
-                                    <span className="sx-muted">{item.classCode}</span>
+                                    <span className="sx-muted">{item.className}</span>
                                 </button>
                             ))}
                         </div>
@@ -72,7 +72,7 @@ export default function CourseHistoryFE({ items }: CourseHistoryProps) {
                         <div className="ch-card-head">
                             <div className="ch-card-title">
                                 <h4 className="ch-course">{selected.courseName}</h4>
-                                <span className="ch-class"><span className="sx-code">{selected.classCode}</span> {selected.className}</span>
+                                <span className="ch-class">{selected.className}</span>
                             </div>
                             <span className={`sx-chip ${selected.status === "Active" ? "is-finished" : "is-danger"}`}>
                                 {selected.status === "Active" ? t("sx.class.Finished") : t(`status.${selected.status.toLowerCase()}`)}

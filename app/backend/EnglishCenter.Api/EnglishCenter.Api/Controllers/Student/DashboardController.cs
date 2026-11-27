@@ -66,11 +66,9 @@ public class DashboardController : StudentControllerBase
                 StartTime = next.Slot.StartTime,
                 EndTime = next.Slot.EndTime,
                 ClassId = r.ClassId,
-                ClassCode = r.ClassCode,
                 ClassName = r.ClassName,
                 TeacherName = r.TeacherName,
                 RoomName = r.Slots.First(x => x.Slot == next.Slot).RoomName,
-                MeetingUrl = r.MeetingUrl,
                 SessionNo = next.Number,
                 ClassTotalSessions = r.TotalSessions
             };

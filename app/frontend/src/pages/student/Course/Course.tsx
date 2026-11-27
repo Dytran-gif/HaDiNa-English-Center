@@ -48,7 +48,7 @@ export default function StudentCourse() {
 
     // Hủy đăng ký: chỉ lớp chưa khai giảng và chưa đóng tiền (BE kiểm tra lại)
     const handleCancel = async (item: StudentEnrollmentItem) => {
-        if (!window.confirm(t("sx.confirmCancel", { code: item.classCode }))) return;
+        if (!window.confirm(t("sx.confirmCancel", { code: item.className }))) return;
         try {
             await api.send("DELETE", `enrollments/${item.enrollmentId}`);
             reloadEnrollments();

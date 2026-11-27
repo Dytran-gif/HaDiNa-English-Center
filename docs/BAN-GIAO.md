@@ -1,5 +1,12 @@
 # Nhật ký bàn giao
 
+## [2026-11-27] Bỏ mã lớp và link học online
+
+- Bỏ khỏi form tạo/sửa lớp, entity, DTO và DB bằng migration `20261127075745_RemoveClassCodeAndMeetingUrl`; đã backup/verify và áp dụng local.
+- Các trang Admin/Teacher/Student/Public chuyển sang tên lớp, liên kết vẫn bằng ID. Cần đưa FE/BE và migration lên cùng nhau; xem `docs/api/CLASS-FIELDS.md`.
+- API CRUD lớp, ghi danh, lịch/học phí và các API đọc liên quan đã kiểm tra thành công. Đã dọn QA; số dòng trước/sau vẫn 13 lớp, 20 ghi danh, 18 lịch, 19 phiếu thu.
+- Down chỉ khôi phục cấu trúc/mã LOP-ID; giá trị mã/link cũ nằm trong backup trước migration.
+
 ## [2026-11-27] Band kh?a h?c v? quy?n h?c ph?
 
 - FE/API/SQL b?t bu?c Band t? < Band ??n, 0?9, b??c 0.5. S?a Range decimal tr?nh l?t gi? tr? s?t bi?n.

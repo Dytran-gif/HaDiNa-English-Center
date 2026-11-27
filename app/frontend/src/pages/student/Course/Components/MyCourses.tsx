@@ -62,7 +62,7 @@ export default function MyCourses({ items, onCancel, onBrowse }: MyCoursesProps)
                         return (
                             <article key={item.enrollmentId} className={`sx-card is-${item.classStatus.toLowerCase()}`}>
                                 <div className="sx-card-head">
-                                    <span className="sx-code">{item.classCode}</span>
+                                    <span className="sx-code">{item.className}</span>
                                     <span className={`sx-chip is-${item.classStatus.toLowerCase()}`}>{t(`sx.class.${item.classStatus}`)}</span>
                                 </div>
                                 <h4>{item.course.name}</h4>

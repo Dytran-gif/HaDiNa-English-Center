@@ -6,7 +6,7 @@ public class StudentTuitionItemDto
 {
     public int EnrollmentId { get; set; }
     public int ClassId { get; set; }
-    public string ClassCode { get; set; } = "";
+    public string ClassName { get; set; } = "";
     public string EnrollmentStatus { get; set; } = "";
     public decimal ExtraDiscountAmount { get; set; }
     public string? DiscountNote { get; set; }
@@ -14,7 +14,6 @@ public class StudentTuitionItemDto
     public decimal RemainingAmount { get; set; }
     public string PaymentStatus { get; set; } = "";      // Unpaid | Partial | Paid | Refunded
     public List<StudentPaymentDto> Payments { get; set; } = new();
-    public string ClassName { get; set; } = "";
     public string CourseName { get; set; } = "";
     public string BandFrom { get; set; } = "";
     public string BandTo { get; set; } = "";

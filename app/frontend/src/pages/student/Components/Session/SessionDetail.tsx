@@ -5,7 +5,6 @@ import "../../StudentExtra.css";
 
 export interface SessionInfo {
     courseName: string;
-    classCode?: string;
     className?: string;
     dateStr?: string;        // yyyy-MM-dd
     startTime?: string;      // HH:mm
@@ -14,7 +13,6 @@ export interface SessionInfo {
     totalSessions?: number;
     teacherName?: string;
     roomName?: string;
-    meetingUrl?: string;
     attendanceStatus?: string | null;
     newAssignments?: number;
 }
@@ -42,7 +40,6 @@ export default function SessionDetail({ session, onClose }: { session: SessionIn
                 <div className="sx-modal-head">
                     <div>
                         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                            {session.classCode && <span className="sx-code">{session.classCode}</span>}
                             {session.sessionNo ? (
                                 <span className="sx-chip is-ongoing">
                                     {t("sx.sessionOf", { n: session.sessionNo, total: session.totalSessions ?? "?" })}
@@ -60,7 +57,6 @@ export default function SessionDetail({ session, onClose }: { session: SessionIn
                     {session.startTime && (<><dt>{t("sx.time")}</dt><dd>{session.startTime.slice(0, 5)} – {session.endTime?.slice(0, 5)}</dd></>)}
                     {session.roomName && (<><dt>{t("sx.room")}</dt><dd>{session.roomName}</dd></>)}
                     {session.teacherName && (<><dt>{t("sx.teacher")}</dt><dd>{session.teacherName}</dd></>)}
-                    {session.meetingUrl && (<><dt>{t("sx.online")}</dt><dd><a href={session.meetingUrl} target="_blank" rel="noreferrer">{session.meetingUrl}</a></dd></>)}
                     {session.newAssignments !== undefined && (<><dt>{t("sx.assignments")}</dt><dd>{session.newAssignments > 0 ? t("sx.newAssignments", { n: session.newAssignments }) : t("sx.noNewAssignments")}</dd></>)}
                     {session.attendanceStatus !== undefined && (
                         <>
@@ -76,11 +72,6 @@ export default function SessionDetail({ session, onClose }: { session: SessionIn
                     <button type="button" className="sx-btn" onClick={() => { onClose(); navigate("/student/courses"); }}>
                         <i className="fa-solid fa-book-open"></i> {t("sx.viewClass")}
                     </button>
-                    {session.meetingUrl && (
-                        <a className="sx-btn is-primary" href={session.meetingUrl} target="_blank" rel="noreferrer">
-                            <i className="fa-solid fa-video"></i> {t("sx.joinOnline")}
-                        </a>
-                    )}
                 </div>
             </div>
         </div>

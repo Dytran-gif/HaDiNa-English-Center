@@ -58,9 +58,9 @@ export default function CourseFE({ courses }: CourseProps) {
                             </div>
 
                             <div className="cf-card-body">
-                                {course.classCode && (
+                                {course.className && (
                                     <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                                        <span className="sx-code">{course.classCode}</span>
+                                        <span className="sx-code">{course.className}</span>
                                         {course.classStatus && (
                                             <span className={`sx-chip is-${course.classStatus.toLowerCase()}`}>{t(`sx.class.${course.classStatus}`)}</span>
                                         )}

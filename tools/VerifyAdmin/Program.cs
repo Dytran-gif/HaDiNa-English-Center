@@ -13,6 +13,9 @@ using Microsoft.EntityFrameworkCore;
 
 var passed = 0;
 void Check(bool condition, string label) { if (!condition) throw new Exception(label); passed++; Console.WriteLine($"PASS {label}"); }
+Check(typeof(CourseClass).GetProperty("Code") == null && typeof(CourseClass).GetProperty("MeetingUrl") == null, "class entity no longer stores code or online URL");
+Check(typeof(ClassRequest).GetProperty("Code") == null && typeof(ClassRequest).GetProperty("MeetingUrl") == null, "class editor request excludes removed fields");
+Check(typeof(ClassResponse).GetProperty("Code") == null && typeof(ClassResponse).GetProperty("MeetingUrl") == null, "class responses exclude removed fields");
 var assembly = typeof(DashboardController).Assembly;
 var paging = assembly.GetType("EnglishCenter.Api.Controllers.Admin.AdminPaging")!.GetMethod("SlicePage", BindingFlags.Static | BindingFlags.NonPublic)!.MakeGenericMethod(typeof(int));
 var numbers = Enumerable.Range(1, 5).AsQueryable();

@@ -69,18 +69,18 @@ public class EnrollmentService
             tuition - percentAmount - extra, notes.Count == 0 ? null : string.Join("; ", notes));
     }
 
-    private record ClassInfo(int Id, string Code, string Name, int CourseId, string CourseName, DateOnly StartDate,
+    private record ClassInfo(int Id, string Name, int CourseId, string CourseName, DateOnly StartDate,
         DateOnly EndDate, int MaxStudents, List<ClassCalendar.Slot> Slots);
 
     private async Task<List<ClassInfo>> LoadClassesAsync(IQueryable<CourseClass> query) =>
         (await query.AsNoTracking()
             .Select(c => new
             {
-                c.Id, c.Code, c.Name, c.CourseId, CourseName = c.Course.Name, c.StartDate, c.EndDate, c.MaxStudents,
+                c.Id, c.Name, c.CourseId, CourseName = c.Course.Name, c.StartDate, c.EndDate, c.MaxStudents,
                 Slots = c.Schedules.Select(s => new { s.DayOfWeek, s.StartTime, s.EndTime }).ToList()
             })
             .ToListAsync())
-        .Select(c => new ClassInfo(c.Id, c.Code, c.Name, c.CourseId, c.CourseName, c.StartDate, c.EndDate, c.MaxStudents,
+        .Select(c => new ClassInfo(c.Id, c.Name, c.CourseId, c.CourseName, c.StartDate, c.EndDate, c.MaxStudents,
             c.Slots.Select(s => new ClassCalendar.Slot(s.DayOfWeek, s.StartTime, s.EndTime)).ToList()))
         .ToList();
 
@@ -107,7 +107,7 @@ public class EnrollmentService
             foreach (var m in mine.Where(m => m.Id != t.Id))
                 if (ClassCalendar.Overlaps(t.StartDate, t.EndDate, t.Slots, m.StartDate, m.EndDate, m.Slots, out var clash))
                 {
-                    conflict = $"{m.CourseName} ({m.Code}) {ClassCalendar.DayNameVi(clash!.DayOfWeek)} " +
+                    conflict = $"{m.CourseName} ({m.Name}) {ClassCalendar.DayNameVi(clash!.DayOfWeek)} " +
                                $"{clash.StartTime:HH\\:mm}-{clash.EndTime:HH\\:mm}";
                     break;
                 }
@@ -115,7 +115,7 @@ public class EnrollmentService
                 IsFull: counts.GetValueOrDefault(t.Id) >= t.MaxStudents,
                 IsFinished: t.EndDate < today,
                 Conflict: conflict,
-                AlreadyInCourse: same?.Code);
+                AlreadyInCourse: same?.Name);
         }
         return result;
     }
@@ -185,7 +185,7 @@ public class EnrollmentService
             return EnrollmentResult.Fail(409, "Không ghi danh được do có yêu cầu khác cùng lúc, vui lòng thử lại");
         }
 
-        return EnrollmentResult.Ok($"Đã ghi danh vào lớp {cls.Code}", enrollment.Id);
+        return EnrollmentResult.Ok($"Đã ghi danh vào lớp {cls.Name}", enrollment.Id);
     }
 
     // Rút / hủy ghi danh.
@@ -246,7 +246,7 @@ public class EnrollmentService
             .Where(e => studentIds.Contains(e.StudentId) && e.ClassId != classId && e.Status == "Active" && e.Class.EndDate >= today)
             .Select(e => new
             {
-                e.Student.Code, StudentName = e.Student.FullName, ClassCode = e.Class.Code,
+                e.Student.Code, StudentName = e.Student.FullName, ClassName = e.Class.Name,
                 e.Class.StartDate, e.Class.EndDate,
                 Slots = e.Class.Schedules.Select(s => new { s.DayOfWeek, s.StartTime, s.EndTime }).ToList()
             })
@@ -257,7 +257,7 @@ public class EnrollmentService
         {
             var oSlots = o.Slots.Select(s => new ClassCalendar.Slot(s.DayOfWeek, s.StartTime, s.EndTime)).ToList();
             if (ClassCalendar.Overlaps(start, end, slots, o.StartDate, o.EndDate, oSlots, out var clash))
-                result.Add($"{o.Code} {o.StudentName} (lớp {o.ClassCode}, {ClassCalendar.DayNameVi(clash!.DayOfWeek)} " +
+                result.Add($"{o.Code} {o.StudentName} (lớp {o.ClassName}, {ClassCalendar.DayNameVi(clash!.DayOfWeek)} " +
                            $"{clash.StartTime:HH\\:mm}-{clash.EndTime:HH\\:mm})");
         }
         return result;

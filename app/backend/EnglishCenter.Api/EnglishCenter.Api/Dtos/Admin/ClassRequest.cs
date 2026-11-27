@@ -4,10 +4,6 @@ namespace EnglishCenter.Api.Dtos.Admin;
 
 public class ClassRequest : IValidatableObject
 {
-    // Mã lớp (vd IE65-2612-A). Bỏ trống thì hệ thống tự sinh theo mã khóa + tháng khai giảng.
-    [StringLength(20, ErrorMessage = "Mã lớp tối đa 20 ký tự")]
-    public string? Code { get; set; }
-
     // Đổi lịch làm trùng lịch học viên trong lớp: lần đầu trả 409 kèm danh sách, gửi lại với Force = true để vẫn lưu
     public bool Force { get; set; }
 
@@ -28,10 +24,6 @@ public class ClassRequest : IValidatableObject
 
     [Range(1, 1000, ErrorMessage = "Sĩ số tối đa phải lớn hơn 0")]
     public int MaxStudents { get; set; }
-
-    [Url(ErrorMessage = "Link học online không hợp lệ")]
-    [StringLength(500)]
-    public string? MeetingUrl { get; set; }
 
     [MinLength(1, ErrorMessage = "Lớp phải có ít nhất một buổi học mỗi tuần")]
     public List<ClassScheduleRequest> Schedules { get; set; } = new();

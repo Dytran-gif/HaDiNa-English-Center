@@ -35,7 +35,7 @@ public class TuitionController : StudentControllerBase
             {
                 EnrollmentId = e.EnrollmentId,
                 ClassId = e.ClassId,
-                ClassCode = e.ClassCode,
+
                 EnrollmentStatus = e.Status,
                 ClassName = e.ClassName,
                 CourseName = e.CourseName,

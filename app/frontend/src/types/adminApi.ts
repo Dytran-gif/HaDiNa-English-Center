@@ -7,14 +7,13 @@ export interface PagedResponse<T> {
 export interface CenterResponse { name: string; logoUrl: string | null; address: string | null; phone: string | null }
 export interface Schedule { dayOfWeek: number; startTime: string; endTime: string; roomId: number; roomName?: string }
 export interface ClassResponse extends AdminRecord {
-  code: string; name: string; courseId: number; courseName: string; teacherId: number; teacherName: string;
-  startDate: string; endDate: string; maxStudents: number; enrolledCount: number; meetingUrl: string | null;
+  name: string; courseId: number; courseName: string; teacherId: number; teacherName: string;
+  startDate: string; endDate: string; maxStudents: number; enrolledCount: number;
   status: string; schedules: Schedule[]; students?: AdminRecord[];
 }
 export type PaymentStatus = "Pending" | "Confirmed" | "Rejected" | "Cancelled";
 export interface PaymentResponse extends AdminRecord {
-  enrollmentId: number; studentId: number; studentName: string; studentCode: string; classId: number; classCode: string;
-  className: string; courseName: string; tuitionFee: number; discountPercent: number; discountAmount: number;
+  enrollmentId: number; studentId: number; studentName: string; studentCode: string; classId: number; className: string; courseName: string; tuitionFee: number; discountPercent: number; discountAmount: number;
   finalTuitionFee: number; amount: number; paidDate: string; method: string;
   receiptNo: string | null; kind: "Payment" | "Refund"; status: PaymentStatus; transferRef: string | null;
   note: string | null; cancelReason: string | null; requestedByStudent: boolean; createdAt: string; confirmedAt: string | null;
@@ -22,7 +21,7 @@ export interface PaymentResponse extends AdminRecord {
 /** Công nợ theo ghi danh (GET payments/receivables) */
 export interface ReceivableResponse {
   enrollmentId: number; studentId: number; studentCode: string; studentName: string; studentPhone: string;
-  classId: number; classCode: string; courseName: string; enrollmentStatus: string; classStartDate: string;
+  classId: number; className: string; courseName: string; enrollmentStatus: string; classStartDate: string;
   finalTuitionFee: number; paidAmount: number; refundedAmount: number; pendingAmount: number; remainingAmount: number;
   paymentStatus: "Unpaid" | "Partial" | "Paid" | "Refunded";
 }
@@ -33,7 +32,7 @@ export interface ReceiptResponse {
   payment: PaymentResponse; center: CenterResponse; createdByName: string; createdByEmail: string; note: string | null;
 }
 export interface EnrollmentResponse extends AdminRecord {
-  classId: number; classCode: string; className: string; courseName: string; classStatus: string; status: string;
+  classId: number; className: string; courseName: string; classStatus: string; status: string;
   tuitionFee: number; discountPercent: number; discountAmount: number; extraDiscountAmount: number; discountNote: string | null;
   finalTuitionFee: number; paymentId: number | null;
   paidAmount: number; refundedAmount: number; pendingAmount: number; remainingAmount: number;

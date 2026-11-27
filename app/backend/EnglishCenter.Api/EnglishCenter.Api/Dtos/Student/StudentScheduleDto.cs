@@ -25,12 +25,10 @@ public class StudentScheduleDayDto
 public class StudentScheduleSessionDto
 {
     public string ClassId { get; set; } = "";
-    public string ClassCode { get; set; } = "";
-    public string? MeetingUrl { get; set; }
+    public string ClassName { get; set; } = "";
     public string? AttendanceStatus { get; set; }   // Present | Late | Absent | Excused | null (chưa điểm danh)
     public string? AttendanceNote { get; set; }
     public int NewAssignments { get; set; }         // bài tập của lớp giao trong 7 ngày trước buổi
-    public string ClassName { get; set; } = "";
     public string CourseName { get; set; } = "";
     public string BandFrom { get; set; } = "";
     public string BandTo { get; set; } = "";
@@ -60,7 +58,7 @@ public class StudentScheduleHistoryItemDto
     public int EnrollmentId { get; set; }
     public string Status { get; set; } = "";            // trạng thái ghi danh
     public string ClassStatus { get; set; } = "";       // Finished | Ongoing | Upcoming
-    public string ClassCode { get; set; } = "";
+    public string ClassName { get; set; } = "";
     public int Year { get; set; }                       // năm kết thúc lớp (nhóm thư mục)
     public int AttendedSessions { get; set; }           // có mặt + muộn
     public int MarkedSessions { get; set; }             // số buổi đã điểm danh
@@ -70,7 +68,6 @@ public class StudentScheduleHistoryItemDto
     public string? LastFeedbackAt { get; set; }
     public string RegisteredAt { get; set; } = "";
     public string ClassId { get; set; } = "";
-    public string ClassName { get; set; } = "";
     public string StartDate { get; set; } = "";
     public string EndDate { get; set; } = "";
     public string CourseName { get; set; } = "";

@@ -73,9 +73,8 @@ export default function CourseDetail() {
             ) : (
               <div className="course-classes__list">
                 {live.open_classes.map(c => (
-                  <article key={c.code} className="course-classes__item">
+                  <article key={c.id} className="course-classes__item">
                     <div>
-                      <span className="course-classes__code">{c.code}</span>
                       <h3>{c.name}</h3>
                       <p>{c.schedule}</p>
                     </div>
