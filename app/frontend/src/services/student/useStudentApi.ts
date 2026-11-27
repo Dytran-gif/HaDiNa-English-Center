@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { notifyCoursesChanged } from "../usePublicCourses";
 import { useAuth } from "../../context/AuthContext";
 import { ApiError, request, downloadFile } from "../apiClient";
 import type { Course, AttendancePage } from "../../types/StudentTypes/MainTypes";
@@ -82,10 +83,12 @@ export function useStudentApi() {
     async send<T = void>(method: string, path: string, body?: unknown) {
       if (!token) throw new ApiError(401, "Chưa đăng nhập.");
       try {
-        return await request<T>(`/api/student/${path}`, token, {
+        const result = await request<T>(`/api/student/${path}`, token, {
           method,
           body: body === undefined ? undefined : JSON.stringify(body)
         });
+        if (/^enrollments(\/|$)/.test(path)) notifyCoursesChanged();
+        return result;
       } catch (error) {
         if (error instanceof ApiError && error.status === 401) logout();
         throw error;

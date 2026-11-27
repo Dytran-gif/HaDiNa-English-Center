@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { ApiError, request } from "../apiClient";
+import { notifyCoursesChanged } from "../usePublicCourses";
 
 export function useAdminApi() {
   const { token, logout } = useAuth();
@@ -12,7 +13,11 @@ export function useAdminApi() {
     },
     async send<T = void>(method: string, path: string, body?: unknown) {
       if (!token) throw new ApiError(401, "Đăng nhập bằng tài khoản thật để lưu dữ liệu.");
-      try { return await request<T>(`/api/admin/${path}`, token, { method, body: body === undefined ? undefined : JSON.stringify(body) }); }
+      try {
+        const result = await request<T>(`/api/admin/${path}`, token, { method, body: body === undefined ? undefined : JSON.stringify(body) });
+        if (/^(courses|classes|teachers)(\/|$)|^students\/\d+\/enrollments(\/|$)/.test(path)) notifyCoursesChanged();
+        return result;
+      }
       catch (error) { if (error instanceof ApiError && error.status === 401) logout(); throw error; }
     },
     async upload<T>(path: string, body: FormData) {

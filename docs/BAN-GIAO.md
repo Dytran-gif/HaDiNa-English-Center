@@ -1,5 +1,12 @@
 # Nhật ký bàn giao
 
+## [2026-11-27] Khóa học public dùng chung DB với Admin
+
+- Homepage 6 khóa + Xem tất cả; danh sách/chi tiết/menu/footer/tư vấn/khảo sát lấy API thật. Không còn chặn trang chi tiết theo slug trong dữ liệu tĩnh.
+- Public chỉ lấy khóa công bố; giá sau giảm do BE trả. Làm mới sau sửa khóa/lớp/ghi danh, focus và sự kiện giữa các tab; lỗi/rỗng có trạng thái riêng.
+- Không migration, không xóa/ghi đè dữ liệu khóa có sẵn. Giữ file nội dung tĩnh cũ nhưng không sử dụng ở UI. 46 kiểm tra API/trình duyệt đạt, khóa QA đã dọn và dữ liệu Admin so sánh trước/sau giữ nguyên.
+- Xem `docs/api/PUBLIC-COURSES.md`; build FE/BE đạt, hai lint warning và bundle warning cũ. Commit cùng FE và BE; chưa commit/push trong phiên này.
+
 ## [2026-11-27] Bỏ mã lớp và link học online
 
 - Bỏ khỏi form tạo/sửa lớp, entity, DTO và DB bằng migration `20261127075745_RemoveClassCodeAndMeetingUrl`; đã backup/verify và áp dụng local.

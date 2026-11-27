@@ -6,11 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EnglishCenter.Api.Controllers.Public;
 
-// Khóa học thật trong DB (Admin quản lý) + các lớp đang mở. Trang Khóa học public giữ nội dung giới thiệu,
-// phần "Lớp đang mở" lấy từ đây theo slug (Admin đặt slug khóa trùng đường dẫn trang giới thiệu).
+// Published Admin-managed courses and open classes. Public pages resolve database slugs directly.
 [ApiController]
 [AllowAnonymous]
 [Route("api/public/courses")]
+[ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public class CoursesController(AppDbContext db) : ControllerBase
 {
     private async Task<List<object>> BuildAsync(IQueryable<EnglishCenter.Api.Entities.Course> query, CancellationToken ct)
@@ -25,7 +25,8 @@ public class CoursesController(AppDbContext db) : ControllerBase
                     .Select(x => new
                     {
                         x.Id, x.Name, x.StartDate, x.EndDate, x.MaxStudents, TeacherName = x.Teacher.FullName,
-                        TeacherSlug = db.PublicTeacherProfiles.Where(p => p.TeacherId == x.TeacherId && p.IsPublished)
+                        TeacherSlug = db.PublicTeacherProfiles.Where(p => p.TeacherId == x.TeacherId && p.IsPublished
+                                && x.Teacher.Status == "Teaching" && !x.Teacher.User.IsLocked)
                             .Select(p => p.Slug).FirstOrDefault(),
                         Enrolled = x.Enrollments.Count(e => e.Status == "Active"),
                         Slots = x.Schedules.OrderBy(s => s.DayOfWeek).ThenBy(s => s.StartTime)

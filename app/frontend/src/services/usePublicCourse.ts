@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { ApiError, request } from "./apiClient";
+import usePublicCourses from "./usePublicCourses";
 
 export interface PublicOpenClass {
   id: number;
@@ -19,24 +18,19 @@ export interface PublicCourse {
   slug: string;
   course_name: string;
   description: string;
+  band_from: number;
+  band_to: number;
+  total_sessions: number;
+  sessions_per_week: number;
+  image: string | null;
   price: number;
   discount_percent: number;
   final_price: number;
   open_classes: PublicOpenClass[];
 }
 
-// GET /api/public/courses/{slug} — khóa thật trong DB + lớp đang mở (null nếu Admin chưa đặt slug trùng trang này)
+// Detail and list share one API catalog; unknown/unpublished slugs never use static fallback.
 export default function usePublicCourse(slug: string) {
-  const [course, setCourse] = useState<PublicCourse | null>(null);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    const controller = new AbortController();
-    setLoading(true);
-    request<PublicCourse>(`/api/public/courses/${encodeURIComponent(slug)}`, null, { signal: controller.signal })
-      .then(data => { if (!controller.signal.aborted) setCourse(data); })
-      .catch(reason => { if (!controller.signal.aborted && (!(reason instanceof ApiError) || reason.status !== 0)) setCourse(null); })
-      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
-    return () => controller.abort();
-  }, [slug]);
-  return { course, loading };
+  const { courses, loading, error, reload } = usePublicCourses();
+  return { course: courses.find(course => course.slug === slug) ?? null, loading, error, reload };
 }

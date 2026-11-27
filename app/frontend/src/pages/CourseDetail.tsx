@@ -3,8 +3,7 @@ import PageShell from "../components/layout/PageShell";
 import Button from "../components/ui/Button";
 import Tag from "../components/ui/Tag";
 import TeacherCard from "../components/ui/TeacherCard";
-import { getCourseBySlug, formatPrice } from "../data/courses";
-import { getCategoryById } from "../data/categories";
+import { courseBand, formatCoursePrice } from "../services/usePublicCourses";
 import usePublicTeachers from "../services/usePublicTeachers";
 import usePublicCourse from "../services/usePublicCourse";
 import NotFound from "./NotFound";
@@ -12,16 +11,18 @@ import "./CourseDetail.css";
 
 export default function CourseDetail() {
   const { slug = "" } = useParams();
-  const course = getCourseBySlug(slug);
   const { teachers } = usePublicTeachers();
-  const { course: live } = usePublicCourse(slug);
+  const { course, loading, error, reload } = usePublicCourse(slug);
+
+  if (loading) return <PageShell><div className="container course-detail" role="status">Đang tải khóa học…</div></PageShell>;
+  if (error) return <PageShell><div className="container course-detail" role="alert"><p>{error}</p><Button onClick={() => void reload()}>Thử lại</Button></div></PageShell>;
 
   if (!course) {
     return <NotFound />;
   }
 
-  const category = getCategoryById(course.category_id);
-  const teacher = teachers.find(t => live?.open_classes.some(c => c.teacher_slug === t.slug));
+  const live = course;
+  const teacher = teachers.find(t => course.open_classes.some(c => c.teacher_slug === t.slug));
 
   return (
     <PageShell>
@@ -31,27 +32,26 @@ export default function CourseDetail() {
         </Button>
 
         <div className="course-detail__tags">
-          {category && <Tag tone="red">{category.category_name}</Tag>}
-          <Tag>{course.level}</Tag>
+          <Tag>{courseBand(course)}</Tag>
         </div>
 
         <h1>{course.course_name}</h1>
         <p className="course-detail__desc">{course.description}</p>
 
         <div className="course-summary">
-          <span className="course-summary__price">{formatPrice(live?.final_price ?? course.price)}</span>
+          <span className="course-summary__price">{formatCoursePrice(course.final_price)}</span>
           <dl>
             <div>
               <dt>Thời lượng</dt>
-              <dd>{course.duration_weeks} tuần</dd>
+              <dd>{course.total_sessions} buổi</dd>
             </div>
             <div>
               <dt>Lịch học</dt>
-              <dd>{course.schedule}</dd>
+              <dd>{course.sessions_per_week} buổi/tuần</dd>
             </div>
             <div>
               <dt>Trình độ</dt>
-              <dd>{course.level}</dd>
+              <dd>{courseBand(course)}</dd>
             </div>
           </dl>
           <div className="course-summary__actions">
@@ -92,13 +92,6 @@ export default function CourseDetail() {
             )}
           </section>
         )}
-
-        <h2>Nội dung khoá học</h2>
-        <ul className="course-detail__outline">
-          {course.outline.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
 
         {teacher && (
           <>

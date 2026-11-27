@@ -1,16 +1,17 @@
 import { useState, type FormEvent } from "react";
 import Button from "../ui/Button";
 import { InputField, SelectField } from "../ui/FormField";
-import { courses } from "../../data/courses";
+import usePublicCourses from "../../services/usePublicCourses";
 import { sendConsultation } from "../../services/consultations";
 import "./RegisterCta.css";
 
 export default function RegisterCta() {
+  const { courses, loading, error: catalogError, reload } = usePublicCourses();
   const [submitted, setSubmitted] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [courseSlug, setCourseSlug] = useState(courses[0]?.slug ?? "");
+  const [courseSlug, setCourseSlug] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [submissionId, setSubmissionId] = useState(() => crypto.randomUUID());
@@ -64,6 +65,7 @@ export default function RegisterCta() {
             <form onSubmit={handleSubmit}>
               <p>Thông tin được dùng để trung tâm liên hệ tư vấn khóa học bạn quan tâm.</p>
               {error && <p role="alert">{error}</p>}
+              {catalogError && <div role="alert"><p>{catalogError}</p><Button type="button" onClick={() => void reload()}>Tải lại khóa học</Button></div>}
               <fieldset disabled={busy} className="register-cta__fields" onChange={() => setSubmissionId(crypto.randomUUID())}>
               <InputField
                 label="Họ và tên"
@@ -95,15 +97,17 @@ export default function RegisterCta() {
               <SelectField
                 label="Quan tâm khoá học"
                 id="register-course"
+                required
+                disabled={loading || !!catalogError || courses.length === 0}
                 value={courseSlug}
                 onChange={(e) => setCourseSlug(e.target.value)}
-                options={courses.map((c) => ({
+                options={[{ value: "", label: loading ? "Đang tải khóa học…" : "Chọn khóa học" }, ...courses.map((c) => ({
                   value: c.slug,
                   label: c.course_name,
-                }))}
+                }))]}
               />
               </fieldset>
-              <Button type="submit" variant="primary" disabled={busy} className="register-cta__submit">
+              <Button type="submit" variant="primary" disabled={busy || loading || !!catalogError || !courses.some(course => course.slug === courseSlug)} className="register-cta__submit">
                 {busy ? "Đang gửi…" : "Gửi đăng ký"}
               </Button>
             </form>
