@@ -87,7 +87,7 @@ export function useStudentApi() {
           method,
           body: body === undefined ? undefined : JSON.stringify(body)
         });
-        if (/^enrollments(\/|$)/.test(path)) notifyCoursesChanged();
+        if (/^(enrollments|course-registrations)(\/|$)/.test(path)) notifyCoursesChanged();
         return result;
       } catch (error) {
         if (error instanceof ApiError && error.status === 401) logout();
@@ -195,39 +195,8 @@ export interface StudentEnrollmentItem {
 
 // GET api/student/enrollments - các ghi danh của học viên (khối khóa đã đăng ký trang Courses)
 export function useStudentEnrollments() {
-  const api = useStudentApi();
-  const { token } = useAuth();
-  const [data, setData] = useState<StudentEnrollmentItem[]>([]);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [reloadKey, setReloadKey] = useState(0);
-
-  useEffect(() => {
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-    const controller = new AbortController();
-    setLoading(true);
-    setError("");
-
-    api.get<StudentEnrollmentItem[]>("enrollments", controller.signal)
-      .then((res) => {
-        if (!controller.signal.aborted) setData(res);
-      })
-      .catch((err) => {
-        if (!controller.signal.aborted) {
-          setError(err instanceof Error ? err.message : "Không tải được danh sách ghi danh.");
-        }
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
-
-    return () => controller.abort();
-  }, [api, token, reloadKey]);
-
-  return { data, error, loading, reload: () => setReloadKey(k => k + 1) };
+  const query = useStudentQuery<StudentEnrollmentItem[]>("enrollments");
+  return { ...query, data: query.data ?? [] };
 }
 
 export interface StudentPayment {
@@ -744,6 +713,13 @@ export function useStudentQuery<T>(path: string | null) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(path !== null);
   const [reloadKey, setReloadKey] = useState(0);
+  useEffect(() => {
+    if (!path || !/^(course-registrations|enrollments|dashboard|tuition|schedule)([/?]|$)/.test(path)) return;
+    const refresh = () => setReloadKey(v => v + 1);
+    const storage = (e: StorageEvent) => { if (e.key === "ecw_courses_revision") refresh(); };
+    window.addEventListener("focus", refresh); window.addEventListener("courses-changed", refresh); window.addEventListener("storage", storage);
+    return () => { window.removeEventListener("focus", refresh); window.removeEventListener("courses-changed", refresh); window.removeEventListener("storage", storage); };
+  }, [path]);
   useEffect(() => {
     if (!token || path === null) { setData(undefined); setLoading(false); return; }
     const controller = new AbortController();

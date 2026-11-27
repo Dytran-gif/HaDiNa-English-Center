@@ -26,6 +26,7 @@ public partial class AppDbContext : DbContext
     {
         ConfigurePublic(b);
         ConfigureConsultations(b);
+        ConfigureCourseRegistrations(b);
         ConfigureReviews(b);
         // ---------- Users ----------
         b.Entity<User>(e =>

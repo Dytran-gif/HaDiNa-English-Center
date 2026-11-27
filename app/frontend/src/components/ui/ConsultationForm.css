@@ -1,0 +1,7 @@
+.consultation-form { display: flex; flex-direction: column; gap: 16px; }
+.page-shell .consultation-form__fields { display: grid; gap: 16px; border: 0; padding: 0; margin: 0; min-width: 0; }
+.consultation-form > .btn { align-self: flex-start; }
+.consultation-form__success { display: grid; gap: 16px; }
+.consultation-form__success > .btn { justify-self: start; }
+.consultation-dialog { border: 0; padding: 0; margin: auto; color: var(--ink); }
+.consultation-dialog::backdrop { background: rgba(15, 23, 42, 0.45); }

@@ -222,6 +222,8 @@ public class CoursesController : ControllerBase
         if (classCount > 0)
             return Conflict(new { message = $"Khóa học đang được {classCount} lớp sử dụng, không thể xóa" });
 
+        if (await _db.CourseRegistrations.AnyAsync(r => r.CourseId == id))
+            return Conflict(new { message = "Khóa học đã có yêu cầu đăng ký, cần giữ lại lịch sử. Có thể ẩn khóa khỏi website." });
         _db.Courses.Remove(course);
         try { await _db.SaveChangesAsync(); }
         catch (DbUpdateException error) when (error.InnerException is SqlException { Number: 547 })

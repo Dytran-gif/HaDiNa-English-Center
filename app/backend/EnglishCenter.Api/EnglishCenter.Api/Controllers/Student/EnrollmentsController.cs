@@ -85,16 +85,11 @@ public class EnrollmentsController : StudentControllerBase
         return Ok(rows.OrderByDescending(r => r.StartDate).Select(r => ToDto(r, today)).ToList());
     }
 
-    // POST api/student/enrollments { classId } - đăng ký vào lớp đã chọn
+    // Legacy self-enrollment is disabled; students submit course requests for Admin assignment.
     [HttpPost]
-    public async Task<IActionResult> Create(StudentEnrollRequest req)
+    public IActionResult Create(StudentEnrollRequest req)
     {
-        var result = await _enrollments.EnrollAsync(StudentId, req.ClassId);
-        if (!result.Success) return Error(result.StatusCode, result.Message);
-
-        var today = AppTime.Today;
-        var created = (await LoadMyEnrollmentsAsync(e => e.Id == result.EnrollmentId)).First();
-        return StatusCode(201, new { message = $"Đăng ký thành công lớp {created.ClassName} ({created.CourseName})", enrollment = ToDto(created, today) });
+        return Error(403, "Học viên đăng ký khóa học tại course-registrations; Admin sẽ xếp lớp phù hợp");
     }
 
     // DELETE api/student/enrollments/{enrollmentId} - hủy đăng ký của chính mình.

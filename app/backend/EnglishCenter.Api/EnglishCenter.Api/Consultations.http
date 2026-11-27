@@ -1,0 +1,11 @@
+@baseUrl = http://localhost:5220
+@adminToken = REPLACE_WITH_ADMIN_TOKEN
+@consultationId = 0
+
+### Admin: list inquiries
+GET {{baseUrl}}/api/admin/consultations?page=1&pageSize=10
+Authorization: Bearer {{adminToken}}
+
+### Admin: permanently delete a handled inquiry (204; missing ID 404)
+DELETE {{baseUrl}}/api/admin/consultations/{{consultationId}}
+Authorization: Bearer {{adminToken}}

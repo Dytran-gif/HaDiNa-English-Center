@@ -9,6 +9,7 @@ export const adminSidebarMenuGroups: AdminMenuGroup[] = [
   { label: "Đào tạo", items: [
     { label: "Khóa học", path: "/admin/courses", icon: "book" },
     { label: "Lớp học", path: "/admin/classes", icon: "classes" },
+    { label: "Đăng ký khóa học", path: "/admin/course-registrations", icon: "requests" },
     { label: "Giáo viên", path: "/admin/teachers", icon: "teachers" },
     { label: "Học viên", path: "/admin/students", icon: "students" },
   ] },

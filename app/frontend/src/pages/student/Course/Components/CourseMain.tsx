@@ -83,9 +83,6 @@ export default function CourseMainFE({ courses, onRegisterCourse, registering }:
                                         <div className="cm-card-meta">
                                             <span><i className="fa-regular fa-clock"></i> {t("common.sessions", { n: course.totalSessions })}</span>
                                             <span><i className="fa-solid fa-calendar-days"></i> {t("common.sessionsPerWeek", { n: course.sessionsPerWeek })}</span>
-                                            {course.teacherName && (
-                                                <span><i className="fa-solid fa-chalkboard-user"></i> {course.teacherName}</span>
-                                            )}
                                         </div>
 
                                         {/* Tags Thông tin bổ sung */}

@@ -121,7 +121,7 @@ public class EnrollmentService
     }
 
     // Ghi danh học viên vào lớp. Học phí lấy từ khóa học, KHÔNG nhận từ client (trừ ưu đãi riêng của Admin).
-    public async Task<EnrollmentResult> EnrollAsync(int studentId, int classId, EnrollOptions? options = null)
+    public async Task<EnrollmentResult> EnrollAsync(int studentId, int classId, EnrollOptions? options = null, int? courseRegistrationId = null)
     {
         options ??= new EnrollOptions();
         var student = await _db.Students.FindAsync(studentId);
@@ -129,11 +129,6 @@ public class EnrollmentService
             return EnrollmentResult.Fail(404, "Không tìm thấy học viên");
         if (student.Status == "Dropped")
             return EnrollmentResult.Fail(409, "Học viên đã nghỉ, không thể ghi danh");
-
-        var cls = await _db.Classes.Include(c => c.Course).Include(c => c.Schedules)
-            .FirstOrDefaultAsync(c => c.Id == classId);
-        if (cls == null)
-            return EnrollmentResult.Fail(404, "Không tìm thấy lớp học");
 
         // Serializable: hai người đăng ký cùng lúc không vượt sĩ số
         await using var tx = await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
@@ -143,10 +138,22 @@ public class EnrollmentService
         if (!await _db.Students.AnyAsync(s => s.Id == studentId && s.DeletedAt == null && s.Status != "Dropped"))
             return EnrollmentResult.Fail(409, "Học viên đã nghỉ hoặc đã được xóa, không thể ghi danh");
 
+        await ClassLifecycle.LockAsync(_db, classId);
+        var cls = await _db.Classes.AsNoTracking().Include(c => c.Course).Include(c => c.Schedules).FirstOrDefaultAsync(c => c.Id == classId);
+        if (cls == null) return EnrollmentResult.Fail(404, "Không tìm thấy lớp học");
+
+        var registration = await _db.CourseRegistrations.FirstOrDefaultAsync(r => r.StudentId == studentId && r.Status == "Pending"
+            && (courseRegistrationId.HasValue ? r.Id == courseRegistrationId.Value : r.CourseId == cls.CourseId));
+        if (courseRegistrationId.HasValue && registration == null)
+            return EnrollmentResult.Fail(409, "Yêu cầu đăng ký đã được xử lý hoặc đã hủy");
+        if (registration != null && registration.CourseId != cls.CourseId)
+            return EnrollmentResult.Fail(400, "Lớp được chọn không thuộc khóa học đã đăng ký");
+
         if (await _db.Enrollments.AnyAsync(e => e.StudentId == studentId && e.ClassId == classId))
             return EnrollmentResult.Fail(409, "Học viên đã có ghi danh trong lớp này");
 
-        var check = (await CheckAsync(studentId, new[] { classId }))[classId];
+        if (!(await CheckAsync(studentId, new[] { classId })).TryGetValue(classId, out var check))
+            return EnrollmentResult.Fail(404, "Không tìm thấy lớp học");
         if (check.IsFinished)
             return EnrollmentResult.Fail(409, "Lớp đã kết thúc, không thể ghi danh");
         if (check.IsFull)
@@ -178,6 +185,12 @@ public class EnrollmentService
             Status = "Active"
         };
         _db.Enrollments.Add(enrollment);
+        if (registration != null)
+        {
+            registration.Status = "Assigned";
+            registration.ClassId = classId;
+            registration.AssignedAt = AppTime.Now;
+        }
 
         try
         {
@@ -219,6 +232,8 @@ public class EnrollmentService
                 return EnrollmentResult.Fail(409, "Lớp đã khai giảng, liên hệ trung tâm để nghỉ học");
         }
 
+        var assignedRequests = await _db.CourseRegistrations.Where(r => r.StudentId == studentId && r.ClassId == enrollment.ClassId && r.Status == "Assigned").ToListAsync();
+        foreach (var registration in assignedRequests) registration.Status = "Cancelled";
         if (!hasConfirmed && !started)
         {
             _db.Payments.RemoveRange(enrollment.Payments);

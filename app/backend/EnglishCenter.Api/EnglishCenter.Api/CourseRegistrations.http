@@ -1,0 +1,32 @@
+@base = http://localhost:5220
+@studentToken = REPLACE_WITH_STUDENT_TOKEN
+@adminToken = REPLACE_WITH_ADMIN_TOKEN
+@courseId = 1
+@classId = 1
+@registrationId = 1
+
+### Student: request a course, not a class (choose an actual published course)
+POST {{base}}/api/student/course-registrations
+Authorization: Bearer {{studentToken}}
+Content-Type: application/json
+
+{ "courseId": {{courseId}} }
+
+### Student: own requests
+GET {{base}}/api/student/course-registrations
+Authorization: Bearer {{studentToken}}
+
+### Admin: pending requests; copy the actual request ID before assigning
+GET {{base}}/api/admin/course-registrations?status=Pending&page=1&pageSize=10
+Authorization: Bearer {{adminToken}}
+
+### Admin: choose an available class belonging to the requested course
+POST {{base}}/api/admin/course-registrations/{{registrationId}}/assign
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{ "classId": {{classId}} }
+
+### Student: cancel own pending request
+DELETE {{base}}/api/student/course-registrations/{{registrationId}}
+Authorization: Bearer {{studentToken}}

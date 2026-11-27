@@ -1,6 +1,7 @@
 import type { PageTitle } from "../../types";
 
 export const adminPageTitles: Record<string, PageTitle> = {
+    "/admin/course-registrations": { title: "Đăng ký khóa học", subtitle: "Tiếp nhận đăng ký và xếp lớp cho học viên." },
     "/admin/consultations": { title: "Yêu cầu tư vấn", subtitle: "Thông tin khách hàng đăng ký tư vấn từ trang chủ." },
     "/admin/profile": { title: "Hồ sơ cá nhân", subtitle: "Thông tin quản trị viên và bảo mật tài khoản." },
     "/admin/teachers": { title: "Quản lý giáo viên", subtitle: "Hồ sơ, lớp phụ trách và tài khoản giáo viên." },

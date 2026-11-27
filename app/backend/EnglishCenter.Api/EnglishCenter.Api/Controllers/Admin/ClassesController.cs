@@ -169,6 +169,7 @@ public class ClassesController : ControllerBase
                 Name = c.Name,
                 CourseId = c.CourseId,
                 CourseName = c.Course.Name,
+                TeacherName = c.Teacher.FullName,
                 Enrolled = c.Enrollments.Count(e => e.Status == "Active"),
                 Capacity = c.MaxStudents,
                 Tuition = c.Course.Tuition,
@@ -235,6 +236,8 @@ public class ClassesController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, ClassRequest req)
     {
+        await using var tx = await _db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+        await ClassLifecycle.LockAsync(_db, id);
         var cls = await _db.Classes.Include(c => c.Schedules).FirstOrDefaultAsync(c => c.Id == id);
         if (cls == null)
             return NotFound(new { message = "Không tìm thấy lớp học" });
@@ -275,8 +278,6 @@ public class ClassesController : ControllerBase
         }
 
         // Xóa lịch cũ rồi thêm lịch mới, làm trong một transaction
-        await using var tx = await _db.Database.BeginTransactionAsync();
-
         cls.Name = req.Name.Trim();
         cls.CourseId = req.CourseId;
         cls.TeacherId = req.TeacherId;
@@ -309,6 +310,8 @@ public class ClassesController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
+        await using var tx = await _db.Database.BeginTransactionAsync();
+        await ClassLifecycle.LockAsync(_db, id);
         var cls = await _db.Classes.FindAsync(id);
         if (cls == null)
             return NotFound(new { message = "Không tìm thấy lớp học" });
@@ -318,6 +321,7 @@ public class ClassesController : ControllerBase
 
         _db.Classes.Remove(cls);   // lịch học của lớp tự xóa theo (cascade)
         await _db.SaveChangesAsync();
+        await tx.CommitAsync();
 
         return NoContent();
     }

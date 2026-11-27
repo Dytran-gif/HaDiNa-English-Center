@@ -1,5 +1,24 @@
 # Nhật ký bàn giao
 
+## [2026-11-27] Xóa yêu cầu tư vấn sau khi xử lý
+
+- Admin → Yêu cầu tư vấn có nút Xóa đỏ và xác nhận tên người gửi; thành công cập nhật danh sách/tổng số. Lỗi giữ dialog để thử lại.
+- DELETE `/api/admin/consultations/{id}` chỉ Admin, 204/404; xóa vĩnh viễn yêu cầu, không ảnh hưởng tài khoản/ghi danh/phiếu thu; không migration.
+- FE lint/typecheck/build và BE build đạt, reviewer PASS; 7 kiểm tra API với bản ghi QA đạt và đã dọn QA. API5220 đã chạy lại, AutoSetup=false. Xem reports `2026-11-27-consultation-delete-*`.
+
+## [2026-11-27] Sửa lại nút public đăng ký khóa học → form tư vấn
+
+- CTA trên chi tiết khóa luôn là Đăng ký khóa học cho mọi vai trò/khách; mở form thông tin tại chỗ, điền sẵn khóa đang xem. Gửi vào ConsultationRequests, xem ở Admin → Yêu cầu tư vấn.
+- Dùng chung ConsultationForm với homepage, giữ lỗi/bản nháp và idempotency GUID. Không tạo tài khoản/ghi danh/phiếu thu từ form này; không xóa dữ liệu hoặc rollback bảng đã có.
+- Chrome/API13 ca đạt, xác minh dòng ở Admin; đã dọn bản ghi QA chính xác. Xem `docs/api/PUBLIC-COURSE-CONSULTATION.md`. FE build/typecheck/lint đạt, cảnh báo cũ.
+
+## [2026-11-27] Đăng ký khóa học, Admin xếp lớp
+
+- Đã căn cột lớp public, bỏ đăng ký từng lớp, hiển thị nhiều giáo viên đúng từng lớp. Giữ khóa đã chọn qua đăng ký tài khoản/đăng nhập.
+- Student gửi yêu cầu Pending bằng course ID, không tự ghi danh lớp. Admin có mục Đào tạo → Đăng ký khóa học để xếp lớp cùng khóa; Assigned và Enrollment lưu cùng transaction, có kiểm tra sĩ số/lịch.
+- Migration `20261127093719_CourseRegistrationRequests` đã backup/verify và áp dụng local. Không backfill/đổi Enrollment/Payment cũ; pending không phát sinh học phí. Xem `docs/api/COURSE-REGISTRATIONS.md` và `CourseRegistrations.http`.
+- 38 ca API, 14 ca Chrome và VerifyAdmin40 đạt. QA đã dọn; 4 Student/20 Enrollment/19 Payment gốc giữ nguyên, một đăng ký thật phát sinh trong lúc test vẫn giữ. Cần commit FE/BE/migration cùng nhau.
+
 ## [2026-11-27] Đổi tên lớp không bị chặn bởi lịch trùng có sẵn
 
 - Nguyên nhân: Update luôn kiểm tra lại toàn bộ lịch, trong khi DB có lịch chồng nhau từ trước. ScheduleService nay so sánh lịch thực tế; đổi tên không kiểm tra xung đột cũ và không xóa/tạo lại các dòng lịch.

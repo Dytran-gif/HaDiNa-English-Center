@@ -18,8 +18,9 @@ export default function MyCourses({ items, onCancel, onBrowse }: MyCoursesProps)
     const { t, money, date } = useLang();
     const navigate = useNavigate();
     const counts = Object.fromEntries(ORDER.map(s => [s, items.filter(i => i.classStatus === s).length])) as Record<ClassStatus, number>;
-    const [filter, setFilter] = useState<ClassStatus>(() => ORDER.find(s => counts[s] > 0) ?? "Ongoing");
-    const list = items.filter(i => i.classStatus === filter);
+    const [filter, setFilter] = useState<ClassStatus | null>(null);
+    const selectedFilter = filter ?? ORDER.find(s => counts[s] > 0) ?? "Ongoing";
+    const list = items.filter(i => i.classStatus === selectedFilter);
     const owing = items.filter(i => i.remainingAmount > 0);
     const owingTotal = owing.reduce((sum, i) => sum + i.remainingAmount, 0);
 
@@ -40,7 +41,7 @@ export default function MyCourses({ items, onCancel, onBrowse }: MyCoursesProps)
             <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
                 <div className="sx-seg" role="group" aria-label={t("sx.filterLabel")}>
                     {ORDER.map(s => (
-                        <button key={s} type="button" className={`is-${s.toLowerCase()}`} aria-pressed={filter === s} onClick={() => setFilter(s)}>
+                        <button key={s} type="button" className={`is-${s.toLowerCase()}`} aria-pressed={selectedFilter === s} onClick={() => setFilter(s)}>
                             <i className={`fa-solid ${ICON[s]}`}></i> {t(`sx.class.${s}`)} <span className="sx-count">{counts[s]}</span>
                         </button>
                     ))}
@@ -53,7 +54,7 @@ export default function MyCourses({ items, onCancel, onBrowse }: MyCoursesProps)
             </div>
 
             {list.length === 0 ? (
-                <div className="sx-empty">{t(`sx.empty.${filter}`)}</div>
+                <div className="sx-empty">{t(`sx.empty.${selectedFilter}`)}</div>
             ) : (
                 <div className="sx-grid">
                     {list.map(item => {

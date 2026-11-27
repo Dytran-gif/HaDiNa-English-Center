@@ -249,6 +249,8 @@ public class StudentsController : ControllerBase
 
         var enrollments = await _db.Enrollments.Where(e => e.StudentId == id).ToListAsync();
         foreach (var enrollment in enrollments) enrollment.Status = "Dropped";
+        var registrations = await _db.CourseRegistrations.Where(r => r.StudentId == id && r.Status == "Pending").ToListAsync();
+        foreach (var registration in registrations) registration.Status = "Cancelled";
         var pending = await _db.Payments.Where(p => p.Enrollment.StudentId == id && p.Status == "Pending").ToListAsync();
         foreach (var payment in pending)
         {

@@ -68,6 +68,17 @@ foreach (var length in new[] { 7,8 }) {
 Check(Math.Abs((AppTime.Now - DateTime.UtcNow.AddHours(7)).TotalSeconds) < 2 && AppTime.Now.Kind == DateTimeKind.Unspecified, "Vietnam business time independent of server timezone, serialized without Z");
 var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlServer("Server=localhost;Database=VerifyOnly;Trusted_Connection=True;TrustServerCertificate=True").Options;
 using var db = new AppDbContext(options);
+var registrationEntity = db.Model.FindEntityType(typeof(CourseRegistration))!;
+Check(registrationEntity.GetIndexes().Any(index => index.IsUnique && index.GetFilter()?.Contains("Pending") == true
+    && index.Properties.Select(p => p.Name).SequenceEqual(new[] { "StudentId", "CourseId" })), "only one pending request per student/course is enforced by DB");
+Check(typeof(CourseRegistrationsController).GetCustomAttribute<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>()?.Roles == "admin",
+    "only Admin can assign course registrations");
+Check(typeof(EnglishCenter.Api.Controllers.StudentPortal.CourseRegistrationsController)
+    .GetCustomAttributes<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>(true).Any(a => a.Roles == "student"),
+    "student registrations require the Student role");
+var studentEnrollmentController = new EnglishCenter.Api.Controllers.StudentPortal.EnrollmentsController(db, new EnrollmentService(db));
+Check(studentEnrollmentController.Create(new EnglishCenter.Api.Dtos.StudentPortal.StudentEnrollRequest { ClassId = 1 })
+    is ObjectResult { StatusCode: 403 }, "legacy student class enrollment endpoint cannot bypass Admin assignment");
 Check(db.Model.FindEntityType(typeof(Student))!.FindProperty(nameof(Student.DeletedAt))!.IsNullable,
     "student archive marker leaves existing records active by default");
 var retainedHistorySql = db.Payments.Select(p => new { p.Id, p.Amount, p.Enrollment.Student.FullName }).ToQueryString();
