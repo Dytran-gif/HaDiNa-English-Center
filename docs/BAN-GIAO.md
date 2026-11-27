@@ -1,4 +1,10 @@
 # Nhật ký bàn giao
+## [2026-11-27] Rút gọn form Khóa học Admin
+
+- Bỏ Mã khóa/Đường dẫn website/Hiển thị website/Ảnh URL khỏi form theo yêu cầu. Metadata giữ ở DB vì mã lớp/public/ảnh phụ thuộc; tạo mới tự sinh, sửa giữ mã/slug cũ.
+- API bảo toàn ảnh và trạng thái hiển thị khi request bỏ các trường đó; explicit null ảnh vẫn xóa, explicit visibility vẫn hoạt động. Không migration, không thay đổi lớp/ghi danh hiện có.
+- Live API kiểm tra tạo tự sinh, sửa không mất metadata/không tự bật khóa ẩn, public routes đúng; đã xóa khóa QA. BuildFE/BE đạt, lintwarning cũ. Xem docs/api/COURSE-FORM.md.
+
 ## [2026-11-26] Ảnh giáo viên trong Admin, đồng bộ public và kiểm tra khóa/xóa
 
 - Bảng Giáo viên có cột ảnh; Sửa/Hồ sơ có uploadJPG/PNG/WebP5MB. Tạo giáo viên trước rồi tải ảnh. APIAdmin lưu Users.AvatarUrl, public dùng cùng URL; không migration.

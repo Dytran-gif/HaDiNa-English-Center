@@ -143,7 +143,7 @@ public class CoursesController : ControllerBase
             Code = code,
             Slug = slug,
             ImageUrl = string.IsNullOrWhiteSpace(req.ImageUrl) ? null : req.ImageUrl.Trim(),
-            IsPublished = req.IsPublished,
+            IsPublished = req.IsPublished ?? true,
             Name = name,
             Description = req.Description?.Trim(),
             BandFrom = req.BandFrom,
@@ -187,8 +187,10 @@ public class CoursesController : ControllerBase
         // Đổi mã khóa không đổi mã các lớp đã tạo.
         course.Code = code;
         course.Slug = slug;
-        course.ImageUrl = string.IsNullOrWhiteSpace(req.ImageUrl) ? null : req.ImageUrl.Trim();
-        course.IsPublished = req.IsPublished;
+        // Simplified Admin form omits website metadata; do not erase or republish existing courses.
+        if (req.ImageUrlProvided)
+            course.ImageUrl = string.IsNullOrWhiteSpace(req.ImageUrl) ? null : req.ImageUrl.Trim();
+        if (req.IsPublished.HasValue) course.IsPublished = req.IsPublished.Value;
         course.Name = name;
         course.Description = req.Description?.Trim();
         course.BandFrom = req.BandFrom;

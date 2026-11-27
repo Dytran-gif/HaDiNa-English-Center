@@ -18,11 +18,18 @@ public class CourseRequest : IValidatableObject
     [StringLength(150)]
     public string? Slug { get; set; }
 
+    private string? _imageUrl;
     [StringLength(500)]
-    public string? ImageUrl { get; set; }
+    public string? ImageUrl
+    {
+        get => _imageUrl;
+        set { _imageUrl = value; ImageUrlProvided = true; }
+    }
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool ImageUrlProvided { get; private set; }
 
-    // Hiện trên website public (mặc định có)
-    public bool IsPublished { get; set; } = true;
+    // Omitted: visible for a new course; preserve the current value when updating.
+    public bool? IsPublished { get; set; }
 
     [System.Text.Json.Serialization.JsonRequired]
     [Range(0, 9, ErrorMessage = "Band từ phải trong khoảng 0.0-9.0")]
