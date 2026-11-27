@@ -17,6 +17,24 @@ Check(typeof(CourseClass).GetProperty("Code") == null && typeof(CourseClass).Get
 Check(typeof(ClassRequest).GetProperty("Code") == null && typeof(ClassRequest).GetProperty("MeetingUrl") == null, "class editor request excludes removed fields");
 Check(typeof(ClassResponse).GetProperty("Code") == null && typeof(ClassResponse).GetProperty("MeetingUrl") == null, "class responses exclude removed fields");
 var assembly = typeof(DashboardController).Assembly;
+var scheduledClass = new CourseClass { Id = 77, TeacherId = 2, StartDate = new DateOnly(2027, 2, 1), EndDate = new DateOnly(2027, 2, 8),
+    Schedules = [new ClassSchedule { DayOfWeek = 1, StartTime = new TimeOnly(18, 0), EndTime = new TimeOnly(19, 30), RoomId = 3 },
+        new ClassSchedule { DayOfWeek = 3, StartTime = new TimeOnly(18, 0), EndTime = new TimeOnly(19, 30), RoomId = 4 }] };
+ClassRequest OriginalSchedule() => new() { Name = "Renamed", TeacherId = 2, StartDate = scheduledClass.StartDate, EndDate = scheduledClass.EndDate,
+    Schedules = scheduledClass.Schedules.Select(s => new ClassScheduleRequest { DayOfWeek = s.DayOfWeek, StartTime = s.StartTime, EndTime = s.EndTime, RoomId = s.RoomId }).ToList() };
+var scheduleRequest = OriginalSchedule();
+Check(ScheduleService.SameSchedule(scheduledClass, scheduleRequest, scheduledClass.EndDate), "rename does not change the timetable");
+scheduleRequest.Schedules.Reverse();
+Check(ScheduleService.SameSchedule(scheduledClass, scheduleRequest, scheduledClass.EndDate), "schedule order does not trigger conflict checks");
+scheduleRequest = OriginalSchedule(); scheduleRequest.TeacherId++;
+Check(!ScheduleService.SameSchedule(scheduledClass, scheduleRequest, scheduledClass.EndDate), "teacher change triggers timetable checks");
+scheduleRequest = OriginalSchedule(); scheduleRequest.Schedules[0].RoomId++;
+Check(!ScheduleService.SameSchedule(scheduledClass, scheduleRequest, scheduledClass.EndDate), "room change triggers timetable checks");
+scheduleRequest = OriginalSchedule(); scheduleRequest.Schedules[0].StartTime = new TimeOnly(18, 1);
+Check(!ScheduleService.SameSchedule(scheduledClass, scheduleRequest, scheduledClass.EndDate), "time change triggers timetable checks");
+scheduleRequest = OriginalSchedule(); scheduleRequest.StartDate = scheduleRequest.StartDate.AddDays(1);
+Check(!ScheduleService.SameSchedule(scheduledClass, scheduleRequest, scheduledClass.EndDate), "start date change triggers timetable checks");
+Check(!ScheduleService.SameSchedule(scheduledClass, OriginalSchedule(), scheduledClass.EndDate.AddDays(1)), "effective end date change triggers timetable checks");
 var paging = assembly.GetType("EnglishCenter.Api.Controllers.Admin.AdminPaging")!.GetMethod("SlicePage", BindingFlags.Static | BindingFlags.NonPublic)!.MakeGenericMethod(typeof(int));
 var numbers = Enumerable.Range(1, 5).AsQueryable();
 var overflow = (IQueryable<int>)paging.Invoke(null, [numbers, int.MaxValue, 100, 5])!;

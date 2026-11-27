@@ -1,5 +1,12 @@
 # Bỏ mã lớp và link học online — 2026-11-27
 
+## Sửa tên lớp khi lịch giữ nguyên — 2026-11-27
+
+- PUT lớp so sánh giáo viên, ngày bắt đầu/kết thúc hiệu lực và tập lịch (thứ/giờ/phòng), không phụ thuộc thứ tự dòng gửi lên. Chỉ đổi tên không kiểm tra lại các xung đột lịch/sức chứa có sẵn trong dữ liệu cũ.
+- Giữ nguyên các dòng và ID ClassSchedules nếu lịch không đổi. Đổi sĩ số vẫn kiểm tra sức chứa phòng và số học viên đang học; đổi giáo viên/ngày/giờ/phòng vẫn kiểm tra trùng lịch. Force không bỏ qua xung đột giáo viên/phòng.
+- Không tự sửa các lịch chồng nhau cũ. Không migration, không thay đổi lịch/ghi danh/học phí đang có.
+- Đã kiểm tra API trên hai lớp QA cố ý chồng lịch: đổi tên giữ nguyên lịch thành công, ID lịch giữ nguyên; đổi giờ gây trùng/tạo lớp trùng/bỏ qua bằng Force đều bị chặn, đổi giờ không trùng lưu được. Đã dọn QA; VerifyAdmin 36 checks đạt.
+
 - Form tạo/sửa lớp chỉ còn tên lớp, khóa học, giáo viên, ngày học, sĩ số và lịch/phòng học. Không gửi `code` hoặc `meetingUrl`.
 - Entity `CourseClass` và bảng `Classes` không còn `Code`, `MeetingUrl`; bỏ cả unique index `IX_Classes_Code` và bộ sinh mã lớp. Mã học viên và mã khóa học là các trường khác, vẫn giữ.
 - API lớp Admin/Teacher/Student trả `id` và `name`. Các API tham chiếu lớp (ghi danh, lịch, học phí, đánh giá, bài tập) dùng `classId` và `className`, thay `classCode`. Public `open_classes` trả `id/name`; đánh giá public dùng `class_name`. FE đã cập nhật cùng hợp đồng; cần triển khai FE/BE đồng thời.

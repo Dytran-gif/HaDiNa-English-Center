@@ -1,5 +1,17 @@
 # Nhật ký bàn giao
 
+## [2026-11-27] Đổi tên lớp không bị chặn bởi lịch trùng có sẵn
+
+- Nguyên nhân: Update luôn kiểm tra lại toàn bộ lịch, trong khi DB có lịch chồng nhau từ trước. ScheduleService nay so sánh lịch thực tế; đổi tên không kiểm tra xung đột cũ và không xóa/tạo lại các dòng lịch.
+- Đổi giờ/ngày/phòng/giáo viên vẫn kiểm tra đầy đủ; thay sĩ số vẫn kiểm tra sức chứa và số đang học. Không tắt kiểm tra trùng lịch cho tạo mới hoặc Force.
+- VerifyAdmin 36 checks và API đổi tên/lịch/giới hạn phòng trên QA đạt; lớp/khóa QA đã dọn. Không migration hoặc sửa lịch thật. Xem `docs/api/CLASS-FIELDS.md`.
+
+## [2026-11-27] Chuyển tài khoản demo học viên sang Phạm Văn D
+
+- Theo yêu cầu, Student ID3 / User ID6 (Pham Van D) dùng `student@demo.com`, mật khẩu demo `123456`; tài khoản mở và hồ sơ đang Studying. Đăng nhập API, profile và danh sách ghi danh đã kiểm tra thành công.
+- Hồ sơ demo cũ ID1 vẫn giữ trạng thái đã xóa/khóa. Email của User ID3 đổi sang `archived.student.3.20261127@demo.invalid` để nhường email demo; không gộp hoặc chuyển ghi danh/phiếu thu giữa hai học viên.
+- Đã backup/verify trước cập nhật: `EnglishCenterDB_before_demo_reassign_20261127.bak`. Chỉ cập nhật Users và thu hồi phiên cũ bằng TokenVersion; không migration hoặc sửa dữ liệu lớp/học phí. Công cụ tạm đã dọn.
+
 ## [2026-11-27] Xóa học viên đã khóa hoặc đã nghỉ, cập nhật sĩ số
 
 - Admin được xóa nếu tài khoản khóa HOẶC trạng thái Dropped dù có ghi danh. Xóa khỏi danh sách bằng DeletedAt, chuyển ghi danh Dropped để sĩ số tự tính lại; giữ phiếu thu Confirmed/lịch sử. Pending được từ chối.

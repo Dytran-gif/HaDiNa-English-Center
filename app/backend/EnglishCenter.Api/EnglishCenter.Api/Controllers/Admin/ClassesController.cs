@@ -251,15 +251,15 @@ public class ClassesController : ControllerBase
             return Conflict(new { message = "Lớp đã có học viên ghi danh, không thể đổi khóa học" });
 
         var activeCount = await _db.Enrollments.CountAsync(e => e.ClassId == id && e.Status == "Active");
-        if (req.MaxStudents < activeCount)
+        if (req.MaxStudents != cls.MaxStudents && req.MaxStudents < activeCount)
             return Conflict(new { message = $"Lớp đang có {activeCount} học viên, sĩ số tối đa không được nhỏ hơn" });
 
-        var check = await _schedules.CheckAsync(id, req, course);
+        var check = await _schedules.CheckAsync(id, req, course, cls);
         if (check.Error != null)
             return StatusCode(check.StatusCode, new { message = check.Error });
 
         // Lịch mới có làm học viên trong lớp bị trùng với lớp khác họ đang học không
-        if (!req.Force)
+        if (check.ScheduleChanged && !req.Force)
         {
             var clashes = await _enrollments.StudentConflictsForScheduleAsync(id, req.StartDate, check.EndDate,
                 req.Schedules.Select(s => new ClassCalendar.Slot(s.DayOfWeek, s.StartTime, s.EndTime)));
@@ -284,17 +284,19 @@ public class ClassesController : ControllerBase
         cls.EndDate = check.EndDate;
         cls.MaxStudents = req.MaxStudents;
 
-        _db.ClassSchedules.RemoveRange(cls.Schedules.ToList());
-        await _db.SaveChangesAsync();
-
-        _db.ClassSchedules.AddRange(req.Schedules.Select(s => new ClassSchedule
+        if (check.ScheduleChanged)
         {
-            ClassId = id,
-            RoomId = s.RoomId,
-            DayOfWeek = (byte)s.DayOfWeek,
-            StartTime = s.StartTime,
-            EndTime = s.EndTime
-        }));
+            _db.ClassSchedules.RemoveRange(cls.Schedules.ToList());
+            await _db.SaveChangesAsync();
+            _db.ClassSchedules.AddRange(req.Schedules.Select(s => new ClassSchedule
+            {
+                ClassId = id,
+                RoomId = s.RoomId,
+                DayOfWeek = (byte)s.DayOfWeek,
+                StartTime = s.StartTime,
+                EndTime = s.EndTime
+            }));
+        }
         await _db.SaveChangesAsync();
 
         await tx.CommitAsync();
