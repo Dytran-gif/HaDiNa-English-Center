@@ -1,9 +1,12 @@
 import { useState } from "react";
 import Button from "../ui/Button";
-import { surveyQuestions, recommendCourse } from "./surveyConfig";
+import { surveyQuestions } from "./surveyConfig";
+import { recommendCourse } from "./courseRecommendation";
+import usePublicCourses from "../../services/usePublicCourses";
 import "./CourseSurvey.css";
 
 export default function CourseSurvey() {
+  const { courses } = usePublicCourses();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [done, setDone] = useState(false);
@@ -28,7 +31,7 @@ export default function CourseSurvey() {
     setDone(false);
   }
 
-  const result = done ? recommendCourse(answers) : null;
+  const result = done ? recommendCourse(answers, courses) : null;
 
   return (
     <section className="survey">
@@ -98,7 +101,7 @@ export default function CourseSurvey() {
               <h3 className="survey__result-name">{result.courseName}</h3>
               <p className="survey__result-reason">{result.reason}</p>
               <div className="survey__result-actions">
-                <Button to={`/khoa-hoc/${result.slug}`} variant="primary">
+                <Button to={result.slug ? `/khoa-hoc/${result.slug}` : "/khoa-hoc"} variant="primary">
                   Xem khoá học →
                 </Button>
                 <button

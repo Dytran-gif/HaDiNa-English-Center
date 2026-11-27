@@ -45,7 +45,7 @@ public class StudentsController : ControllerBase
             CurrentClass = s.Enrollments
                 .Where(e => e.Status == "Active" && e.Class.EndDate >= today)
                 .OrderBy(e => e.Class.StartDate)
-                .Select(e => e.Class.Code + " · " + e.Class.Name)
+                .Select(e => e.Class.Name)
                 .FirstOrDefault()
         });
     }
@@ -56,7 +56,7 @@ public class StudentsController : ControllerBase
     {
         var today = Today();
 
-        var student = await Project(_db.Students.Where(s => s.Id == id), today).FirstOrDefaultAsync();
+        var student = await Project(_db.Students.Where(s => s.Id == id && s.DeletedAt == null), today).FirstOrDefaultAsync();
         if (student == null) return null;
 
         var items = await _db.Enrollments
@@ -66,7 +66,6 @@ public class StudentsController : ControllerBase
             {
                 Id = e.Id,
                 ClassId = e.ClassId,
-                ClassCode = e.Class.Code,
                 ClassName = e.Class.Name,
                 CourseName = e.Class.Course.Name,
                 ClassStartDate = e.Class.StartDate,
@@ -107,7 +106,7 @@ public class StudentsController : ControllerBase
 
     private Task<Student?> GetWithUser(int id)
     {
-        return _db.Students.Include(s => s.User).FirstOrDefaultAsync(s => s.Id == id);
+        return _db.Students.Include(s => s.User).FirstOrDefaultAsync(s => s.Id == id && s.DeletedAt == null);
     }
 
     // GET api/admin/students?search=&status=&page=1&pageSize=10
@@ -120,7 +119,7 @@ public class StudentsController : ControllerBase
 
         if (!string.IsNullOrWhiteSpace(status) && status != "Studying" && status != "OnHold" && status != "Dropped")
             return BadRequest(new { message = "status phải là Studying, OnHold hoặc Dropped" });
-        var query = _db.Students.AsNoTracking().WhereContains(search, s => s.FullName, s => s.Phone, s => s.Code);
+        var query = _db.Students.AsNoTracking().Where(s => s.DeletedAt == null).WhereContains(search, s => s.FullName, s => s.Phone, s => s.Code);
         if (!string.IsNullOrWhiteSpace(status))
             query = query.Where(s => s.Status == status);
 
@@ -214,7 +213,9 @@ public class StudentsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, StudentUpdateRequest req)
     {
-        var student = await _db.Students.FindAsync(id);
+        await using var tx = await _db.Database.BeginTransactionAsync();
+        await StudentLifecycle.LockAsync(_db, id);
+        var student = await _db.Students.FirstOrDefaultAsync(s => s.Id == id && s.DeletedAt == null);
         if (student == null)
             return NotFound(new { message = "Không tìm thấy học viên" });
 
@@ -226,6 +227,7 @@ public class StudentsController : ControllerBase
         student.ParentPhone = req.ParentPhone?.Trim();
         student.Status = req.Status;
         await _db.SaveChangesAsync();
+        await tx.CommitAsync();
 
         var result = await Project(_db.Students.Where(s => s.Id == id), Today()).FirstAsync();
         return Ok(result);
@@ -235,17 +237,32 @@ public class StudentsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
+        // Serialize deletion with enrollment/status changes; counts read Active enrollments.
+        await using var tx = await _db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+        await StudentLifecycle.LockAsync(_db, id);
         var student = await GetWithUser(id);
         if (student == null)
             return NotFound(new { message = "Không tìm thấy học viên" });
 
-        // Phiếu thu gắn với ghi danh, nên kiểm tra ghi danh là đủ cho cả hai luật
-        if (await _db.Enrollments.AnyAsync(e => e.StudentId == id))
-            return Conflict(new { message = "Học viên đã có ghi danh hoặc phiếu thu, không thể xóa. Hãy chuyển trạng thái sang Nghỉ (Dropped)" });
+        if (!student.User.IsLocked && student.Status != "Dropped")
+            return Conflict(new { message = "Chỉ được xóa học viên đã khóa tài khoản hoặc có trạng thái Nghỉ học." });
 
-        _db.Students.Remove(student);
-        _db.Users.Remove(student.User);
+        var enrollments = await _db.Enrollments.Where(e => e.StudentId == id).ToListAsync();
+        foreach (var enrollment in enrollments) enrollment.Status = "Dropped";
+        var registrations = await _db.CourseRegistrations.Where(r => r.StudentId == id && r.Status == "Pending").ToListAsync();
+        foreach (var registration in registrations) registration.Status = "Cancelled";
+        var pending = await _db.Payments.Where(p => p.Enrollment.StudentId == id && p.Status == "Pending").ToListAsync();
+        foreach (var payment in pending)
+        {
+            payment.Status = "Rejected";
+            payment.CancelReason = "Học viên đã được xóa khỏi danh sách";
+        }
+        student.Status = "Dropped";
+        student.DeletedAt = AppTime.Now;
+        student.User.IsLocked = true;
+        student.User.TokenVersion++;
         await _db.SaveChangesAsync();
+        await tx.CommitAsync();
 
         return NoContent();
     }
@@ -284,12 +301,13 @@ public class StudentsController : ControllerBase
     [HttpPost("{id}/unlock")]
     public async Task<IActionResult> Unlock(int id)
     {
-        var student = await GetWithUser(id);
-        if (student == null)
+        await using var tx = await _db.Database.BeginTransactionAsync();
+        await StudentLifecycle.LockAsync(_db, id);
+        var changed = await _db.Users.Where(u => u.Student != null && u.Student.Id == id && u.Student.DeletedAt == null)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(u => u.IsLocked, false));
+        if (changed == 0)
             return NotFound(new { message = "Không tìm thấy học viên" });
-
-        student.User.IsLocked = false;
-        await _db.SaveChangesAsync();
+        await tx.CommitAsync();
 
         return Ok(new { message = "Đã mở khóa tài khoản" });
     }

@@ -59,7 +59,6 @@ public class ScheduleController : StudentControllerBase
                 sessions.Add(new StudentScheduleSessionDto
                 {
                     ClassId = r.ClassId.ToString(),
-                    ClassCode = r.ClassCode,
                     ClassName = r.ClassName,
                     CourseName = r.CourseName,
                     BandFrom = r.BandFrom.ToString("0.#"),
@@ -68,7 +67,6 @@ public class ScheduleController : StudentControllerBase
                     TotalSessions = total,
                     TeacherName = r.TeacherName,
                     RoomName = room,
-                    MeetingUrl = r.MeetingUrl,
                     DayOfWeek = DayNames[AppTime.DayNo(s.Date) - 1],
                     DateStr = s.Date.ToString("yyyy-MM-dd"),
                     StartTime = s.Slot.StartTime.ToString("HH\\:mm"),
@@ -139,10 +137,10 @@ public class ScheduleController : StudentControllerBase
                 EnrollmentId = e.EnrollmentId,
                 Status = e.Status,
                 ClassStatus = e.ClassStatus(today),
-                ClassCode = e.ClassCode,
                 Year = e.EndDate.Year,
                 RegisteredAt = e.CreatedAt.ToString("yyyy-MM-dd"),
                 ClassId = e.ClassId.ToString(),
+
                 ClassName = e.ClassName,
                 StartDate = e.StartDate.ToString("yyyy-MM-dd"),
                 EndDate = e.EndDate.ToString("yyyy-MM-dd"),

@@ -11,7 +11,9 @@ import {
 } from "../../../services/student/useStudentApi";
 import CourseMainFE from "./Components/CourseMain";
 import MyCourses from "./Components/MyCourses";
-import ClassPicker from "./Components/ClassPicker";
+import CourseRegistrationDialog from "./Components/CourseRegistrationDialog";
+import { useStudentQuery } from "../../../services/student/useStudentApi";
+import type { CourseRegistration } from "../../../types/courseRegistration";
 import CourseHistoryFE from "./Components/CourseHistory";
 import { useLang } from "../../../i18n/LanguageContext";
 
@@ -28,6 +30,8 @@ export default function StudentCourse() {
     const { data: enrollments, reload: reloadEnrollments } = useStudentEnrollments();
     const { data: history } = useStudentScheduleHistory();
     const api = useStudentApi();
+    const registrations = useStudentQuery<CourseRegistration[]>("course-registrations");
+    const pending = (registrations.data ?? []).filter(r => r.status === "Pending");
     const [picking, setPicking] = useState<Course | null>(null);
 
     // Tab lấy từ URL (?tab=browse) để trang Đăng ký public chuyển thẳng sang bước chọn khóa
@@ -48,7 +52,7 @@ export default function StudentCourse() {
 
     // Hủy đăng ký: chỉ lớp chưa khai giảng và chưa đóng tiền (BE kiểm tra lại)
     const handleCancel = async (item: StudentEnrollmentItem) => {
-        if (!window.confirm(t("sx.confirmCancel", { code: item.classCode }))) return;
+        if (!window.confirm(t("sx.confirmCancel", { code: item.className }))) return;
         try {
             await api.send("DELETE", `enrollments/${item.enrollmentId}`);
             reloadEnrollments();
@@ -58,7 +62,7 @@ export default function StudentCourse() {
     };
 
     const tabs: { key: TabKey; label: string; icon: string; count: number }[] = [
-        { key: 'registered', label: t("courses.tabMine"), icon: 'fa-book-bookmark', count: activeEnrollments.length },
+        { key: 'registered', label: t("courses.tabMine"), icon: 'fa-book-bookmark', count: activeEnrollments.length + pending.length },
         { key: 'browse', label: t("sx.tabRegister"), icon: 'fa-circle-plus', count: courses.length },
         { key: 'history', label: t("courses.tabHistory"), icon: 'fa-folder-tree', count: history.length }
     ];
@@ -99,12 +103,14 @@ export default function StudentCourse() {
 
                 <div className="col-12">
                     <div className="course-panel" key={tab}>
-                        {tab === 'registered' && (
+                        {registrations.error && <p role="alert">{registrations.error} <button type="button" onClick={registrations.reload}>Thử lại</button></p>}
+                        {tab === 'registered' && pending.length > 0 && <section className="course-registration-pending"><h2>Khóa đã đăng ký — chờ xếp lớp</h2>{pending.map(row => <div className="course-registration-pending__row" key={row.id}><strong>{row.courseName}</strong><span>Trung tâm đang sắp xếp lớp và giáo viên.</span><button className="sx-btn" type="button" onClick={async () => { if (!window.confirm("Hủy yêu cầu đăng ký khóa học này?")) return; try { await api.send("DELETE", `course-registrations/${row.id}`); registrations.reload(); } catch (reason) { window.alert(reason instanceof Error ? reason.message : "Không hủy được yêu cầu."); } }}>Hủy yêu cầu</button></div>)}</section>}
+                        {tab === 'registered' && (activeEnrollments.length > 0 || pending.length === 0) && (
                             <MyCourses items={activeEnrollments} onCancel={handleCancel} onBrowse={() => setTab('browse')} />
                         )}
 
                         {tab === 'browse' && (
-                            <CourseMainFE courses={courses} onRegisterCourse={setPicking} />
+                            <CourseMainFE courses={courses.filter(c => !pending.some(r => r.courseId === Number(c.id)) && !activeEnrollments.some(e => e.course.id === c.id))} onRegisterCourse={setPicking} />
                         )}
 
                         {tab === 'history' && (
@@ -115,10 +121,10 @@ export default function StudentCourse() {
             </div>
 
             {picking && (
-                <ClassPicker
+                <CourseRegistrationDialog
                     course={picking}
                     onClose={() => { setPicking(null); if (params.get('course')) setTab('browse'); }}
-                    onDone={reloadEnrollments}
+                    onDone={() => { registrations.reload(); reloadEnrollments(); }}
                 />
             )}
         </div>

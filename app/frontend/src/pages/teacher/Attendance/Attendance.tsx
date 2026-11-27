@@ -95,22 +95,26 @@ function RosterEditor({ classId, date, onSaved }: { classId: number; date: strin
   const saved = useMemo(() => data?.items.filter(i => i.status).length ?? 0, [data]);
   const missing = data?.items.filter(i => !rows[i.studentId]?.status).length ?? 0;
   const dirty = !!data && data.items.some(i => {
+    if (i.isDeleted) return false;
     const r = rows[i.studentId];
     return r && (r.status !== i.status || r.note.trim() !== (i.note ?? ""));
   });
 
   function set(studentId: number, patch: Partial<Row>) {
+    if (data?.items.find(item => item.studentId === studentId)?.isDeleted) return;
     setRows(r => ({ ...r, [studentId]: { status: r[studentId]?.status ?? null, note: r[studentId]?.note ?? "", ...patch } }));
   }
   function markAllPresent() {
     if (!data) return;
-    setRows(r => Object.fromEntries(data.items.map(i => [i.studentId, { status: r[i.studentId]?.status ?? "Present", note: r[i.studentId]?.note ?? "" }])));
+    setRows(r => Object.fromEntries(data.items.map(i => [i.studentId, i.isDeleted
+      ? (r[i.studentId] ?? { status: i.status, note: i.note ?? "" })
+      : { status: r[i.studentId]?.status ?? "Present", note: r[i.studentId]?.note ?? "" }])));
   }
 
   async function save() {
     if (!data) return;
     const items = data.items
-      .filter(i => rows[i.studentId]?.status)
+      .filter(i => !i.isDeleted && rows[i.studentId]?.status)
       .map(i => ({ studentId: i.studentId, status: rows[i.studentId].status, note: rows[i.studentId].note.trim() || null }));
     if (items.length === 0) { setNotice({ text: "Chưa chọn trạng thái cho học viên nào.", tone: "error" }); return; }
     setBusy(true);
@@ -132,7 +136,7 @@ function RosterEditor({ classId, date, onSaved }: { classId: number; date: strin
                 <h3 className="t-card-title" style={{ margin: 0 }}>{dayNames[dayNo(data.date)]} {fmtDate(data.date)}</h3>
                 <span className="t-muted t-small">{data.className} · {fmtTime(data.startTime)}–{fmtTime(data.endTime)} · Phòng {data.roomName} · đã lưu {saved}/{data.items.length}</span>
               </div>
-              {data.canEdit && <Button variant="outline" onClick={markAllPresent}>Còn lại: có mặt</Button>}
+              {data.canEdit && data.items.some(i => !i.isDeleted) && <Button variant="outline" onClick={markAllPresent}>Còn lại: có mặt</Button>}
             </div>
             <Notice message={notice.text} tone={notice.tone} onClose={() => setNotice({ text: "", tone: "ok" })} />
             {!data.canEdit && <p className="t-muted t-small">Chưa tới ngày học, chưa điểm danh được.</p>}
@@ -152,7 +156,7 @@ function RosterEditor({ classId, date, onSaved }: { classId: number; date: strin
                           <td>
                             <div className="teacher-attendance-actions">
                               {STATUSES.map(st => (
-                                <button key={st} type="button" disabled={!data.canEdit}
+                                <button key={st} type="button" disabled={!data.canEdit || i.isDeleted}
                                   className={`teacher-attendance-btn ${r.status === st ? `active is-${st}` : ""}`}
                                   onClick={() => set(i.studentId, { status: st })}>
                                   {attendanceLabel[st]}
@@ -161,7 +165,7 @@ function RosterEditor({ classId, date, onSaved }: { classId: number; date: strin
                             </div>
                           </td>
                           <td>
-                            <input className="t-input t-input--sm" maxLength={300} disabled={!data.canEdit} value={r.note}
+                            <input className="t-input t-input--sm" maxLength={300} disabled={!data.canEdit || i.isDeleted} value={r.note}
                               placeholder={r.status === "Late" ? "Muộn bao lâu..." : r.status === "Excused" ? "Lý do..." : ""}
                               onChange={e => set(i.studentId, { note: e.target.value })} />
                           </td>
@@ -172,7 +176,7 @@ function RosterEditor({ classId, date, onSaved }: { classId: number; date: strin
                 </table>
               </div>
             )}
-            {data.canEdit && data.items.length > 0 && (
+            {data.canEdit && data.items.some(i => !i.isDeleted) && (
               <div className="t-row t-row--between" style={{ marginTop: 12 }}>
                 <span className="t-muted t-small">{missing > 0 ? `${missing} học viên chưa chọn trạng thái (sẽ không lưu)` : "Đã chọn đủ"}</span>
                 <Button disabled={busy || !dirty} onClick={save}>{busy ? "Đang lưu..." : "Lưu điểm danh"}</Button>

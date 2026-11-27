@@ -1,5 +1,7 @@
 # API công khai cho khách (SPEC, CHƯA CODE)
 
+> 2026-11-27: Classes no longer store Code or MeetingUrl. Class responses use id/name; references use classId/className. Student/course codes remain separate. Public open_classes use id/name, not code. See CLASS-FIELDS.md.
+
 > **Trạng thái: đề xuất** (plan 40). Không cần token: `[AllowAnonymous]`, nằm ở `Controllers/Public/`.
 > **Không** trả dữ liệu riêng tư: email / SĐT giáo viên, bài nháp, thông tin học viên.
 

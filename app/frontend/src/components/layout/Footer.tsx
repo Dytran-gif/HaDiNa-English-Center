@@ -3,14 +3,15 @@ import {
   siteName,
   siteTagline,
   contactEmail,
-  footerCoursesNav,
   footerPolicyNav,
   primaryNav,
 } from "../../data/siteConfig";
 import "./Footer.css";
 import useCenterSettings from "../../services/useCenterSettings";
+import usePublicCourses from "../../services/usePublicCourses";
 
 export default function Footer() {
+  const { courses } = usePublicCourses();
   const year = new Date().getFullYear();
   const { center, loading, error, reload } = useCenterSettings();
   const name = center?.name ?? siteName;
@@ -47,9 +48,9 @@ export default function Footer() {
         <div className="site-footer__col">
           <h4>Khoá học</h4>
           <ul>
-            {footerCoursesNav.map((link) => (
-              <li key={link.to}>
-                <Link to={link.to}>{link.label}</Link>
+            {courses.map((course) => (
+              <li key={course.course_id}>
+                <Link to={`/khoa-hoc/${course.slug}`}>{course.course_name}</Link>
               </li>
             ))}
           </ul>

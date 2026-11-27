@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
-import { siteName, primaryNav, footerCoursesNav } from "../../data/siteConfig";
+import { siteName, primaryNav } from "../../data/siteConfig";
+import usePublicCourses from "../../services/usePublicCourses";
 import Button from "../ui/Button";
 import usePublicTeachers from "../../services/usePublicTeachers";
 import usePublicPosts from "../../services/usePublicPosts";
@@ -25,8 +26,9 @@ export default function Header() {
   const [mobileSub, setMobileSub] = useState<string | null>(null);   // menu con đang mở trong menu mobile
   const posts = usePublicPosts();
   const { teachers } = usePublicTeachers();
+  const { courses } = usePublicCourses();
   const submenus: Record<string, SubLink[]> = {
-    "/khoa-hoc": footerCoursesNav,
+    "/khoa-hoc": courses.map(course => ({ label: course.course_name, to: `/khoa-hoc/${course.slug}` })),
     "/giao-vien": teachers.map(teacher => ({ label: teacher.full_name, to: `/giao-vien/${teacher.slug}` })),
     "/blog": Array.from(new Set(posts.map(post => post.category))).map(category => ({ label: category, to: `/blog?category=${encodeURIComponent(category)}` })),
   };

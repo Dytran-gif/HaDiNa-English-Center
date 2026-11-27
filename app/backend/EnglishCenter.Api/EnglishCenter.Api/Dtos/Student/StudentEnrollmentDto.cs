@@ -19,7 +19,6 @@ public class StudentEnrollmentItemDto
 
     // Lớp + trạng thái tính theo ngày của lớp (Đang học / Sắp học / Đã học)
     public int ClassId { get; set; }
-    public string ClassCode { get; set; } = "";
     public string ClassName { get; set; } = "";
     public string ClassStatus { get; set; } = "";
     public DateOnly StartDate { get; set; }
@@ -44,7 +43,6 @@ public class StudentEnrollmentItemDto
 public class StudentClassOptionDto
 {
     public int Id { get; set; }
-    public string Code { get; set; } = "";
     public string Name { get; set; } = "";
     public string TeacherName { get; set; } = "";
     public DateOnly StartDate { get; set; }

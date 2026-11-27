@@ -1,3 +1,4 @@
+import { validateCourseForm } from "./courseValidation";
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import Card from "../../../../components/ui/Card";
@@ -8,6 +9,8 @@ import Button from "../Ui/Button";
 import Modal from "../Ui/Modal";
 import RowActions from "../Ui/RowActions";
 import ActionMenu from "../Ui/ActionMenu";
+import TeacherPhoto from "./TeacherPhoto";
+import { notifyTeachersChanged } from "../../../../services/usePublicTeachers";
 import Badge from "../Ui/Badge";
 import ConfirmDialog from "../Ui/ConfirmDialog";
 import EmptyState from "../Ui/EmptyState";
@@ -62,22 +65,23 @@ export default function ResourcePage({ config }: { config: ResourceConfig }) {
   function changeParam(key:string,value:string) { setParams(previous => { const next = new URLSearchParams(previous); if(value)next.set(key,value);else next.delete(key); if(key!=="page")next.set("page","1"); return next; }); }
   function closeEditor() { if(busy)return; setOpen(false); setEditorLoading(false); setParams(previous => { const next = new URLSearchParams(previous); next.delete("edit"); next.delete("action"); return next; },{replace:true}); }
   function edit(row?:AdminRecord) { setEditorLoading(false); setParams(previous => { const next = new URLSearchParams(previous); next.delete("edit"); next.delete("action"); return next; },{replace:true}); setEditing(row?.id ?? null); setForm(makeForm(row)); setFieldErrors({}); setActionError(""); setOpen(true); }
-  function updateField(key:string,value:string) { setForm(previous => ({...previous,[key]:value})); setFieldErrors(previous => {const next={...previous};delete next[key.toLowerCase()];return next;}); }
+  function updateField(key:string,value:string) { setForm(previous => ({...previous,[key]:value})); setFieldErrors(previous => {const next={...previous};delete next[key.toLowerCase()];if(key==="bandFrom"||key==="bandTo"){delete next.bandfrom;delete next.bandto;}return next;}); }
   async function mutate(action:()=>Promise<unknown>,success:string,deleted=false,rethrow=false) {
     if(busy)return false;setBusy(true);setActionError("");setFieldErrors({});
-    try {await action();list.reload();notify({title:success});if(deleted&&rows.length===1&&page>1)changeParam("page",String(page-1));return true;}
+    try {await action();list.reload();if(config.path==="teachers")notifyTeachersChanged();notify({title:success});if(deleted&&rows.length===1&&page>1)changeParam("page",String(page-1));return true;}
     catch(reason){setActionError(errorText(reason));if(reason instanceof ApiError)setFieldErrors(Object.fromEntries(Object.entries(reason.fieldErrors).map(([key,errors])=>[key.split(".").at(-1)!.toLowerCase(),errors.join(" ")])));if(rethrow)throw reason;return false;}
     finally{setBusy(false);}
   }
   async function save(event:FormEvent) {
     event.preventDefault();if(busy||editorLoading)return;
-    if(isCourse){const errors:Record<string,string>={};if(Number(form.bandFrom)>Number(form.bandTo))errors.bandfrom="Band từ phải nhỏ hơn hoặc bằng band đến.";if(Number(form.sessionsPerWeek)>Number(form.totalSessions))errors.sessionsperweek="Số buổi mỗi tuần không được lớn hơn tổng số buổi.";if(Object.keys(errors).length){setFieldErrors(errors);return;}}
+    if(isCourse){const errors=validateCourseForm(form);if(Object.keys(errors).length){setFieldErrors(errors);return;}}
     const body=Object.fromEntries(config.fields.filter(field=>editing===null||!field.createOnly).map(field=>[field.key,field.type==="number"?Number(form[field.key]):field.type==="boolean"?form[field.key]==="true":form[field.key]||null]));
     if(await mutate(()=>api.send(editing===null?"POST":"PUT",config.path+(editing===null?"":`/${editing}`),body),"Đã lưu thay đổi.")) {setOpen(false);setParams(previous=>{const next=new URLSearchParams(previous);next.delete("edit");next.delete("action");return next;},{replace:true});}
   }
   const nameOf=(row:AdminRecord)=>String(row.fullName ?? row.name ?? config.singular);
   function actions(row:AdminRecord){
-    const deleteButton=<Button icon="trash" variant="danger" onClick={()=>setConfirmation({row,action:"delete"})} disabled={busy}>Xóa {config.singular}</Button>;
+    const studentDeleteBlocked=config.path==="students" && !row.isLocked && row.status!=="Dropped";
+    const deleteButton=<Button icon="trash" variant="danger" onClick={()=>setConfirmation({row,action:"delete"})} disabled={busy||studentDeleteBlocked} title={studentDeleteBlocked?"Khóa tài khoản hoặc chuyển sang Nghỉ học để xóa học viên.":undefined}>Xóa {config.singular}</Button>;
     return <RowActions name={nameOf(row)} onEdit={()=>edit(row)} disabled={busy} onDelete={accounts?undefined:()=>setConfirmation({row,action:"delete"})}>{accounts?<ActionMenu label={nameOf(row)}>
       <Button onClick={()=>{setResetRow(row);setPassword("");setActionError("");setFieldErrors({});}} disabled={busy}>Đặt lại mật khẩu</Button>
       <Button onClick={()=>setConfirmation({row,action:"lock"})} disabled={busy}>{row.isLocked?"Mở khóa tài khoản":"Khóa tài khoản"}</Button>
@@ -103,13 +107,15 @@ export default function ResourcePage({ config }: { config: ResourceConfig }) {
         <footer>{actions(row)}</footer>
       </Card>)}
     </div>:<Card><div className="admin-api-table" role="region" aria-label={`Danh sách ${config.title.toLowerCase()}`} tabIndex={0}><table className="admin-table" aria-busy={list.loading}><thead><tr>{config.columns.map(column=><th scope="col" key={column.key}>{column.label}</th>)}<th scope="col">Thao tác</th></tr></thead><tbody>
-      {list.loading?<TableSkeleton columns={config.columns.length+1}/>:rows.map(row=><tr key={row.id}>{config.columns.map(column=><td key={column.key}>{column.key==="fullName"&&accounts?<Link className="admin-management-name" to={`/admin/${config.path}/${row.id}`} state={{returnTo:location.pathname+location.search}}>{display(row[column.key])}</Link>:column.key==="status"?<Badge status={String(row.status)}/>:column.key==="isLocked"?<Badge tone={row.isLocked?"warning":"success"}>{display(row.isLocked)}</Badge>:column.currency?money(row[column.key]):display(row[column.key])}</td>)}<td>{actions(row)}</td></tr>)}
+      {list.loading?<TableSkeleton columns={config.columns.length+1}/>:rows.map(row=><tr key={row.id}>{config.columns.map(column=><td key={column.key}>{column.key==="avatarUrl"?<TeacherPhoto key={row.id} id={row.id} name={nameOf(row)} initialUrl={typeof row.avatarUrl==="string"?row.avatarUrl:null} onChanged={list.reload}/>:column.key==="fullName"&&accounts?<Link className="admin-management-name" to={`/admin/${config.path}/${row.id}`} state={{returnTo:location.pathname+location.search}}>{display(row[column.key])}</Link>:column.key==="status"?<Badge status={String(row.status)}/>:column.key==="isLocked"?<Badge tone={row.isLocked?"warning":"success"}>{display(row.isLocked)}</Badge>:column.currency?money(row[column.key]):display(row[column.key])}</td>)}<td>{actions(row)}</td></tr>)}
     </tbody></table></div></Card>)}
     {!list.loading&&!list.error&&!rows.length&&<EmptyState title={filtered?`Không tìm thấy ${config.singular} phù hợp`:`Chưa có ${config.singular}`} description={filtered?"Thử từ khóa khác hoặc xóa bộ lọc để xem lại danh sách.":`Thêm ${config.singular} đầu tiên để bắt đầu quản lý.`} action={filtered?<Button onClick={()=>setParams({})}>Xóa bộ lọc</Button>:<Button variant="primary" onClick={()=>edit()}>Thêm {config.singular}</Button>}/>}
     {config.paged&&total>pageSize&&<Pager page={page} pageSize={pageSize} total={total} loading={list.loading} onChange={value=>{changeParam("page",String(value));document.getElementById("admin-main-content")?.scrollIntoView({block:"start"});}}/>}
     <Modal open={open} title={`${editing===null?"Thêm":"Sửa"} ${config.singular}`} busy={busy} onClose={closeEditor}>
       {editorLoading?<p role="status">Đang tải hồ sơ để chỉnh sửa…</p>:<form className="admin-api-stack" onSubmit={save}>
         {actionError&&<Notice tone="error">{actionError}</Notice>}
+        {config.path === "teachers" && editing !== null && <TeacherPhoto key={editing} id={editing} name={form.fullName || "Giáo viên"} initialUrl={rows.find(row=>row.id===editing)?.avatarUrl as string | null | undefined} onChanged={list.reload}/>}
+        {config.path === "teachers" && editing === null && <p className="admin-api-muted">Sau khi tạo giáo viên, mở Sửa hồ sơ để tải ảnh đại diện.</p>}
         {config.fields.filter(field=>editing===null||!field.createOnly).map(field=>field.options?<SelectField key={field.key} label={field.label} required={field.required} disabled={busy} error={fieldErrors[field.key.toLowerCase()]} value={form[field.key]??""} onChange={event=>updateField(field.key,event.target.value)} help={field.help} options={field.options.map(value=>({value,label:field.optionLabels?.[value]??display(value)}))}/>:field.type==="textarea"?<TextareaField key={field.key} label={field.label} disabled={busy} error={fieldErrors[field.key.toLowerCase()]} maxLength={field.maxLength} value={form[field.key]??""} onChange={event=>updateField(field.key,event.target.value)}/>:<InputField key={field.key} label={field.label} help={field.help} placeholder={`Nhập ${field.label.toLowerCase()}`} type={field.type??"text"} required={field.required} disabled={busy} error={fieldErrors[field.key.toLowerCase()]} min={field.min} max={field.max} step={field.step} maxLength={field.maxLength} minLength={field.type==="password"?8:undefined} value={form[field.key]??""} onChange={event=>updateField(field.key,event.target.value)}/>)}
         {isCourse&&<><p>Học phí sau giảm: <strong>{money(Number(form.tuition||0)*(1-Number(form.discountPercent||0)/100))}</strong></p>{editing!==null&&<Notice tone="info">Thay đổi học phí và giảm giá chỉ áp dụng cho học viên ghi danh từ bây giờ.</Notice>}</>}
         {editing!==null&&accounts&&<p className="admin-api-muted">Email đăng nhập được giữ nguyên khi sửa hồ sơ.</p>}
@@ -125,6 +131,6 @@ export default function ResourcePage({ config }: { config: ResourceConfig }) {
     <ConfirmDialog open={Boolean(confirmation)} title={confirmation?.action==="delete"?`Xóa ${config.singular}`:confirmation?.row.isLocked?"Mở khóa tài khoản":"Khóa tài khoản"} confirmLabel={confirmation?.action==="delete"?"Xác nhận xóa":confirmation?.row.isLocked?"Mở khóa":"Khóa tài khoản"} danger={confirmation?.action==="delete"||!confirmation?.row.isLocked} onClose={()=>setConfirmation(null)} onConfirm={async()=>{
       if(!confirmation)return;const {row,action}=confirmation;
       await mutate(()=>api.send(action==="delete"?"DELETE":"POST",`${config.path}/${row.id}${action==="delete"?"":`/${row.isLocked?"unlock":"lock"}`}`),action==="delete"?`Đã xóa ${nameOf(row)}.`:"Đã cập nhật trạng thái tài khoản.",action==="delete",true);
-    }}><p>{confirmation?.action==="delete"?"Bạn muốn xóa":"Thay đổi quyền đăng nhập của"} <strong>{confirmation?nameOf(confirmation.row):""}</strong>?</p>{confirmation?.action==="delete"&&<p>Dữ liệu đang được sử dụng sẽ được máy chủ kiểm tra trước khi xóa.</p>}</ConfirmDialog>
+    }}><p>{confirmation?.action==="delete"?"Bạn muốn xóa":"Thay đổi quyền đăng nhập của"} <strong>{confirmation?nameOf(confirmation.row):""}</strong>?</p>{confirmation?.action==="delete"&&<p>{config.path==="students"?"Học viên sẽ được gỡ khỏi danh sách và sĩ số các lớp. Lịch sử học và phiếu thu được giữ lại.":"Dữ liệu đang được sử dụng sẽ được máy chủ kiểm tra trước khi xóa."}</p>}</ConfirmDialog>
   </div>;
 }

@@ -41,7 +41,7 @@ export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWe
         onKeyDown: (e: React.KeyboardEvent) => {
             if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect(item); }
         },
-        "aria-label": `${item.courseName} ${item.classCode ?? ""} ${item.dateStr} ${item.startTime}`,
+        "aria-label": `${item.courseName} ${item.className ?? ""} ${item.dateStr} ${item.startTime}`,
     } : {};
 
     // Ngày hôm nay (yyyy-mm-dd) để đánh dấu trong agenda mobile
@@ -160,7 +160,7 @@ export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWe
                                                     ) : (
                                                         <div className="card-meta">
                                                             <span className="meta-item">
-                                                                <i className="fa-solid fa-hashtag"></i> {item.classCode || item.className}
+                                                                <i className="fa-solid fa-hashtag"></i> {item.className}
                                                             </span>
                                                             {item.teacherName && (
                                                                 <span className="meta-item">
@@ -224,7 +224,7 @@ export default function ScheduleGrid({ weekStart, sessions, onPrevWeek, onNextWe
                                             </p>
 
                                             <div className="agenda-meta">
-                                                <span><i className="fa-solid fa-hashtag"></i> {item.classCode || item.className}</span>
+                                                <span><i className="fa-solid fa-hashtag"></i> {item.className}</span>
                                                 {item.teacherName && (
                                                     <span><i className="fa-solid fa-chalkboard-user"></i> {item.teacherName}</span>
                                                 )}

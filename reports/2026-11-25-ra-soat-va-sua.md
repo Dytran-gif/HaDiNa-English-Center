@@ -1,6 +1,6 @@
 # Rà soát & sửa 25/11/2026 (Duy + Claude)
 
-Danh sách lỗi gốc, phân tích, ảnh demo: xem Docs "Rà soát HaDiNa English Center" (đã gửi nhóm). File này ghi lại **đã làm gì** và **cần kiểm tra gì**.
+Danh sách lỗi gốc, phân tích, ảnh demo: xem Docs "Rà soát HaDI English Center" (đã gửi nhóm). File này ghi lại **đã làm gì** và **cần kiểm tra gì**.
 
 ## Đã làm
 | Vùng | Việc |

@@ -40,7 +40,7 @@ export default function Schedule() {
                 {events.map((e, i) => (
                   <Link key={i} className="t-event" to={d <= today ? `/teacher/attendance?class=${e.classId}&date=${d}` : `/teacher/classes/${e.classId}`}>
                     <strong>{fmtTime(e.startTime)}–{fmtTime(e.endTime)}</strong>
-                    <span><span className="t-code">{e.classCode}</span> {e.className}</span>
+                    <span>{e.className}</span>
                     <span className="t-muted">Phòng {e.roomName}</span>
                     {d <= today && <span className={e.attendanceMarked ? "t-muted" : "t-danger-text"}>{e.attendanceMarked ? "✓ Đã điểm danh" : "Chưa điểm danh"}</span>}
                   </Link>

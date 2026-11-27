@@ -36,7 +36,7 @@ public abstract class StudentControllerBase : ControllerBase, IAsyncActionFilter
         }
 
         var studentId = await Db.Students.AsNoTracking()
-            .Where(s => s.UserId == userId)
+            .Where(s => s.UserId == userId && s.DeletedAt == null)
             .Select(s => (int?)s.Id)
             .FirstOrDefaultAsync();
         if (studentId == null)
@@ -86,7 +86,7 @@ public abstract class StudentControllerBase : ControllerBase, IAsyncActionFilter
     }
     // Ghi danh của mình kèm lớp, lịch tuần và tiền (dùng chung Dashboard / Khóa của tôi / Học phí / Lịch)
     public record MyEnrollment(int EnrollmentId, string Status, DateTime CreatedAt,
-        int ClassId, string ClassCode, string ClassName, DateOnly StartDate, DateOnly EndDate, string? MeetingUrl,
+        int ClassId, string ClassName, DateOnly StartDate, DateOnly EndDate,
         int CourseId, string CourseName, string? Description, decimal BandFrom, decimal BandTo,
         int CourseTotalSessions, int SessionsPerWeek, decimal Tuition, decimal CourseDiscountPercent, string? ImageUrl,
         int TeacherId, string TeacherName, decimal TuitionFee, decimal DiscountPercent, decimal DiscountAmount,
@@ -112,8 +112,8 @@ public abstract class StudentControllerBase : ControllerBase, IAsyncActionFilter
         var rows = await q.OrderBy(e => e.Class.StartDate).ThenBy(e => e.Id)
             .Select(e => new
             {
-                e.Id, e.Status, e.CreatedAt, e.ClassId, ClassCode = e.Class.Code, ClassName = e.Class.Name,
-                e.Class.StartDate, e.Class.EndDate, e.Class.MeetingUrl,
+                e.Id, e.Status, e.CreatedAt, e.ClassId, ClassName = e.Class.Name,
+                e.Class.StartDate, e.Class.EndDate,
                 e.Class.CourseId, CourseName = e.Class.Course.Name, e.Class.Course.Description,
                 e.Class.Course.BandFrom, e.Class.Course.BandTo, CourseTotal = e.Class.Course.TotalSessions,
                 e.Class.Course.SessionsPerWeek, e.Class.Course.Tuition, CourseDiscount = e.Class.Course.DiscountPercent,
@@ -124,8 +124,8 @@ public abstract class StudentControllerBase : ControllerBase, IAsyncActionFilter
                     .Select(s => new { s.DayOfWeek, s.StartTime, s.EndTime, RoomName = s.Room.Name }).ToList()
             })
             .ToListAsync();
-        return rows.Select(r => new MyEnrollment(r.Id, r.Status, r.CreatedAt, r.ClassId, r.ClassCode, r.ClassName,
-            r.StartDate, r.EndDate, r.MeetingUrl, r.CourseId, r.CourseName, r.Description, r.BandFrom, r.BandTo,
+        return rows.Select(r => new MyEnrollment(r.Id, r.Status, r.CreatedAt, r.ClassId, r.ClassName,
+            r.StartDate, r.EndDate, r.CourseId, r.CourseName, r.Description, r.BandFrom, r.BandTo,
             r.CourseTotal, r.SessionsPerWeek, r.Tuition, r.CourseDiscount, r.ImageUrl, r.TeacherId, r.TeacherName,
             r.TuitionFee, r.DiscountPercent, r.DiscountAmount, r.ExtraDiscountAmount, r.DiscountNote, r.FinalTuitionFee,
             r.Payments, r.Slots.Select(s => (new ClassCalendar.Slot(s.DayOfWeek, s.StartTime, s.EndTime), s.RoomName)).ToList()))

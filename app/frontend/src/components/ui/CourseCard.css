@@ -60,3 +60,8 @@
 .course-card__cta {
   align-self: flex-start;
 }
+
+.course-card__image { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--radius-lg); }
+.course-card__meta { flex-wrap: wrap; }
+.course-card__meta del { display: block; color: var(--muted); font-size: 0.85em; font-weight: 400; }
+.course-card__desc { white-space: pre-line; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }

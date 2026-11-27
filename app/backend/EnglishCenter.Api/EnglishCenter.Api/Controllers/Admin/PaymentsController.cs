@@ -101,7 +101,7 @@ public class PaymentsController(AppDbContext db, PaymentService payments) : Cont
             return BadRequest(new { message = "Ngày bắt đầu phải trước hoặc bằng ngày kết thúc" });
 
         var query = _db.Payments.AsNoTracking().WhereContains(search,
-            p => p.Enrollment.Student.FullName, p => p.Enrollment.Student.Code, p => p.Enrollment.Class.Code,
+            p => p.Enrollment.Student.FullName, p => p.Enrollment.Student.Code, p => p.Enrollment.Class.Name,
             p => p.ReceiptNo ?? "", p => p.TransferRef ?? "");
         if (!string.IsNullOrWhiteSpace(status)) query = query.Where(p => p.Status == status);
         if (!string.IsNullOrWhiteSpace(kind)) query = query.Where(p => p.Kind == kind);
@@ -152,7 +152,7 @@ public class PaymentsController(AppDbContext db, PaymentService payments) : Cont
         page = Math.Max(1, page);
         pageSize = pageSize < 1 ? 10 : Math.Min(100, pageSize);
         var query = _db.Enrollments.AsNoTracking().Where(e => e.Status != "Dropped")
-            .WhereContains(search, e => e.Student.FullName, e => e.Student.Code, e => e.Class.Code);
+            .WhereContains(search, e => e.Student.FullName, e => e.Student.Code, e => e.Class.Name);
         var all = await AdminPaymentQueries.Receivables(query
             .OrderBy(e => e.Class.StartDate).ThenBy(e => e.Student.FullName)).ToListAsync();
         foreach (var r in all)

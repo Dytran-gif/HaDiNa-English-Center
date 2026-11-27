@@ -17,7 +17,7 @@ public class TeacherStudentsController : TeacherControllerBase
     [HttpGet("students")]
     public async Task<IActionResult> List(int? classId, string? q)
     {
-        var enr = Db.Enrollments.AsNoTracking().Where(e => e.Class.TeacherId == TeacherId);
+        var enr = Db.Enrollments.AsNoTracking().Where(e => e.Class.TeacherId == TeacherId && e.Student.DeletedAt == null);
         if (classId != null) enr = enr.Where(e => e.ClassId == classId);
         if (!string.IsNullOrWhiteSpace(q))
         {
@@ -54,7 +54,7 @@ public class TeacherStudentsController : TeacherControllerBase
     [HttpGet("students/{id:int}")]
     public async Task<IActionResult> Detail(int id)
     {
-        if (!await Db.Enrollments.AnyAsync(e => e.StudentId == id && e.Class.TeacherId == TeacherId))
+        if (!await Db.Enrollments.AnyAsync(e => e.StudentId == id && e.Class.TeacherId == TeacherId && e.Student.DeletedAt == null))
             return Error(404, "Không tìm thấy học viên trong các lớp bạn dạy");
 
         var s = await Db.Students.AsNoTracking().Where(x => x.Id == id)

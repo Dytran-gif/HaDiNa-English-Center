@@ -26,6 +26,7 @@ public partial class AppDbContext : DbContext
     {
         ConfigurePublic(b);
         ConfigureConsultations(b);
+        ConfigureCourseRegistrations(b);
         ConfigureReviews(b);
         // ---------- Users ----------
         b.Entity<User>(e =>
@@ -49,6 +50,7 @@ public partial class AppDbContext : DbContext
             e.Property(x => x.Phone).HasMaxLength(20).IsRequired();
             e.Property(x => x.Specialty).HasMaxLength(100).IsRequired();
             e.Property(x => x.Degree).HasMaxLength(200);
+            e.Property(x => x.TeachingExperience).HasMaxLength(1000);
             e.Property(x => x.Status).HasMaxLength(20).IsRequired();
 
             e.HasOne(x => x.User).WithOne(u => u.Teacher)
@@ -98,7 +100,7 @@ public partial class AppDbContext : DbContext
 
             e.ToTable(t =>
             {
-                t.HasCheckConstraint("CK_Courses_Band", "[BandFrom] >= 0 AND [BandTo] <= 9 AND [BandFrom] <= [BandTo]");
+                t.HasCheckConstraint("CK_Courses_Band", "[BandFrom] >= 0 AND [BandTo] <= 9 AND [BandFrom] < [BandTo] AND [BandFrom] % 0.5 = 0 AND [BandTo] % 0.5 = 0");
                 t.HasCheckConstraint("CK_Courses_Sessions", "[TotalSessions] > 0 AND [SessionsPerWeek] BETWEEN 1 AND 7 AND [SessionsPerWeek] <= [TotalSessions]");
                 t.HasCheckConstraint("CK_Courses_Tuition", "[Tuition] >= 0");
                 t.HasCheckConstraint("CK_Courses_Discount", "[DiscountPercent] BETWEEN 0 AND 50");
@@ -117,10 +119,7 @@ public partial class AppDbContext : DbContext
         b.Entity<CourseClass>(e =>
         {
             e.ToTable("Classes");
-            e.Property(x => x.Code).HasMaxLength(20).IsRequired();
-            e.HasIndex(x => x.Code).IsUnique();
             e.Property(x => x.Name).HasMaxLength(150).IsRequired();
-            e.Property(x => x.MeetingUrl).HasMaxLength(500);
 
             e.HasOne(x => x.Course).WithMany(c => c.Classes)
                 .HasForeignKey(x => x.CourseId)

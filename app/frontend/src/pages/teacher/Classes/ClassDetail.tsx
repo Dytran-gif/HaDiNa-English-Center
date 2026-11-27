@@ -24,7 +24,7 @@ export default function ClassDetail() {
           <>
             <Card>
               <div className="t-row t-row--between">
-                <h2 style={{ margin: 0 }}><span className="t-code" style={{ verticalAlign: "middle" }}>{c.code}</span> {c.name}</h2>
+                <h2 style={{ margin: 0 }}>{c.name}</h2>
                 <StatusTag status={c.status} labels={classStatusLabel} />
               </div>
               <dl className="t-kv" style={{ marginTop: 12 }}>
@@ -35,7 +35,6 @@ export default function ClassDetail() {
                 <dd>{c.schedules.length === 0 ? "Chưa xếp lịch" : c.schedules.map((s, i) => (
                   <div key={i}>{dayNames[s.dayOfWeek]} {fmtTime(s.startTime)}–{fmtTime(s.endTime)} · Phòng {s.roomName}</div>
                 ))}</dd>
-                {c.meetingUrl && <><dt>Học online</dt><dd><a className="t-link" href={c.meetingUrl} target="_blank" rel="noreferrer">{c.meetingUrl}</a></dd></>}
               </dl>
               <div className="t-row" style={{ marginTop: 12 }}>
                 <Link className="t-link t-small" to={`/teacher/attendance?class=${c.id}`}>Điểm danh</Link>

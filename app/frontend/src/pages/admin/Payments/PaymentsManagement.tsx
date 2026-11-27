@@ -65,7 +65,7 @@ function PaymentForm({ studentId, busy, onBusyChange, saved }: { studentId: numb
       <fieldset className="admin-api-fieldset admin-api-stack" disabled={busy || student.loading || Boolean(student.error)}>
         <SelectField label="Ghi danh còn nợ" required value={enrollmentId}
           onChange={event => { setEnrollmentId(event.target.value); setAmount(""); setConfirmed(false); }}
-          options={[{ value: "", label: "Chọn lớp" }, ...eligible.map(item => ({ value: String(item.id), label: `${item.classCode} · ${item.courseName} · còn ${money(item.remainingAmount)}` }))]} />
+          options={[{ value: "", label: "Chọn lớp" }, ...eligible.map(item => ({ value: String(item.id), label: `${item.className} · ${item.courseName} · còn ${money(item.remainingAmount)}` }))]} />
         {student.data && !eligible.length && <Notice tone="info">Học viên không còn khoản nợ nào.</Notice>}
         {selected && (
           <div className="admin-api-schedule">
@@ -130,7 +130,7 @@ function Receipt({ id, close }: { id: number; close: () => void }) {
           {p.status !== "Confirmed" && <Notice tone="warning">Phiếu {statusLabel[p.status].toLowerCase()}{p.cancelReason ? `: ${p.cancelReason}` : ""}</Notice>}
           <dl className="admin-management-fields">
             <div><dt>Học viên</dt><dd>{p.studentCode} · {p.studentName}</dd></div>
-            <div><dt>Lớp / Khóa</dt><dd>{p.classCode} · {p.courseName}</dd></div>
+            <div><dt>Lớp / Khóa</dt><dd>{p.className} · {p.courseName}</dd></div>
             <div><dt>Học phí phải đóng</dt><dd>{money(p.finalTuitionFee)}</dd></div>
             <div><dt>{p.kind === "Refund" ? "Số tiền hoàn" : "Số tiền thu"}</dt><dd><strong>{money(p.amount)}</strong></dd></div>
             <div><dt>Ngày / Hình thức</dt><dd>{display(p.paidDate)} · {p.method === "Transfer" ? "Chuyển khoản" : "Tiền mặt"}{p.transferRef ? ` · ${p.transferRef}` : ""}</dd></div>
@@ -182,7 +182,7 @@ function RefundDialog({ row, onClose, saved }: { row: ReceivableResponse; onClos
     finally { setBusy(false); }
   }
   return (
-    <Modal open busy={busy} title={`Hoàn tiền · ${row.studentCode} · ${row.classCode}`} onClose={onClose}
+    <Modal open busy={busy} title={`Hoàn tiền · ${row.studentCode} · ${row.className}`} onClose={onClose}
       footer={<><Button disabled={busy} onClick={onClose}>Hủy</Button><Button variant="primary" loading={busy} onClick={submit}>Lập phiếu hoàn</Button></>}>
       <div className="admin-api-stack">
         {error && <Notice tone="error">{error}</Notice>}
@@ -291,7 +291,7 @@ export default function PaymentsManagement() {
                 <tbody>{receivables.loading ? <TableSkeleton columns={6} /> : (receivables.data?.items ?? []).map(r => (
                   <tr key={r.enrollmentId}>
                     <td><strong>{r.studentName}</strong><span className="admin-management-subtitle">{r.studentCode} · {r.studentPhone}</span></td>
-                    <td><span className="admin-code">{r.classCode}</span><span className="admin-management-subtitle">{r.courseName}</span></td>
+                    <td><span className="admin-code">{r.className}</span><span className="admin-management-subtitle">{r.courseName}</span></td>
                     <td>{money(r.finalTuitionFee)}</td>
                     <td>{money(r.paidAmount - r.refundedAmount)}{r.pendingAmount > 0 && <span className="admin-management-subtitle">+ {money(r.pendingAmount)} chờ xác nhận</span>}</td>
                     <td><strong>{money(r.remainingAmount)}</strong><span className="admin-management-subtitle"><Badge tone={payTone[r.paymentStatus]}>{payLabel[r.paymentStatus]}</Badge></span></td>
@@ -309,7 +309,7 @@ export default function PaymentsManagement() {
                   <tr key={p.id}>
                     <td>{p.receiptNo ?? <span className="admin-api-muted">—</span>}{p.requestedByStudent && <span className="admin-management-subtitle">Học viên báo CK</span>}</td>
                     <td><strong>{p.studentName}</strong><span className="admin-management-subtitle">{p.studentCode}</span></td>
-                    <td><span className="admin-code">{p.classCode}</span><span className="admin-management-subtitle">{p.courseName}</span></td>
+                    <td><span className="admin-code">{p.className}</span><span className="admin-management-subtitle">{p.courseName}</span></td>
                     <td><strong>{p.kind === "Refund" ? "−" : ""}{money(p.amount)}</strong><span className="admin-management-subtitle">{p.kind === "Refund" ? "Hoàn tiền" : `/ phải thu ${money(p.finalTuitionFee)}`}</span></td>
                     <td>{display(p.paidDate)}<span className="admin-management-subtitle">{p.method === "Transfer" ? "Chuyển khoản" : "Tiền mặt"}{p.transferRef ? ` · ${p.transferRef}` : ""}</span></td>
                     <td><Badge tone={statusTone[p.status]}>{statusLabel[p.status]}</Badge>{p.cancelReason && <span className="admin-management-subtitle">{p.cancelReason}</span>}</td>

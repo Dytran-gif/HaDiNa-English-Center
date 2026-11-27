@@ -1,4 +1,7 @@
 /* Trang Courses: hero + 3 tab (My Courses / Browse Courses / Course History) */
+.course-registration-pending { padding: 24px; margin-bottom: 24px; border: 1px solid var(--line); border-radius: 16px; background: var(--paper); }
+.course-registration-pending__row { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; padding-block: 16px; border-bottom: 1px solid var(--line); }
+.course-registration-pending__row:last-child { border-bottom: 0; }
 
 .course-hero {
     background-color: #ffffff;

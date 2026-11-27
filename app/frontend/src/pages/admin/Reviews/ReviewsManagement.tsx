@@ -19,7 +19,7 @@ import "../Components/Api/AdminApi.css";
 // Duyệt đánh giá GV: học viên gửi -> chờ duyệt -> admin bật hiển thị thì mới lên trang public (tên rút gọn + lớp).
 interface ReviewItem {
   id: number; rating: number; comment: string; isPublished: boolean; createdAt: string;
-  studentId: number; studentCode: string; studentName: string; classId: number; classCode: string; courseName: string;
+  studentId: number; studentCode: string; studentName: string; classId: number; className: string; courseName: string;
   teacherId: number; teacherName: string;
 }
 
@@ -55,7 +55,7 @@ export default function ReviewsManagement() {
               <tbody>{list.loading ? <TableSkeleton columns={5} /> : (list.data?.items ?? []).map(r => (
                 <tr key={r.id}>
                   <td><Link className="admin-management-name" to={`/admin/students/${r.studentId}`}>{r.studentName}</Link>
-                    <span className="admin-management-subtitle"><span className="admin-code">{r.classCode}</span> {r.courseName}</span></td>
+                    <span className="admin-management-subtitle"><span className="admin-code">{r.className}</span> {r.courseName}</span></td>
                   <td><Link className="admin-management-name" to={`/admin/teachers/${r.teacherId}`}>{r.teacherName}</Link></td>
                   <td><span aria-label={`${r.rating} trên 5 sao`} style={{ color: "#d99a00", letterSpacing: 1 }}>{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span>
                     <span className="admin-management-subtitle" style={{ whiteSpace: "normal", maxWidth: 420 }}>{r.comment}</span>

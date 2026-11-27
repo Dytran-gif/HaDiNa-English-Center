@@ -8,7 +8,6 @@ public class PaymentResponse
     public string StudentCode { get; set; } = "";
     public string StudentName { get; set; } = "";
     public int ClassId { get; set; }
-    public string ClassCode { get; set; } = "";
     public string ClassName { get; set; } = "";
     public string CourseName { get; set; } = "";
     public decimal TuitionFee { get; set; }
@@ -38,7 +37,7 @@ public class ReceivableResponse
     public string StudentName { get; set; } = "";
     public string StudentPhone { get; set; } = "";
     public int ClassId { get; set; }
-    public string ClassCode { get; set; } = "";
+    public string ClassName { get; set; } = "";
     public string CourseName { get; set; } = "";
     public string EnrollmentStatus { get; set; } = "";
     public DateOnly ClassStartDate { get; set; }

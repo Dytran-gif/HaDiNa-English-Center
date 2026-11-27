@@ -47,7 +47,7 @@ function ClassCard({ c }: { c: TeacherClass }) {
   return (
     <Card>
       <div className="t-row t-row--between" style={{ marginBottom: 8 }}>
-        <span className="t-row" style={{ gap: 6 }}><span className="t-code">{c.code}</span><StatusTag status={c.status} labels={classStatusLabel} /></span>
+        <span className="t-row" style={{ gap: 6 }}><StatusTag status={c.status} labels={classStatusLabel} /></span>
         <span className="t-muted">{c.enrolledCount}/{c.maxStudents} học viên</span>
       </div>
       <h3 style={{ margin: "0 0 4px" }}><Link className="t-link" to={`/teacher/classes/${c.id}`}>{c.name}</Link></h3>
@@ -61,7 +61,6 @@ function ClassCard({ c }: { c: TeacherClass }) {
         <Link className="t-link t-small" to={`/teacher/classes/${c.id}`}>Chi tiết lớp</Link>
         <Link className="t-link t-small" to={`/teacher/attendance?class=${c.id}`}>Điểm danh</Link>
         <Link className="t-link t-small" to={`/teacher/assignments?class=${c.id}`}>Bài tập</Link>
-        {c.meetingUrl && <a className="t-link t-small" href={c.meetingUrl} target="_blank" rel="noreferrer">Link học online</a>}
       </div>
     </Card>
   );

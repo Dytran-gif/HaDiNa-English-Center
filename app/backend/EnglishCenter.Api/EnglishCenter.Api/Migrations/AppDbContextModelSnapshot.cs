@@ -329,7 +329,7 @@ namespace EnglishCenter.Api.Migrations
 
                     b.ToTable("Courses", t =>
                         {
-                            t.HasCheckConstraint("CK_Courses_Band", "[BandFrom] >= 0 AND [BandTo] <= 9 AND [BandFrom] <= [BandTo]");
+                            t.HasCheckConstraint("CK_Courses_Band", "[BandFrom] >= 0 AND [BandTo] <= 9 AND [BandFrom] < [BandTo] AND [BandFrom] % 0.5 = 0 AND [BandTo] % 0.5 = 0");
 
                             t.HasCheckConstraint("CK_Courses_Discount", "[DiscountPercent] BETWEEN 0 AND 50");
 
@@ -347,11 +347,6 @@ namespace EnglishCenter.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
                     b.Property<int>("CourseId")
                         .HasColumnType("int");
 
@@ -360,10 +355,6 @@ namespace EnglishCenter.Api.Migrations
 
                     b.Property<int>("MaxStudents")
                         .HasColumnType("int");
-
-                    b.Property<string>("MeetingUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -378,9 +369,6 @@ namespace EnglishCenter.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Code")
-                        .IsUnique();
-
                     b.HasIndex("CourseId");
 
                     b.HasIndex("TeacherId");
@@ -390,6 +378,52 @@ namespace EnglishCenter.Api.Migrations
                             t.HasCheckConstraint("CK_Classes_Dates", "[StartDate] <= [EndDate]");
 
                             t.HasCheckConstraint("CK_Classes_MaxStudents", "[MaxStudents] > 0");
+                        });
+                });
+
+            modelBuilder.Entity("EnglishCenter.Api.Entities.CourseRegistration", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("AssignedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ClassId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CourseId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClassId");
+
+                    b.HasIndex("CourseId");
+
+                    b.HasIndex("Status", "CreatedAt");
+
+                    b.HasIndex("StudentId", "CourseId")
+                        .IsUnique()
+                        .HasFilter("[Status] = N'Pending'");
+
+                    b.ToTable("CourseRegistrations", t =>
+                        {
+                            t.HasCheckConstraint("CK_CourseRegistrations_Status", "[Status] IN ('Pending','Assigned','Cancelled')");
                         });
                 });
 
@@ -717,6 +751,9 @@ namespace EnglishCenter.Api.Migrations
                     b.Property<DateOnly?>("DateOfBirth")
                         .HasColumnType("date");
 
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasMaxLength(150)
@@ -829,6 +866,10 @@ namespace EnglishCenter.Api.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("TeachingExperience")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -1032,6 +1073,32 @@ namespace EnglishCenter.Api.Migrations
                     b.Navigation("Course");
 
                     b.Navigation("Teacher");
+                });
+
+            modelBuilder.Entity("EnglishCenter.Api.Entities.CourseRegistration", b =>
+                {
+                    b.HasOne("EnglishCenter.Api.Entities.CourseClass", "Class")
+                        .WithMany()
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("EnglishCenter.Api.Entities.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EnglishCenter.Api.Entities.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Class");
+
+                    b.Navigation("Course");
+
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("EnglishCenter.Api.Entities.Enrollment", b =>

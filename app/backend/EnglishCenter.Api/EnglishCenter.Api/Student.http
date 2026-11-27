@@ -110,7 +110,7 @@ Content-Type: multipart/form-data; boundary=--HTTPBoundary
 Content-Disposition: form-data; name="file"; filename="avatar.jpg"
 Content-Type: image/jpeg
 
-< D:/Capstone/HaDiNa-English-Center/app/frontend/src/assets/images/next-lesson-mock.jpg
+< ../../../frontend/src/assets/images/next-lesson-mock.jpg
 ----HTTPBoundary--
 
 ### Chi tiết khóa học (popup Present Lessons): thông tin khóa + GV + lớp + lịch học
@@ -136,7 +136,7 @@ Content-Type: multipart/form-data; boundary=--HTTPBoundary
 Content-Disposition: form-data; name="file"; filename="bai-lam.pdf"
 Content-Type: application/pdf
 
-< D:/Capstone/HaDiNa-English-Center/app/frontend/src/assets/images/next-lesson-mock.jpg
+< ../../../frontend/src/assets/images/next-lesson-mock.jpg
 ----HTTPBoundary--
 
 ### Tải bài nộp mới nhất của chính mình cho bài tập này

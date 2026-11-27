@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import PageShell from "../components/layout/PageShell";
 import Button from "../components/ui/Button";
@@ -10,6 +10,9 @@ import { siteName } from "../data/siteConfig";
 import "./Auth.css";
 
 export default function Login() {
+  const [params] = useSearchParams();
+  const chosenCourse = Number(params.get("course"));
+  const validCourse = Number.isSafeInteger(chosenCourse) && chosenCourse > 0;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -31,7 +34,7 @@ export default function Login() {
     setBusy(true); setError("");
     try {
       const user = await loginApi(email, password);
-      navigate(`/${user.role}`);
+      navigate(user.role === "student" && validCourse ? `/student/courses?tab=browse&course=${chosenCourse}` : `/${user.role}`);
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Không đăng nhập được."); }
     finally { setBusy(false); }
   }
@@ -68,7 +71,7 @@ export default function Login() {
           </form>
 
           <p className="auth-switch">
-            Chưa có tài khoản? <Button to="/dang-ky" variant="ghost">Đăng ký</Button>
+            Chưa có tài khoản? <Button to={validCourse ? `/dang-ky?course=${chosenCourse}` : "/dang-ky"} variant="ghost">Đăng ký</Button>
           </p>
         </Card>
       </div>

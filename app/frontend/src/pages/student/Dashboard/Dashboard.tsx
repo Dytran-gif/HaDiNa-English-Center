@@ -47,7 +47,7 @@ export default function StudentDashboard() {
                 <PresentLessonFE
                     lesson={nextLesson ? {
                         courseName: nextLesson.courseName,
-                        classCode: nextLesson.classCode,
+                        className: nextLesson.className,
                         bandFrom: nextLesson.bandFrom,
                         bandTo: nextLesson.bandTo,
                         description: nextLesson.description,
@@ -86,7 +86,6 @@ export default function StudentDashboard() {
                 <SessionDetail
                     session={{
                         courseName: nextLesson.courseName,
-                        classCode: nextLesson.classCode,
                         className: nextLesson.className,
                         dateStr: nextLesson.nextDate,
                         startTime: nextLesson.startTime,
@@ -95,7 +94,6 @@ export default function StudentDashboard() {
                         totalSessions: nextLesson.classTotalSessions,
                         teacherName: nextLesson.teacherName,
                         roomName: nextLesson.roomName,
-                        meetingUrl: nextLesson.meetingUrl,
                     }}
                     onClose={() => setOpenLesson(false)}
                 />

@@ -6,11 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EnglishCenter.Api.Controllers.Public;
 
-// Khóa học thật trong DB (Admin quản lý) + các lớp đang mở. Trang Khóa học public giữ nội dung giới thiệu,
-// phần "Lớp đang mở" lấy từ đây theo slug (Admin đặt slug khóa trùng đường dẫn trang giới thiệu).
+// Published Admin-managed courses and open classes. Public pages resolve database slugs directly.
 [ApiController]
 [AllowAnonymous]
 [Route("api/public/courses")]
+[ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public class CoursesController(AppDbContext db) : ControllerBase
 {
     private async Task<List<object>> BuildAsync(IQueryable<EnglishCenter.Api.Entities.Course> query, CancellationToken ct)
@@ -24,8 +24,9 @@ public class CoursesController(AppDbContext db) : ControllerBase
                 Classes = c.Classes.Where(x => x.EndDate >= today).OrderBy(x => x.StartDate)
                     .Select(x => new
                     {
-                        x.Code, x.Name, x.StartDate, x.EndDate, x.MaxStudents, TeacherName = x.Teacher.FullName,
-                        TeacherSlug = db.PublicTeacherProfiles.Where(p => p.TeacherId == x.TeacherId && p.IsPublished)
+                        x.Id, x.Name, x.StartDate, x.EndDate, x.MaxStudents, TeacherName = x.Teacher.FullName,
+                        TeacherSlug = db.PublicTeacherProfiles.Where(p => p.TeacherId == x.TeacherId && p.IsPublished
+                                && x.Teacher.Status == "Teaching" && !x.Teacher.User.IsLocked)
                             .Select(p => p.Slug).FirstOrDefault(),
                         Enrolled = x.Enrollments.Count(e => e.Status == "Active"),
                         Slots = x.Schedules.OrderBy(s => s.DayOfWeek).ThenBy(s => s.StartTime)
@@ -43,7 +44,7 @@ public class CoursesController(AppDbContext db) : ControllerBase
             image = c.ImageUrl,
             open_classes = c.Classes.Select(x => new
             {
-                code = x.Code, name = x.Name, start_date = x.StartDate, end_date = x.EndDate,
+                id = x.Id, name = x.Name, start_date = x.StartDate, end_date = x.EndDate,
                 status = ClassCalendar.Status(x.StartDate, x.EndDate, today),
                 teacher_name = x.TeacherName, teacher_slug = x.TeacherSlug,
                 seats_left = Math.Max(0, x.MaxStudents - x.Enrolled),

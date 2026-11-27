@@ -42,7 +42,7 @@ export default function Assignments() {
         <select className="t-input" value={classFilter} aria-label="Lớp"
           onChange={e => setParams(e.target.value ? { class: e.target.value } : {})}>
           <option value="">Tất cả lớp của tôi</option>
-          {classes?.map(c => <option key={c.id} value={c.id}>{c.code} · {c.courseName}{c.status === "Finished" ? " (đã kết thúc)" : ""}</option>)}
+          {classes?.map(c => <option key={c.id} value={c.id}>{c.name} · {c.courseName}{c.status === "Finished" ? " (đã kết thúc)" : ""}</option>)}
         </select>
         <Button onClick={() => setShowForm(v => !v)}>{showForm ? "Đóng" : "+ Giao bài tập"}</Button>
       </div>
@@ -61,7 +61,7 @@ export default function Assignments() {
                 {data.map(a => (
                   <tr key={a.id}>
                     <td className="t-wrap"><strong>{a.title}</strong>{a.description && <div className="t-muted t-small t-pre">{a.description}</div>}</td>
-                    <td>{a.classCode ? <span className="t-code">{a.classCode}</span> : <span className="t-muted t-small">Mọi lớp của tôi</span>}
+                    <td>{a.className ? <span className="t-code">{a.className}</span> : <span className="t-muted t-small">Mọi lớp của tôi</span>}
                       <div className="t-muted t-small">{a.courseName ?? "—"}</div></td>
                     <td>{a.hasFile
                       ? <button type="button" className="teacher-action-link" onClick={() => download(`assignments/${a.id}/download`, a.fileName)}>{a.fileName}</button>
@@ -132,13 +132,13 @@ function CreateForm({ classes, defaultClass, onDone }: {
         <div className="t-form">
           <label className="t-label">Lớp nhận bài
             <select className="t-input" value={classId} onChange={e => setClassId(e.target.value)}>
-              {classes.map(c => <option key={c.id} value={c.id}>{c.code} · {c.name} ({c.courseName})</option>)}
+              {classes.map(c => <option key={c.id} value={c.id}>{c.name} ({c.courseName})</option>)}
             </select>
           </label>
           {sameCourse.length > 1 && (
             <label className="t-row t-small" style={{ gap: 8 }}>
               <input type="checkbox" checked={allClasses} onChange={e => setAllClasses(e.target.checked)} />
-              Giao cho mọi lớp của tôi trong khóa {chosen?.courseName} ({sameCourse.map(c => c.code).join(", ")})
+              Giao cho mọi lớp của tôi trong khóa {chosen?.courseName} ({sameCourse.map(c => c.name).join(", ")})
             </label>
           )}
           <label className="t-label">Tiêu đề

@@ -33,6 +33,7 @@ import RoomsManagement from "./pages/admin/Rooms/RoomsManagement";
 import TeachersManagement from "./pages/admin/Teachers/TeachersManagement";
 import StudentsManagement from "./pages/admin/Students/StudentsManagement";
 import ClassesManagement from "./pages/admin/Classes/ClassesManagement";
+import CourseRegistrations from "./pages/admin/CourseRegistrations/CourseRegistrations";
 import ClassProfile from "./pages/admin/Classes/ClassProfile";
 import AdminProfile from "./pages/admin/Profile/Profile";
 import Settings from "./pages/admin/Settings/Settings";
@@ -105,6 +106,7 @@ export default function AppRoutes() {
                 <Route path="students" element={<StudentsManagement />} />
                 <Route path="students/:id" element={<AccountProfile kind="students" />} />
                 <Route path="classes" element={<ClassesManagement />} />
+                <Route path="course-registrations" element={<CourseRegistrations />} />
                 <Route path="classes/:id" element={<ClassProfile />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="profile" element={<AdminProfile />} />

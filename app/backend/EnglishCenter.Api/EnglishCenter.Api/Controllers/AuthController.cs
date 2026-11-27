@@ -27,13 +27,13 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Login(LoginRequest req)
     {
         var email = req.Email.Trim();
-        var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == email);
+        var user = await _db.Users.Include(u => u.Student).FirstOrDefaultAsync(u => u.Email == email);
 
         // Cùng một thông báo cho "sai email" và "sai mật khẩu" để không lộ email nào tồn tại
         if (user == null || !BCrypt.Net.BCrypt.Verify(req.Password, user.PasswordHash))
             return Unauthorized(new { message = "Email hoặc mật khẩu không đúng" });
 
-        if (user.IsLocked)
+        if (user.IsLocked || user.Student?.DeletedAt != null)
             return StatusCode(403, new { message = "Tài khoản đã bị khóa" });
 
         return Ok(new LoginResponse

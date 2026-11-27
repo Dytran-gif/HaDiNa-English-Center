@@ -76,7 +76,6 @@ public static class DbSeeder
         {
             Course = course,
             Teacher = teacher,
-            Code = "IE65-2611-A",
             Name = "IELTS 6.5 - Lớp tối 2-4-6",
             StartDate = new DateOnly(2026, 11, 2),
             EndDate = new DateOnly(2026, 12, 30),

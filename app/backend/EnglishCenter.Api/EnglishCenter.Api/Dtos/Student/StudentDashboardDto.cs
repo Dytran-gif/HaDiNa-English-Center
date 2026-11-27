@@ -43,11 +43,9 @@ public class NextLessonInfoDto
 
     // Chi tiết buổi để FE mở popup buổi học
     public int? ClassId { get; set; }
-    public string? ClassCode { get; set; }
     public string? ClassName { get; set; }
     public string? TeacherName { get; set; }
     public string? RoomName { get; set; }
-    public string? MeetingUrl { get; set; }
     public int SessionNo { get; set; }
     public int ClassTotalSessions { get; set; }
 }
@@ -81,12 +79,10 @@ public class CourseItemDto
 
     // Lớp của học viên trong khóa (dashboard / khóa đã đăng ký). Trang danh sách khóa thì null.
     public int? ClassId { get; set; }
-    public string? ClassCode { get; set; }
     public string? ClassName { get; set; }
     public string? ClassStatus { get; set; }       // Upcoming | Ongoing | Finished
     public DateOnly? StartDate { get; set; }
     public DateOnly? EndDate { get; set; }
-    public string? MeetingUrl { get; set; }
     public int SessionsDone { get; set; }
     public int ClassTotalSessions { get; set; }
 }

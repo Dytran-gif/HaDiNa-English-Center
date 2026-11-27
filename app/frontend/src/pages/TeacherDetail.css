@@ -119,3 +119,8 @@
 .teacher-detail__reviews .testimonial-card {
   width: auto;
 }
+.page-shell .teacher-detail__qualifications { display: grid; gap: 24px; margin: 8px 0 0; }
+.page-shell .teacher-detail__qualifications > div { padding-bottom: 24px; border-bottom: 1px solid var(--line); }
+.page-shell .teacher-detail__qualifications > div:last-child { border-bottom: 0; }
+.page-shell .teacher-detail__qualifications dt { margin-bottom: 8px; font-size: 1.125rem; font-weight: 700; color: var(--blue-dark); }
+.page-shell .teacher-detail__qualifications dd { margin: 0; line-height: 1.8; white-space: pre-line; overflow-wrap: anywhere; color: var(--muted); }

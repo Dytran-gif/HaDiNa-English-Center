@@ -34,11 +34,11 @@ public class TeacherAssignmentsController : TeacherControllerBase
         var today = AppTime.Today;
         var rows = await MyClasses.AsNoTracking()
             .OrderByDescending(c => c.EndDate >= today).ThenBy(c => c.StartDate)
-            .Select(c => new { c.Id, c.Code, c.Name, c.CourseId, CourseName = c.Course.Name, c.StartDate, c.EndDate })
+            .Select(c => new { c.Id, c.Name, c.CourseId, CourseName = c.Course.Name, c.StartDate, c.EndDate })
             .ToListAsync();
         return Ok(rows.Select(c => new
         {
-            c.Id, c.Code, c.Name, c.CourseId, c.CourseName,
+            c.Id, c.Name, c.CourseId, c.CourseName,
             Status = ClassCalendar.Status(c.StartDate, c.EndDate, today)
         }));
     }
@@ -73,7 +73,7 @@ public class TeacherAssignmentsController : TeacherControllerBase
             {
                 a.Id, a.Title, a.Description, a.FileName, HasFile = a.FilePath != "", a.CourseId, a.ClassId,
                 CourseName = Db.Courses.Where(c => c.Id == a.CourseId).Select(c => c.Name).FirstOrDefault(),
-                ClassCode = Db.Classes.Where(c => c.Id == a.ClassId).Select(c => c.Code).FirstOrDefault(),
+                ClassName = Db.Classes.Where(c => c.Id == a.ClassId).Select(c => c.Name).FirstOrDefault(),
                 a.CreatedAt,
                 SubmittedCount = Db.AssignmentFiles
                     .Where(s => s.FileType == "Student" && s.AssignmentId == a.Id)
@@ -97,7 +97,7 @@ public class TeacherAssignmentsController : TeacherControllerBase
 
         return Ok(rows.Select(r => new
         {
-            r.Id, r.Title, r.Description, r.FileName, r.HasFile, r.CourseId, r.CourseName, r.ClassId, r.ClassCode,
+            r.Id, r.Title, r.Description, r.FileName, r.HasFile, r.CourseId, r.CourseName, r.ClassId, r.ClassName,
             r.CreatedAt, r.SubmittedCount,
             StudentCount = r.ClassId != null ? classSizes.GetValueOrDefault(r.ClassId.Value)
                 : r.CourseId != null ? sizes.GetValueOrDefault(r.CourseId.Value) : 0
@@ -196,7 +196,7 @@ public class TeacherAssignmentsController : TeacherControllerBase
                 x.Id, x.Title, x.Description, x.FileName, HasFile = x.FilePath != "", x.CourseId, x.ClassId, x.TeacherId,
                 x.CreatedAt,
                 CourseName = Db.Courses.Where(c => c.Id == x.CourseId).Select(c => c.Name).FirstOrDefault(),
-                ClassCode = Db.Classes.Where(c => c.Id == x.ClassId).Select(c => c.Code).FirstOrDefault()
+                ClassName = Db.Classes.Where(c => c.Id == x.ClassId).Select(c => c.Name).FirstOrDefault()
             })
             .FirstOrDefaultAsync();
         if (a == null) return Error(404, "Không tìm thấy bài tập");
@@ -207,7 +207,7 @@ public class TeacherAssignmentsController : TeacherControllerBase
             ? enrollments.Where(e => e.ClassId == a.ClassId)
             : enrollments.Where(e => e.Class.CourseId == a.CourseId && e.Class.TeacherId == a.TeacherId);
         var students = await enrollments
-            .Select(e => new { e.StudentId, e.Student.Code, e.Student.FullName, ClassName = e.Class.Code + " · " + e.Class.Name })
+            .Select(e => new { e.StudentId, e.Student.Code, e.Student.FullName, ClassName = e.Class.Name })
             .ToListAsync();
 
         var subs = await Db.AssignmentFiles.AsNoTracking()

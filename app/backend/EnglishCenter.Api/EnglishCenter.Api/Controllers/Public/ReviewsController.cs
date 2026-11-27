@@ -29,14 +29,14 @@ public class ReviewsController(AppDbContext db) : ControllerBase
             .Select(r => new
             {
                 r.Id, r.Rating, r.Comment, r.CreatedAt, StudentName = r.Student.FullName,
-                ClassCode = r.Class.Code, CourseName = r.Class.Course.Name, TeacherName = r.Teacher.FullName,
+                ClassName = r.Class.Name, CourseName = r.Class.Course.Name, TeacherName = r.Teacher.FullName,
                 TeacherSlug = db.PublicTeacherProfiles.Where(p => p.TeacherId == r.TeacherId).Select(p => p.Slug).FirstOrDefault()
             })
             .ToListAsync(ct);
         return Ok(rows.Select(r => new
         {
             review_id = r.Id, rating = r.Rating, comment = r.Comment, created_at = r.CreatedAt,
-            author_name = Codes.ShortName(r.StudentName), class_code = r.ClassCode, course_name = r.CourseName,
+            author_name = Codes.ShortName(r.StudentName), class_name = r.ClassName, course_name = r.CourseName,
             teacher_name = r.TeacherName, teacher_slug = r.TeacherSlug
         }));
     }

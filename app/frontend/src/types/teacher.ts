@@ -11,6 +11,9 @@ export interface Teacher {
   slug: string;
   full_name: string;
   title: string;
+  degree?: string | null;
+  specialty?: string;
+  teaching_experience?: string | null;
   bio: string;
   credentials: string[];
   initials: string;

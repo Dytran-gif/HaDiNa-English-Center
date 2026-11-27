@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { notifyCoursesChanged } from "../usePublicCourses";
 import { useAuth } from "../../context/AuthContext";
 import { ApiError, request, downloadFile } from "../apiClient";
 import type { Course, AttendancePage } from "../../types/StudentTypes/MainTypes";
@@ -24,11 +25,9 @@ export interface StudentDashboardResponse {
     endTime?: string;
     // chi tiết buổi để mở popup buổi học
     classId?: number;
-    classCode?: string;
-    className?: string;
+    className: string;
     teacherName?: string;
     roomName?: string;
-    meetingUrl?: string;
     sessionNo?: number;
     classTotalSessions?: number;
   };
@@ -55,12 +54,9 @@ export interface StudentDashboardResponse {
     imageUrl?: string;
     teacherName?: string;
     classId?: number;
-    classCode?: string;
-    className?: string;
     classStatus?: ClassStatus;
     startDate?: string;
     endDate?: string;
-    meetingUrl?: string;
     sessionsDone?: number;
     classTotalSessions?: number;
   }>;
@@ -87,10 +83,12 @@ export function useStudentApi() {
     async send<T = void>(method: string, path: string, body?: unknown) {
       if (!token) throw new ApiError(401, "Chưa đăng nhập.");
       try {
-        return await request<T>(`/api/student/${path}`, token, {
+        const result = await request<T>(`/api/student/${path}`, token, {
           method,
           body: body === undefined ? undefined : JSON.stringify(body)
         });
+        if (/^(enrollments|course-registrations)(\/|$)/.test(path)) notifyCoursesChanged();
+        return result;
       } catch (error) {
         if (error instanceof ApiError && error.status === 401) logout();
         throw error;
@@ -176,7 +174,6 @@ export interface StudentEnrollmentItem {
   finalTuitionFee: number;  // số tiền thực phải thanh toán
   // Lớp + trạng thái theo ngày của lớp
   classId: number;
-  classCode: string;
   className: string;
   classStatus: ClassStatus;
   startDate: string;
@@ -198,39 +195,8 @@ export interface StudentEnrollmentItem {
 
 // GET api/student/enrollments - các ghi danh của học viên (khối khóa đã đăng ký trang Courses)
 export function useStudentEnrollments() {
-  const api = useStudentApi();
-  const { token } = useAuth();
-  const [data, setData] = useState<StudentEnrollmentItem[]>([]);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [reloadKey, setReloadKey] = useState(0);
-
-  useEffect(() => {
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-    const controller = new AbortController();
-    setLoading(true);
-    setError("");
-
-    api.get<StudentEnrollmentItem[]>("enrollments", controller.signal)
-      .then((res) => {
-        if (!controller.signal.aborted) setData(res);
-      })
-      .catch((err) => {
-        if (!controller.signal.aborted) {
-          setError(err instanceof Error ? err.message : "Không tải được danh sách ghi danh.");
-        }
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
-
-    return () => controller.abort();
-  }, [api, token, reloadKey]);
-
-  return { data, error, loading, reload: () => setReloadKey(k => k + 1) };
+  const query = useStudentQuery<StudentEnrollmentItem[]>("enrollments");
+  return { ...query, data: query.data ?? [] };
 }
 
 export interface StudentPayment {
@@ -249,7 +215,7 @@ export interface StudentPayment {
 export interface StudentTuitionItem {
   enrollmentId: number;
   classId: number;
-  classCode: string;
+  className: string;
   enrollmentStatus: string;
   extraDiscountAmount: number;
   discountNote?: string;
@@ -257,7 +223,6 @@ export interface StudentTuitionItem {
   remainingAmount: number;
   paymentStatus: PaymentStatus;
   payments: StudentPayment[];
-  className: string;
   courseName: string;
   bandFrom: string;
   bandTo: string;
@@ -319,12 +284,10 @@ export interface StudentScheduleDay {
 
 export interface StudentScheduleSession {
   classId: string;
-  classCode?: string;
-  meetingUrl?: string;
+  className: string;
   attendanceStatus?: "Present" | "Late" | "Absent" | "Excused" | null;
   attendanceNote?: string;
   newAssignments?: number;
-  className: string;
   courseName: string;
   bandFrom: string;
   bandTo: string;
@@ -395,7 +358,7 @@ export interface StudentScheduleHistoryItem {
   enrollmentId: number;
   status: string;
   classStatus: ClassStatus;
-  classCode: string;
+  className: string;
   year: number;
   attendedSessions: number;
   markedSessions: number;
@@ -405,7 +368,6 @@ export interface StudentScheduleHistoryItem {
   lastFeedbackAt?: string;
   registeredAt: string;
   classId: string;
-  className: string;
   startDate: string;
   endDate: string;
   courseName: string;
@@ -752,6 +714,13 @@ export function useStudentQuery<T>(path: string | null) {
   const [loading, setLoading] = useState(path !== null);
   const [reloadKey, setReloadKey] = useState(0);
   useEffect(() => {
+    if (!path || !/^(course-registrations|enrollments|dashboard|tuition|schedule)([/?]|$)/.test(path)) return;
+    const refresh = () => setReloadKey(v => v + 1);
+    const storage = (e: StorageEvent) => { if (e.key === "ecw_courses_revision") refresh(); };
+    window.addEventListener("focus", refresh); window.addEventListener("courses-changed", refresh); window.addEventListener("storage", storage);
+    return () => { window.removeEventListener("focus", refresh); window.removeEventListener("courses-changed", refresh); window.removeEventListener("storage", storage); };
+  }, [path]);
+  useEffect(() => {
     if (!token || path === null) { setData(undefined); setLoading(false); return; }
     const controller = new AbortController();
     setLoading(true); setError("");
@@ -766,7 +735,6 @@ export function useStudentQuery<T>(path: string | null) {
 
 export interface StudentClassOption {
   id: number;
-  code: string;
   name: string;
   teacherName: string;
   startDate: string;
@@ -794,7 +762,7 @@ export const useStudentBankInfo = () => useStudentQuery<StudentBankInfo>("tuitio
 
 export interface StudentReviewClass {
   classId: number;
-  classCode: string;
+  className: string;
   courseName: string;
   teacherId: number;
   teacherName: string;

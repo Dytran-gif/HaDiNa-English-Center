@@ -37,9 +37,8 @@ export default function ClassProfile() {
   return <div className="admin-api-stack">
     <div className="admin-management-toolbar"><Button to={returnTo} variant="ghost">← Danh sách lớp học</Button>{data&&<Button icon="edit" to={`/admin/classes?edit=${id}`}>Sửa lớp</Button>}</div>
     {detail.error?<Notice tone="error" action={<Button onClick={detail.reload}>Thử lại</Button>}>{detail.error}</Notice>:detail.loading?<p role="status">Đang tải thông tin lớp…</p>:data&&<>
-      <SectionCard title={`${data.code} · ${data.name}`} action={<Badge status={data.status}/>}>
+      <SectionCard title={data.name} action={<Badge status={data.status}/>}>
         <dl className="admin-management-fields"><div><dt>Khóa học</dt><dd>{data.courseName}</dd></div><div><dt>Giáo viên</dt><dd><Link className="admin-management-name" to={`/admin/teachers/${data.teacherId}`}>{data.teacherName}</Link></dd></div><div><dt>Thời gian</dt><dd>{display(data.startDate)} – {display(data.endDate)}</dd></div><div><dt>Sĩ số đang học</dt><dd><Badge tone={full?"warning":"info"}>{data.enrolledCount}/{data.maxStudents} học viên</Badge></dd></div></dl>
-        {data.meetingUrl&&/^https?:\/\//i.test(data.meetingUrl)&&<a className="admin-management-name" href={data.meetingUrl} target="_blank" rel="noreferrer">Mở phòng học trực tuyến ↗</a>}
         <div><h3>Lịch học mỗi tuần</h3>{data.schedules.map((schedule,index)=><p key={index}>{schedule.dayOfWeek===7?"Chủ nhật":`Thứ ${schedule.dayOfWeek+1}`} · {schedule.startTime.slice(0,5)}–{schedule.endTime.slice(0,5)} · {schedule.roomName??"Chưa có phòng"}</p>)}</div>
       </SectionCard>
       <SectionCard title={`Học viên của lớp (${roster.length})`}>

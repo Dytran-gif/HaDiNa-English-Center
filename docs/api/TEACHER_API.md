@@ -1,5 +1,7 @@
 # API chức năng Teacher (bản tối giản, 14/11/2026)
 
+> 2026-11-27: Classes no longer store Code or MeetingUrl. Class responses use id/name; references use classId/className. Student/course codes remain separate. Public open_classes use id/name, not code. See CLASS-FIELDS.md.
+
 Dùng **14 bảng chung** của nhóm + bảng `Attendances` (điểm danh) = 15 bảng (xem `docs/DATABASE.md`).
 Mọi API cần header `Authorization: Bearer <token>` của tài khoản **teacher** (`teacher@demo.com` / `123456`).
 Giáo viên chỉ thấy và thao tác trên **lớp mình phụ trách**. Lỗi trả `{ "message": "..." }` (400, 403, 404, 409).
@@ -21,9 +23,9 @@ Code: `app/backend/.../Controllers/TeacherPortal/`. FE: `app/frontend/src/pages/
 | Method | Đường dẫn | Mô tả |
 |---|---|---|
 | GET | `/api/teacher/dashboard` | `{ classCount, ongoingClassCount, studentCount, assignmentCount, newSubmissionCount (7 ngày), today: ScheduleEvent[], unmarkedSessions: ScheduleEvent[] (7 ngày chưa điểm danh), recentSubmissions: [...8] }` |
-| GET | `/api/teacher/classes?status=Ongoing\|Upcoming\|Finished` | Lớp phụ trách: `{ id, name, courseId, courseName, startDate, endDate, maxStudents, meetingUrl, enrolledCount, status, schedules: [{ dayOfWeek, startTime, endTime, roomName }] }` |
+| GET | `/api/teacher/classes?status=Ongoing\|Upcoming\|Finished` | Lớp phụ trách: `{ id, name, courseId, courseName, startDate, endDate, maxStudents, enrolledCount, status, schedules: [{ dayOfWeek, startTime, endTime, roomName }] }` |
 | GET | `/api/teacher/classes/{id}` | Như trên + `totalSessions`, `students: [{ id, code, fullName, phone, email, enrollmentStatus, enrolledAt }]` |
-| GET | `/api/teacher/schedule?from=yyyy-MM-dd&to=yyyy-MM-dd` | Buổi dạy trong khoảng (mặc định tuần này, tối đa 62 ngày), sinh từ `ClassSchedules` trong thời gian lớp: `ScheduleEvent = { date, classId, className, courseName, startTime, endTime, roomName, meetingUrl, attendanceMarked }` |
+| GET | `/api/teacher/schedule?from=yyyy-MM-dd&to=yyyy-MM-dd` | Buổi dạy trong khoảng (mặc định tuần này, tối đa 62 ngày), sinh từ `ClassSchedules` trong thời gian lớp: `ScheduleEvent = { date, classId, className, courseName, startTime, endTime, roomName, attendanceMarked }` |
 
 `dayOfWeek`: 1 = Thứ Hai … 7 = Chủ nhật. Không lưu buổi học riêng (không có buổi bù / hủy buổi).
 

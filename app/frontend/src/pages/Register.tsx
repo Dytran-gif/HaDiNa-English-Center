@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import PageShell from "../components/layout/PageShell";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
@@ -32,9 +32,13 @@ function validate(v: Record<Field, string>): Errors {
   return e;
 }
 
-// Đăng ký học viên mới: tạo tài khoản -> tự đăng nhập -> sang trang chọn khóa & lớp trong cổng học viên.
+// Create account, then submit a course request for Admin assignment.
 export default function Register() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const chosenCourse = Number(params.get("course"));
+  const courseQuery = Number.isSafeInteger(chosenCourse) && chosenCourse > 0 ? `&course=${chosenCourse}` : "";
+  const loginUrl = courseQuery ? `/dang-nhap?course=${chosenCourse}` : "/dang-nhap";
   const { loginApi } = useAuth();
   const [values, setValues] = useState<Record<Field, string>>({
     fullName: "", email: "", phone: "", password: "", confirmPassword: "", dateOfBirth: "", parentName: "", parentPhone: "",
@@ -77,10 +81,10 @@ export default function Register() {
         parentName: values.parentName.trim() || null, parentPhone: values.parentPhone.trim() || null,
       });
       setDone({ code: result.code });
-      // Đăng nhập luôn rồi chuyển sang bước 2: chọn khóa và lớp
+      // Keep the selected course while signing in.
       try {
         await loginApi(values.email.trim(), values.password);
-        navigate("/student/courses?tab=browse", { replace: true });
+        navigate(`/student/courses?tab=browse${courseQuery}`, { replace: true });
       } catch {
         /* Không đăng nhập tự động được: vẫn hiện thông báo thành công + nút đăng nhập */
       }
@@ -107,14 +111,14 @@ export default function Register() {
 
           <ol className="auth-steps" aria-label="Các bước đăng ký">
             <li className="is-active"><b>1</b> Tài khoản</li>
-            <li><b>2</b> Chọn lớp</li>
-            <li><b>3</b> Học phí</li>
+            <li><b>2</b> Đăng ký khóa học</li>
+            <li><b>3</b> Trung tâm xếp lớp</li>
           </ol>
 
           {done ? (
             <div className="auth-success" role="status">
               <p>Tạo tài khoản thành công! Mã học viên của bạn: <strong>{done.code}</strong>.</p>
-              <Button to="/dang-nhap" variant="primary">Đăng nhập để chọn lớp</Button>
+              <Button to={loginUrl} variant="primary">Đăng nhập để đăng ký khóa học</Button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} noValidate>
@@ -156,13 +160,13 @@ export default function Register() {
 
               <p className="auth-error" role="alert">{error}</p>
               <Button type="submit" variant="primary" disabled={busy} className="auth-submit">
-                {busy ? "Đang tạo tài khoản…" : "Tạo tài khoản và chọn lớp"}
+                {busy ? "Đang tạo tài khoản…" : "Tạo tài khoản và chọn khóa học"}
               </Button>
             </form>
           )}
 
           <p className="auth-switch">
-            Đã có tài khoản? <Button to="/dang-nhap" variant="ghost">Đăng nhập</Button>
+            Đã có tài khoản? <Button to={loginUrl} variant="ghost">Đăng nhập</Button>
           </p>
         </Card>
       </div>

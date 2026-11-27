@@ -8,6 +8,15 @@ namespace EnglishCenter.Api.Controllers.Admin;
 [ApiController, Authorize(Roles = "admin"), Route("api/admin/consultations")]
 public class ConsultationsController(AppDbContext db) : ControllerBase
 {
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> Delete(int id, CancellationToken ct)
+    {
+        var deleted = await db.ConsultationRequests.Where(x => x.Id == id).ExecuteDeleteAsync(ct);
+        return deleted == 0
+            ? NotFound(new { message = "Yêu cầu tư vấn không còn tồn tại." })
+            : NoContent();
+    }
+
     [HttpGet]
     public async Task<IActionResult> List([FromQuery] string? search, int page = 1, int pageSize = 10, CancellationToken ct = default)
     {

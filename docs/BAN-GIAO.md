@@ -1,4 +1,87 @@
 # Nhật ký bàn giao
+
+## [2026-11-27] Xóa yêu cầu tư vấn sau khi xử lý
+
+- Admin → Yêu cầu tư vấn có nút Xóa đỏ và xác nhận tên người gửi; thành công cập nhật danh sách/tổng số. Lỗi giữ dialog để thử lại.
+- DELETE `/api/admin/consultations/{id}` chỉ Admin, 204/404; xóa vĩnh viễn yêu cầu, không ảnh hưởng tài khoản/ghi danh/phiếu thu; không migration.
+- FE lint/typecheck/build và BE build đạt, reviewer PASS; 7 kiểm tra API với bản ghi QA đạt và đã dọn QA. API5220 đã chạy lại, AutoSetup=false. Xem reports `2026-11-27-consultation-delete-*`.
+
+## [2026-11-27] Sửa lại nút public đăng ký khóa học → form tư vấn
+
+- CTA trên chi tiết khóa luôn là Đăng ký khóa học cho mọi vai trò/khách; mở form thông tin tại chỗ, điền sẵn khóa đang xem. Gửi vào ConsultationRequests, xem ở Admin → Yêu cầu tư vấn.
+- Dùng chung ConsultationForm với homepage, giữ lỗi/bản nháp và idempotency GUID. Không tạo tài khoản/ghi danh/phiếu thu từ form này; không xóa dữ liệu hoặc rollback bảng đã có.
+- Chrome/API13 ca đạt, xác minh dòng ở Admin; đã dọn bản ghi QA chính xác. Xem `docs/api/PUBLIC-COURSE-CONSULTATION.md`. FE build/typecheck/lint đạt, cảnh báo cũ.
+
+## [2026-11-27] Đăng ký khóa học, Admin xếp lớp
+
+- Đã căn cột lớp public, bỏ đăng ký từng lớp, hiển thị nhiều giáo viên đúng từng lớp. Giữ khóa đã chọn qua đăng ký tài khoản/đăng nhập.
+- Student gửi yêu cầu Pending bằng course ID, không tự ghi danh lớp. Admin có mục Đào tạo → Đăng ký khóa học để xếp lớp cùng khóa; Assigned và Enrollment lưu cùng transaction, có kiểm tra sĩ số/lịch.
+- Migration `20261127093719_CourseRegistrationRequests` đã backup/verify và áp dụng local. Không backfill/đổi Enrollment/Payment cũ; pending không phát sinh học phí. Xem `docs/api/COURSE-REGISTRATIONS.md` và `CourseRegistrations.http`.
+- 38 ca API, 14 ca Chrome và VerifyAdmin40 đạt. QA đã dọn; 4 Student/20 Enrollment/19 Payment gốc giữ nguyên, một đăng ký thật phát sinh trong lúc test vẫn giữ. Cần commit FE/BE/migration cùng nhau.
+
+## [2026-11-27] Đổi tên lớp không bị chặn bởi lịch trùng có sẵn
+
+- Nguyên nhân: Update luôn kiểm tra lại toàn bộ lịch, trong khi DB có lịch chồng nhau từ trước. ScheduleService nay so sánh lịch thực tế; đổi tên không kiểm tra xung đột cũ và không xóa/tạo lại các dòng lịch.
+- Đổi giờ/ngày/phòng/giáo viên vẫn kiểm tra đầy đủ; thay sĩ số vẫn kiểm tra sức chứa và số đang học. Không tắt kiểm tra trùng lịch cho tạo mới hoặc Force.
+- VerifyAdmin 36 checks và API đổi tên/lịch/giới hạn phòng trên QA đạt; lớp/khóa QA đã dọn. Không migration hoặc sửa lịch thật. Xem `docs/api/CLASS-FIELDS.md`.
+
+## [2026-11-27] Chuyển tài khoản demo học viên sang Phạm Văn D
+
+- Theo yêu cầu, Student ID3 / User ID6 (Pham Van D) dùng `student@demo.com`, mật khẩu demo `123456`; tài khoản mở và hồ sơ đang Studying. Đăng nhập API, profile và danh sách ghi danh đã kiểm tra thành công.
+- Hồ sơ demo cũ ID1 vẫn giữ trạng thái đã xóa/khóa. Email của User ID3 đổi sang `archived.student.3.20261127@demo.invalid` để nhường email demo; không gộp hoặc chuyển ghi danh/phiếu thu giữa hai học viên.
+- Đã backup/verify trước cập nhật: `EnglishCenterDB_before_demo_reassign_20261127.bak`. Chỉ cập nhật Users và thu hồi phiên cũ bằng TokenVersion; không migration hoặc sửa dữ liệu lớp/học phí. Công cụ tạm đã dọn.
+
+## [2026-11-27] Xóa học viên đã khóa hoặc đã nghỉ, cập nhật sĩ số
+
+- Admin được xóa nếu tài khoản khóa HOẶC trạng thái Dropped dù có ghi danh. Xóa khỏi danh sách bằng DeletedAt, chuyển ghi danh Dropped để sĩ số tự tính lại; giữ phiếu thu Confirmed/lịch sử. Pending được từ chối.
+- Thêm migration `20261127084005_ArchiveDeletedStudents`, đã backup/verify và áp dụng local. Không global filter làm mất join báo cáo; login/JWT/mở khóa/ghi danh chặn hồ sơ đã xóa.
+- Đã test API điều kiện, nhiều lớp, biên lai, phiên đăng nhập cũ và các thao tác đồng thời. Dọn đủ sáu tài khoản QA; giữ thao tác xóa ID1 từ phiên khác trong lúc kiểm tra. Xem `docs/api/STUDENT-DELETION.md`.
+- Điểm danh cũ vẫn xem được, dòng học viên đã xóa chỉ đọc. Không sửa luật xóa lớp/khóa trong task này. FE/BE cần triển khai cùng migration.
+
+## [2026-11-27] Khóa học public dùng chung DB với Admin
+
+- Homepage 6 khóa + Xem tất cả; danh sách/chi tiết/menu/footer/tư vấn/khảo sát lấy API thật. Không còn chặn trang chi tiết theo slug trong dữ liệu tĩnh.
+- Public chỉ lấy khóa công bố; giá sau giảm do BE trả. Làm mới sau sửa khóa/lớp/ghi danh, focus và sự kiện giữa các tab; lỗi/rỗng có trạng thái riêng.
+- Không migration, không xóa/ghi đè dữ liệu khóa có sẵn. Giữ file nội dung tĩnh cũ nhưng không sử dụng ở UI. 46 kiểm tra API/trình duyệt đạt, khóa QA đã dọn và dữ liệu Admin so sánh trước/sau giữ nguyên.
+- Xem `docs/api/PUBLIC-COURSES.md`; build FE/BE đạt, hai lint warning và bundle warning cũ. Commit cùng FE và BE; chưa commit/push trong phiên này.
+
+## [2026-11-27] Bỏ mã lớp và link học online
+
+- Bỏ khỏi form tạo/sửa lớp, entity, DTO và DB bằng migration `20261127075745_RemoveClassCodeAndMeetingUrl`; đã backup/verify và áp dụng local.
+- Các trang Admin/Teacher/Student/Public chuyển sang tên lớp, liên kết vẫn bằng ID. Cần đưa FE/BE và migration lên cùng nhau; xem `docs/api/CLASS-FIELDS.md`.
+- API CRUD lớp, ghi danh, lịch/học phí và các API đọc liên quan đã kiểm tra thành công. Đã dọn QA; số dòng trước/sau vẫn 13 lớp, 20 ghi danh, 18 lịch, 19 phiếu thu.
+- Down chỉ khôi phục cấu trúc/mã LOP-ID; giá trị mã/link cũ nằm trong backup trước migration.
+
+## [2026-11-27] Band kh?a h?c v? quy?n h?c ph?
+
+- FE/API/SQL b?t bu?c Band t? < Band ??n, 0?9, b??c 0.5. S?a Range decimal tr?nh l?t gi? tr? s?t bi?n.
+- Gi? quy?n Admin cho m?i API ghi kh?a h?c; live test kh?ch401, teacher/student403; admin s?a gi? th?nh c?ng. Ghi danh ??c gi? DB, gi? snapshot c?.
+- ?? backup/verify DB, ?p d?ng StrictCourseBands; hai kh?a ID17/18 ?? ??i 5?6 theo x?c nh?n. QA course/student ?? x?a. Xem docs/api/COURSE-FORM.md; c?n commit migration k?m snapshot.
+## [2026-11-27] Rút gọn form Khóa học Admin
+
+- Bỏ Mã khóa/Đường dẫn website/Hiển thị website/Ảnh URL khỏi form theo yêu cầu. Metadata giữ ở DB vì mã lớp/public/ảnh phụ thuộc; tạo mới tự sinh, sửa giữ mã/slug cũ.
+- API bảo toàn ảnh và trạng thái hiển thị khi request bỏ các trường đó; explicit null ảnh vẫn xóa, explicit visibility vẫn hoạt động. Không migration, không thay đổi lớp/ghi danh hiện có.
+- Live API kiểm tra tạo tự sinh, sửa không mất metadata/không tự bật khóa ẩn, public routes đúng; đã xóa khóa QA. BuildFE/BE đạt, lintwarning cũ. Xem docs/api/COURSE-FORM.md.
+
+## [2026-11-26] Ảnh giáo viên trong Admin, đồng bộ public và kiểm tra khóa/xóa
+
+- Bảng Giáo viên có cột ảnh; Sửa/Hồ sơ có uploadJPG/PNG/WebP5MB. Tạo giáo viên trước rồi tải ảnh. APIAdmin lưu Users.AvatarUrl, public dùng cùng URL; không migration.
+- usePublicTeachers cập nhật khi focus và tín hiệu mutation/upload cùng tab/khác tab. Lock/OnLeaveẩn, unlockhiện, delete thành côngẩn; guard giáo viên có lớp vẫn giữ nguyên.
+- HTTP+DB QA: photo200/URLkhớp, bad400/anon401, lockdetail404/unlockhiện, deleteẩn. Đã dọn user/teacher/profile/photo thử, không đổi2GV thật. BuildFE/BE đạt, lintwarning cũ. docs/api/PUBLIC-TEACHERS.md.
+
+## [2026-11-26] Hồ sơ giáo viên chỉ hiển thị chuyên môn và kinh nghiệm
+
+- TeacherDetail giữ ảnh/tên, chỉ3mục Bằng cấp, Trình độ/chuyên môn, Kinh nghiệm giảng dạy; gỡ khối khóa phụ trách/giới thiệu/đánh giá khỏi trang này.
+- Bổ sung Teachers.TeachingExperience nullable1000ký tự, migration TeacherTeachingExperience, API Admin/Public và form Sửa/Thêm giáo viên. Không tự tạo số năm kinh nghiệm; thiếu dữ liệu hiện Chưa cập nhật.
+- Backup trước áp migrationDB; live Adminsave/publicread và maxLength400 đạt, đã khôi phục dữ liệu QA. FE/BE build đạt; lintwarning cũ. BE chạy5220 AutoSetup=false. Xem docs/api/PUBLIC-TEACHERS.md.
+
+## [2026-11-26] Đồng bộ giáo viên Admin và public, gỡ mock
+
+- Public trước đó hiện5hồ sơ mẫu TeacherIdNULL, Admin có2Teachers thật. Migration AlignPublicTeachers xóa đúng5mock, tạo2profile liên kết, ẩn orphan. DB đã backup/verify trước áp dụng.
+- Public chỉ hiện Teaching+unlocked+linked+published. Tên/chuyên môn/bằng cấp/avatar từ Teachers/Users; teacher_id là ID thật. Tạo GV Admin tự tạo linked profile cùng transaction; sửa/status tự phản ánh public.
+- Gỡ importer và5ảnh mock tools/db/public-teachers; dọn ảnh seed đã chép ở uploads/public-teachers. Không xóa avatar người dùng. CourseDetail dùng teacher_slug từ lớp thật thay vì local course teacher_id.
+- API so khớp2GV thật,5slugmock404. QA create/update/OnLeave/Teaching/delete đạt; đã dọn dữ liệu QA, public còn2GV. BuildFE/BE đạt, lint warning cũ. Xem docs/api/PUBLIC-TEACHERS.md; máy khác cần pull migration rồi update DB.
+
 ## [2026-11-26] Pull về là chạy
 
 - `chay-du-an.bat` (gốc repo): double-click mở backend + frontend + trình duyệt.

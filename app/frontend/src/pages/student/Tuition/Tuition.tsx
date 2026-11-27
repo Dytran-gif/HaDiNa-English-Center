@@ -24,7 +24,7 @@ export default function StudentTuition() {
     const canRequest = selected ? Math.max(0, selected.remainingAmount - selected.pendingAmount) : 0;
     const totalRemaining = owing.reduce((s, i) => s + i.remainingAmount, 0);
     const totalPending = owing.reduce((s, i) => s + i.pendingAmount, 0);
-    const transferContent = selected ? `${selected.classCode}` : "";
+    const transferContent = selected ? `${selected.className}` : "";
 
     async function submit() {
         if (!selected || busy) return;
@@ -70,15 +70,15 @@ export default function StudentTuition() {
                                 <div>
                                     <table className="sx-table">
                                         <thead>
-                                            <tr><th></th><th>{t("sx.classCode")}</th><th className="is-money">{t("sx.mustPay")}</th><th className="is-money">{t("sx.remainingCol")}</th></tr>
+                                            <tr><th></th><th>{t("sx.className")}</th><th className="is-money">{t("sx.mustPay")}</th><th className="is-money">{t("sx.remainingCol")}</th></tr>
                                         </thead>
                                         <tbody>
                                             {owing.map(i => (
                                                 <tr key={i.enrollmentId} className="sx-clickable" onClick={() => setSelectedId(i.enrollmentId)}>
-                                                    <td><input type="radio" name="tuition-item" aria-label={i.classCode}
+                                                    <td><input type="radio" name="tuition-item" aria-label={i.className}
                                                         checked={selected?.enrollmentId === i.enrollmentId} onChange={() => setSelectedId(i.enrollmentId)} /></td>
                                                     <td>
-                                                        <span className="sx-code">{i.classCode}</span>
+                                                        <span className="sx-code">{i.className}</span>
                                                         <div style={{ fontWeight: 700, marginTop: 4 }}>{i.courseName}</div>
                                                         <span className={`sx-chip is-${i.paymentStatus.toLowerCase()}`}>{t(`sx.pay.${i.paymentStatus}`)}</span>
                                                         {i.pendingAmount > 0 && <span className="sx-chip is-pending" style={{ marginLeft: 6 }}>{t("sx.pendingShort", { amount: money(i.pendingAmount) })}</span>}

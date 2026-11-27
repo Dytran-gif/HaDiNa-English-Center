@@ -111,7 +111,7 @@ public class CoursesController : StudentControllerBase
             .OrderBy(c => c.StartDate)
             .Select(c => new
             {
-                c.Id, c.Code, c.Name, c.StartDate, c.EndDate, c.MaxStudents,
+                c.Id, c.Name, c.StartDate, c.EndDate, c.MaxStudents,
                 TeacherName = c.Teacher.FullName
             })
             .ToListAsync();
@@ -144,7 +144,6 @@ public class CoursesController : StudentControllerBase
             Classes = classes.Select(c => new StudentCourseClassDto
             {
                 Id = c.Id,
-                Code = c.Code,
                 Name = c.Name,
                 StartDate = c.StartDate,
                 EndDate = c.EndDate,
@@ -174,10 +173,10 @@ public class CoursesController : StudentControllerBase
         var today = AppTime.Today;
         var rows = await _db.Classes.AsNoTracking()
             .Where(c => c.CourseId == courseId && c.EndDate >= today)
-            .OrderBy(c => c.StartDate).ThenBy(c => c.Code)
+            .OrderBy(c => c.StartDate).ThenBy(c => c.Id)
             .Select(c => new
             {
-                c.Id, c.Code, c.Name, TeacherName = c.Teacher.FullName, c.StartDate, c.EndDate, c.MaxStudents,
+                c.Id, c.Name, TeacherName = c.Teacher.FullName, c.StartDate, c.EndDate, c.MaxStudents,
                 Enrolled = c.Enrollments.Count(e => e.Status == "Active"),
                 Slots = c.Schedules.OrderBy(s => s.DayOfWeek).ThenBy(s => s.StartTime)
                     .Select(s => new { s.DayOfWeek, s.StartTime, s.EndTime, RoomName = s.Room.Name }).ToList()
@@ -194,7 +193,7 @@ public class CoursesController : StudentControllerBase
             var check = checks.GetValueOrDefault(r.Id) ?? new ClassAvailability(false, false, null, null);
             return new StudentClassOptionDto
             {
-                Id = r.Id, Code = r.Code, Name = r.Name, TeacherName = r.TeacherName,
+                Id = r.Id, Name = r.Name, TeacherName = r.TeacherName,
                 StartDate = r.StartDate, EndDate = r.EndDate,
                 Status = ClassCalendar.Status(r.StartDate, r.EndDate, today),
                 Schedules = r.Slots.Select(s => new StudentClassSlotDto

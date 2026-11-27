@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { ApiError, request } from "../apiClient";
+import { notifyCoursesChanged } from "../usePublicCourses";
 
 export function useAdminApi() {
   const { token, logout } = useAuth();
@@ -12,7 +13,11 @@ export function useAdminApi() {
     },
     async send<T = void>(method: string, path: string, body?: unknown) {
       if (!token) throw new ApiError(401, "Đăng nhập bằng tài khoản thật để lưu dữ liệu.");
-      try { return await request<T>(`/api/admin/${path}`, token, { method, body: body === undefined ? undefined : JSON.stringify(body) }); }
+      try {
+        const result = await request<T>(`/api/admin/${path}`, token, { method, body: body === undefined ? undefined : JSON.stringify(body) });
+        if (/^(courses|classes|teachers|students|course-registrations)(\/|$)/.test(path)) notifyCoursesChanged();
+        return result;
+      }
       catch (error) { if (error instanceof ApiError && error.status === 401) logout(); throw error; }
     },
     async upload<T>(path: string, body: FormData) {
@@ -29,6 +34,22 @@ export function useAdminQuery<T>(path: string, allPages = false) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [revision, setRevision] = useState(0);
+  useEffect(() => {
+    if (!/^(classes|courses|students|teachers|dashboard|course-registrations|consultations)([/?]|$)/.test(path)) return;
+    const consultation = /^consultations([/?]|$)/.test(path);
+    const eventName = consultation ? "consultations-changed" : "courses-changed";
+    const storageKey = consultation ? "ecw_consultations_revision" : "ecw_courses_revision";
+    const refresh = () => setRevision(value => value + 1);
+    const storage = (event: StorageEvent) => { if (event.key === storageKey) refresh(); };
+    window.addEventListener(eventName, refresh);
+    window.addEventListener("storage", storage);
+    window.addEventListener("focus", refresh);
+    return () => {
+      window.removeEventListener(eventName, refresh);
+      window.removeEventListener("storage", storage);
+      window.removeEventListener("focus", refresh);
+    };
+  }, [path]);
   useEffect(() => {
     const controller = new AbortController();
     setData(undefined); setError(""); setLoading(true);

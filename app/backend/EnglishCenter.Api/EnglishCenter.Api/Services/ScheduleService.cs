@@ -10,6 +10,7 @@ public class ScheduleCheck
     public string? Error { get; init; }
     public int StatusCode { get; init; }
     public DateOnly EndDate { get; init; }
+    public bool ScheduleChanged { get; init; } = true;
 }
 
 public class ScheduleService
@@ -44,8 +45,19 @@ public class ScheduleService
     }
 
     // Kiểm tra toàn bộ luật lịch. excludeClassId = lớp đang sửa (để không tự trùng với chính nó)
-    public async Task<ScheduleCheck> CheckAsync(int? excludeClassId, ClassRequest req, Course course)
+    public static bool SameSchedule(CourseClass current, ClassRequest req, DateOnly endDate) =>
+        current.TeacherId == req.TeacherId && current.StartDate == req.StartDate && current.EndDate == endDate
+        && current.Schedules.Select(s => ((int)s.DayOfWeek, s.StartTime, s.EndTime, s.RoomId)).Order()
+            .SequenceEqual(req.Schedules.Select(s => (s.DayOfWeek, s.StartTime, s.EndTime, s.RoomId)).Order());
+
+    public async Task<ScheduleCheck> CheckAsync(int? excludeClassId, ClassRequest req, Course course, CourseClass? current = null)
     {
+        var endDate = req.EndDate
+            ?? ComputeEndDate(req.StartDate, course.TotalSessions, req.Schedules.Select(s => s.DayOfWeek));
+        var unchanged = current != null && current.Id == excludeClassId && SameSchedule(current, req, endDate);
+        // Renaming must not revalidate pre-existing timetable/capacity conflicts.
+        if (unchanged && current!.MaxStudents == req.MaxStudents)
+            return new ScheduleCheck { EndDate = endDate, ScheduleChanged = false };
         // 1. Phòng phải tồn tại và đủ chỗ cho sĩ số tối đa
         var roomIds = req.Schedules.Select(s => s.RoomId).Distinct().ToList();
         var rooms = await _db.Rooms.Where(r => roomIds.Contains(r.Id)).ToListAsync();
@@ -62,13 +74,10 @@ public class ScheduleService
             };
 
         // 2. Ngày kết thúc
-        var endDate = req.EndDate
-            ?? ComputeEndDate(req.StartDate, course.TotalSessions, req.Schedules.Select(s => s.DayOfWeek));
-
         // 3. Trùng lịch giáo viên hoặc phòng với lớp khác
         var excludeId = excludeClassId ?? 0;
 
-        foreach (var s in req.Schedules)
+        foreach (var s in unchanged ? Enumerable.Empty<ClassScheduleRequest>() : req.Schedules)
         {
             var day = (byte)s.DayOfWeek;
             var startTime = s.StartTime;
@@ -102,6 +111,6 @@ public class ScheduleService
             }
         }
 
-        return new ScheduleCheck { EndDate = endDate };
+        return new ScheduleCheck { EndDate = endDate, ScheduleChanged = !unchanged };
     }
 }

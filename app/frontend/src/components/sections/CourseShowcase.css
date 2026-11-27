@@ -3,6 +3,13 @@
   padding-bottom: 50px;
 }
 
+.course-showcase__catalog {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
 .course-showcase__grid {
   display: grid;
   gap: 20px;

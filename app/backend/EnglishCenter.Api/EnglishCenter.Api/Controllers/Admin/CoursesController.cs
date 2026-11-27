@@ -143,7 +143,7 @@ public class CoursesController : ControllerBase
             Code = code,
             Slug = slug,
             ImageUrl = string.IsNullOrWhiteSpace(req.ImageUrl) ? null : req.ImageUrl.Trim(),
-            IsPublished = req.IsPublished,
+            IsPublished = req.IsPublished ?? true,
             Name = name,
             Description = req.Description?.Trim(),
             BandFrom = req.BandFrom,
@@ -187,8 +187,10 @@ public class CoursesController : ControllerBase
         // Đổi mã khóa không đổi mã các lớp đã tạo.
         course.Code = code;
         course.Slug = slug;
-        course.ImageUrl = string.IsNullOrWhiteSpace(req.ImageUrl) ? null : req.ImageUrl.Trim();
-        course.IsPublished = req.IsPublished;
+        // Simplified Admin form omits website metadata; do not erase or republish existing courses.
+        if (req.ImageUrlProvided)
+            course.ImageUrl = string.IsNullOrWhiteSpace(req.ImageUrl) ? null : req.ImageUrl.Trim();
+        if (req.IsPublished.HasValue) course.IsPublished = req.IsPublished.Value;
         course.Name = name;
         course.Description = req.Description?.Trim();
         course.BandFrom = req.BandFrom;
@@ -220,6 +222,8 @@ public class CoursesController : ControllerBase
         if (classCount > 0)
             return Conflict(new { message = $"Khóa học đang được {classCount} lớp sử dụng, không thể xóa" });
 
+        if (await _db.CourseRegistrations.AnyAsync(r => r.CourseId == id))
+            return Conflict(new { message = "Khóa học đã có yêu cầu đăng ký, cần giữ lại lịch sử. Có thể ẩn khóa khỏi website." });
         _db.Courses.Remove(course);
         try { await _db.SaveChangesAsync(); }
         catch (DbUpdateException error) when (error.InnerException is SqlException { Number: 547 })

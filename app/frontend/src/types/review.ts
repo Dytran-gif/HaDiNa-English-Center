@@ -8,7 +8,7 @@ export interface Review {
   comment: string;
   created_at: string;
   // Đánh giá thật từ API (/api/public/reviews)
-  class_code?: string;
+  class_name?: string;
   course_name?: string;
   teacher_name?: string;
   teacher_slug?: string | null;

@@ -49,7 +49,7 @@ export default function TeacherReviews() {
                     {(data ?? []).map(c => (
                         <article key={c.classId} className="sx-card">
                             <div className="sx-card-head">
-                                <span className="sx-code">{c.classCode}</span>
+                                <span className="sx-code">{c.className}</span>
                                 {c.review ? (
                                     <span className={`sx-chip ${c.review.isPublished ? "is-confirmed" : "is-pending"}`}>
                                         {c.review.isPublished ? t("sx.reviewPublished") : t("sx.reviewPending")}
@@ -80,7 +80,7 @@ export default function TeacherReviews() {
                     <div className="sx-modal" role="dialog" aria-modal="true" aria-labelledby="sx-review-title" onClick={e => e.stopPropagation()}>
                         <div className="sx-modal-head">
                             <div>
-                                <span className="sx-code">{editing.classCode}</span>
+                                <span className="sx-code">{editing.className}</span>
                                 <h3 id="sx-review-title">{t("sx.reviewFor", { name: editing.teacherName })}</h3>
                             </div>
                             <button type="button" className="sx-close" onClick={() => setEditing(null)} aria-label={t("sx.close")}>×</button>

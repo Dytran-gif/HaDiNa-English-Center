@@ -47,24 +47,3 @@
   padding: clamp(24px, 3vw, 36px);
 }
 
-.register-cta__form form {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-.register-cta__submit {
-  align-self: flex-start;
-  margin-top: 4px;
-}
-
-.register-cta__success h3 {
-  font-size: 1.5rem;
-  margin-bottom: 12px;
-}
-
-.register-cta__success p {
-  color: var(--muted);
-  margin-bottom: 20px;
-}
-.page-shell .register-cta__fields { border: 0; padding: 0; margin: 0; min-width: 0; display: grid; gap: 16px; }

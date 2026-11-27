@@ -69,18 +69,18 @@ public class EnrollmentService
             tuition - percentAmount - extra, notes.Count == 0 ? null : string.Join("; ", notes));
     }
 
-    private record ClassInfo(int Id, string Code, string Name, int CourseId, string CourseName, DateOnly StartDate,
+    private record ClassInfo(int Id, string Name, int CourseId, string CourseName, DateOnly StartDate,
         DateOnly EndDate, int MaxStudents, List<ClassCalendar.Slot> Slots);
 
     private async Task<List<ClassInfo>> LoadClassesAsync(IQueryable<CourseClass> query) =>
         (await query.AsNoTracking()
             .Select(c => new
             {
-                c.Id, c.Code, c.Name, c.CourseId, CourseName = c.Course.Name, c.StartDate, c.EndDate, c.MaxStudents,
+                c.Id, c.Name, c.CourseId, CourseName = c.Course.Name, c.StartDate, c.EndDate, c.MaxStudents,
                 Slots = c.Schedules.Select(s => new { s.DayOfWeek, s.StartTime, s.EndTime }).ToList()
             })
             .ToListAsync())
-        .Select(c => new ClassInfo(c.Id, c.Code, c.Name, c.CourseId, c.CourseName, c.StartDate, c.EndDate, c.MaxStudents,
+        .Select(c => new ClassInfo(c.Id, c.Name, c.CourseId, c.CourseName, c.StartDate, c.EndDate, c.MaxStudents,
             c.Slots.Select(s => new ClassCalendar.Slot(s.DayOfWeek, s.StartTime, s.EndTime)).ToList()))
         .ToList();
 
@@ -107,7 +107,7 @@ public class EnrollmentService
             foreach (var m in mine.Where(m => m.Id != t.Id))
                 if (ClassCalendar.Overlaps(t.StartDate, t.EndDate, t.Slots, m.StartDate, m.EndDate, m.Slots, out var clash))
                 {
-                    conflict = $"{m.CourseName} ({m.Code}) {ClassCalendar.DayNameVi(clash!.DayOfWeek)} " +
+                    conflict = $"{m.CourseName} ({m.Name}) {ClassCalendar.DayNameVi(clash!.DayOfWeek)} " +
                                $"{clash.StartTime:HH\\:mm}-{clash.EndTime:HH\\:mm}";
                     break;
                 }
@@ -115,33 +115,45 @@ public class EnrollmentService
                 IsFull: counts.GetValueOrDefault(t.Id) >= t.MaxStudents,
                 IsFinished: t.EndDate < today,
                 Conflict: conflict,
-                AlreadyInCourse: same?.Code);
+                AlreadyInCourse: same?.Name);
         }
         return result;
     }
 
     // Ghi danh học viên vào lớp. Học phí lấy từ khóa học, KHÔNG nhận từ client (trừ ưu đãi riêng của Admin).
-    public async Task<EnrollmentResult> EnrollAsync(int studentId, int classId, EnrollOptions? options = null)
+    public async Task<EnrollmentResult> EnrollAsync(int studentId, int classId, EnrollOptions? options = null, int? courseRegistrationId = null)
     {
         options ??= new EnrollOptions();
         var student = await _db.Students.FindAsync(studentId);
-        if (student == null)
+        if (student == null || student.DeletedAt != null)
             return EnrollmentResult.Fail(404, "Không tìm thấy học viên");
         if (student.Status == "Dropped")
             return EnrollmentResult.Fail(409, "Học viên đã nghỉ, không thể ghi danh");
 
-        var cls = await _db.Classes.Include(c => c.Course).Include(c => c.Schedules)
-            .FirstOrDefaultAsync(c => c.Id == classId);
-        if (cls == null)
-            return EnrollmentResult.Fail(404, "Không tìm thấy lớp học");
-
         // Serializable: hai người đăng ký cùng lúc không vượt sĩ số
         await using var tx = await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+        await StudentLifecycle.LockAsync(_db, studentId);
+
+        // Recheck inside the transaction: the student may have been deleted after the initial read.
+        if (!await _db.Students.AnyAsync(s => s.Id == studentId && s.DeletedAt == null && s.Status != "Dropped"))
+            return EnrollmentResult.Fail(409, "Học viên đã nghỉ hoặc đã được xóa, không thể ghi danh");
+
+        await ClassLifecycle.LockAsync(_db, classId);
+        var cls = await _db.Classes.AsNoTracking().Include(c => c.Course).Include(c => c.Schedules).FirstOrDefaultAsync(c => c.Id == classId);
+        if (cls == null) return EnrollmentResult.Fail(404, "Không tìm thấy lớp học");
+
+        var registration = await _db.CourseRegistrations.FirstOrDefaultAsync(r => r.StudentId == studentId && r.Status == "Pending"
+            && (courseRegistrationId.HasValue ? r.Id == courseRegistrationId.Value : r.CourseId == cls.CourseId));
+        if (courseRegistrationId.HasValue && registration == null)
+            return EnrollmentResult.Fail(409, "Yêu cầu đăng ký đã được xử lý hoặc đã hủy");
+        if (registration != null && registration.CourseId != cls.CourseId)
+            return EnrollmentResult.Fail(400, "Lớp được chọn không thuộc khóa học đã đăng ký");
 
         if (await _db.Enrollments.AnyAsync(e => e.StudentId == studentId && e.ClassId == classId))
             return EnrollmentResult.Fail(409, "Học viên đã có ghi danh trong lớp này");
 
-        var check = (await CheckAsync(studentId, new[] { classId }))[classId];
+        if (!(await CheckAsync(studentId, new[] { classId })).TryGetValue(classId, out var check))
+            return EnrollmentResult.Fail(404, "Không tìm thấy lớp học");
         if (check.IsFinished)
             return EnrollmentResult.Fail(409, "Lớp đã kết thúc, không thể ghi danh");
         if (check.IsFull)
@@ -173,6 +185,12 @@ public class EnrollmentService
             Status = "Active"
         };
         _db.Enrollments.Add(enrollment);
+        if (registration != null)
+        {
+            registration.Status = "Assigned";
+            registration.ClassId = classId;
+            registration.AssignedAt = AppTime.Now;
+        }
 
         try
         {
@@ -185,7 +203,7 @@ public class EnrollmentService
             return EnrollmentResult.Fail(409, "Không ghi danh được do có yêu cầu khác cùng lúc, vui lòng thử lại");
         }
 
-        return EnrollmentResult.Ok($"Đã ghi danh vào lớp {cls.Code}", enrollment.Id);
+        return EnrollmentResult.Ok($"Đã ghi danh vào lớp {cls.Name}", enrollment.Id);
     }
 
     // Rút / hủy ghi danh.
@@ -193,10 +211,12 @@ public class EnrollmentService
     // - Còn lại: chuyển sang Dropped để giữ lịch sử điểm danh, bài nộp, phiếu thu (hoàn tiền lập phiếu Refund riêng).
     public async Task<EnrollmentResult> WithdrawAsync(int studentId, int enrollmentId, bool byStudent = false)
     {
+        await using var tx = await _db.Database.BeginTransactionAsync();
+        await StudentLifecycle.LockAsync(_db, studentId);
         var enrollment = await _db.Enrollments
             .Include(e => e.Payments)
             .Include(e => e.Class)
-            .FirstOrDefaultAsync(e => e.Id == enrollmentId && e.StudentId == studentId);
+            .FirstOrDefaultAsync(e => e.Id == enrollmentId && e.StudentId == studentId && e.Student.DeletedAt == null);
 
         if (enrollment == null)
             return EnrollmentResult.Fail(404, "Không tìm thấy ghi danh");
@@ -212,11 +232,14 @@ public class EnrollmentService
                 return EnrollmentResult.Fail(409, "Lớp đã khai giảng, liên hệ trung tâm để nghỉ học");
         }
 
+        var assignedRequests = await _db.CourseRegistrations.Where(r => r.StudentId == studentId && r.ClassId == enrollment.ClassId && r.Status == "Assigned").ToListAsync();
+        foreach (var registration in assignedRequests) registration.Status = "Cancelled";
         if (!hasConfirmed && !started)
         {
             _db.Payments.RemoveRange(enrollment.Payments);
             _db.Enrollments.Remove(enrollment);
             await _db.SaveChangesAsync();
+            await tx.CommitAsync();
             return EnrollmentResult.Ok(byStudent ? "Đã hủy đăng ký" : "Đã rút học viên khỏi lớp");
         }
 
@@ -227,6 +250,7 @@ public class EnrollmentService
             p.CancelReason = "Học viên đã nghỉ lớp";
         }
         await _db.SaveChangesAsync();
+        await tx.CommitAsync();
         return EnrollmentResult.Ok(hasConfirmed
             ? "Đã chuyển ghi danh sang Nghỉ (Dropped). Nếu hoàn tiền, lập phiếu hoàn ở trang Học phí"
             : "Lớp đã khai giảng nên ghi danh được chuyển sang Nghỉ (Dropped) để giữ lịch sử học");
@@ -246,7 +270,7 @@ public class EnrollmentService
             .Where(e => studentIds.Contains(e.StudentId) && e.ClassId != classId && e.Status == "Active" && e.Class.EndDate >= today)
             .Select(e => new
             {
-                e.Student.Code, StudentName = e.Student.FullName, ClassCode = e.Class.Code,
+                e.Student.Code, StudentName = e.Student.FullName, ClassName = e.Class.Name,
                 e.Class.StartDate, e.Class.EndDate,
                 Slots = e.Class.Schedules.Select(s => new { s.DayOfWeek, s.StartTime, s.EndTime }).ToList()
             })
@@ -257,7 +281,7 @@ public class EnrollmentService
         {
             var oSlots = o.Slots.Select(s => new ClassCalendar.Slot(s.DayOfWeek, s.StartTime, s.EndTime)).ToList();
             if (ClassCalendar.Overlaps(start, end, slots, o.StartDate, o.EndDate, oSlots, out var clash))
-                result.Add($"{o.Code} {o.StudentName} (lớp {o.ClassCode}, {ClassCalendar.DayNameVi(clash!.DayOfWeek)} " +
+                result.Add($"{o.Code} {o.StudentName} (lớp {o.ClassName}, {ClassCalendar.DayNameVi(clash!.DayOfWeek)} " +
                            $"{clash.StartTime:HH\\:mm}-{clash.EndTime:HH\\:mm})");
         }
         return result;

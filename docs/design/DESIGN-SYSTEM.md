@@ -1,4 +1,4 @@
-# Design system — Admin HaDiNa
+# Design system — Admin HaDI
 
 Cập nhật: 2026-10-30, đợt 1 (F2). Chỉ CSS thuần, không thêm thư viện. Nguồn token duy nhất của Admin: `src/pages/admin/Components/Ui/AdminTokens.css`, selector `.admin-layout`. Root token và Public/Teacher/Student không đổi.
 

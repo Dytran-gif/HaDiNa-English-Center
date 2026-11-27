@@ -36,15 +36,6 @@ export const offices = [
 export const contactEmail = "hi@hadiielts.vn";
 export const contactPhone = "1900 0000";
 
-export const footerCoursesNav: NavLink[] = [
-  { label: "IELTS tại trung tâm", to: "/khoa-hoc/ielts-tai-trung-tam" },
-  { label: "IELTS Online 4+2", to: "/khoa-hoc/ielts-online-4-2" },
-  { label: "IELTS Online Intensive", to: "/khoa-hoc/ielts-online-intensive" },
-  { label: "English with Huy", to: "/khoa-hoc/english-with-huy" },
-  { label: "SAT Preparation", to: "/khoa-hoc/sat-preparation" },
-  { label: "Kid & Teenager", to: "/khoa-hoc/kid-teenager" },
-];
-
 export const footerPolicyNav: NavLink[] = [
   { label: "Chính sách bảo hành", to: "/lien-he" },
   { label: "Chính sách bảo vệ thông tin người dùng", to: "/lien-he" },

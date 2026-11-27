@@ -6,7 +6,7 @@ import "../../StudentExtra.css";
 interface PresentLessonProps {
     lesson?: {
         courseName: string;
-        classCode?: string;
+        className?: string;
         bandFrom: number | string;
         bandTo: number | string;
         description?: string;
@@ -82,7 +82,7 @@ export default function PresentLessonFE({ lesson, onOpen }: PresentLessonProps) 
                     className="nl-course-img"
                 />
                 <div className="nl-course-body">
-                    <span className="nl-course-band">{lesson.classCode ?? `Band ${lesson.bandFrom} - ${lesson.bandTo}`}</span>
+                    <span className="nl-course-band">{lesson.className ?? `Band ${lesson.bandFrom} - ${lesson.bandTo}`}</span>
                     <h3 className="nl-course-name">{lesson.courseName}</h3>
                     <p className="nl-course-sub">
                         {lesson.description || t("common.sessions", { n: lesson.totalSessions ?? 0 })}

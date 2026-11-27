@@ -5,12 +5,10 @@ public class CourseClass
     public int Id { get; set; }
     public int CourseId { get; set; }
     public int TeacherId { get; set; }
-    public string Code { get; set; } = "";             // mã lớp duy nhất, vd IE65-2612-A (hiển thị + tìm ở cả 3 vai trò)
     public string Name { get; set; } = "";
     public DateOnly StartDate { get; set; }
     public DateOnly EndDate { get; set; }
     public int MaxStudents { get; set; }
-    public string? MeetingUrl { get; set; }
 
     public Course Course { get; set; } = null!;
     public Teacher Teacher { get; set; } = null!;

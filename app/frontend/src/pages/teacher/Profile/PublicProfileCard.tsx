@@ -89,7 +89,7 @@ export function MyReviewsCard() {
               {data.items.map(r => (
                 <li key={r.id}>
                   <div>
-                    <strong>{r.studentName}</strong> <span className="t-muted t-small">· lớp <span className="t-code">{r.classCode}</span> · {fmtDate(r.createdAt)}</span>
+                    <strong>{r.studentName}</strong> <span className="t-muted t-small">· lớp <span className="t-code">{r.className}</span> · {fmtDate(r.createdAt)}</span>
                     <div><span style={{ color: "#f59e0b" }}>{"★".repeat(r.rating)}</span><span style={{ color: "#d1d5db" }}>{"★".repeat(5 - r.rating)}</span></div>
                     <div className="t-muted t-small t-pre">{r.comment}</div>
                   </div>

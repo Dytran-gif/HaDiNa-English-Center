@@ -31,6 +31,8 @@ public class TeachersController : ControllerBase
             Email = t.User.Email,
             Specialty = t.Specialty,
             Degree = t.Degree,
+            AvatarUrl = t.User.AvatarUrl,
+            TeachingExperience = t.TeachingExperience,
             HireDate = t.HireDate,
             Status = t.Status,
             IsLocked = t.User.IsLocked,
@@ -128,6 +130,7 @@ public class TeachersController : ControllerBase
             Phone = req.Phone.Trim(),
             Specialty = req.Specialty.Trim(),
             Degree = req.Degree?.Trim(),
+            TeachingExperience = req.TeachingExperience?.Trim(),
             HireDate = req.HireDate,
             Status = req.Status,
             User = new User
@@ -138,6 +141,14 @@ public class TeachersController : ControllerBase
             }
         };
         _db.Teachers.Add(teacher);
+        _db.PublicTeacherProfiles.Add(new PublicTeacherProfile
+        {
+            Teacher = teacher,
+            Slug = $"giao-vien-{Guid.NewGuid():N}",
+            FullName = teacher.FullName,
+            Title = teacher.Degree ?? teacher.Specialty,
+            Bio = "", CredentialsJson = "[]", IsPublished = true
+        });
 
         try
         {
@@ -165,6 +176,7 @@ public class TeachersController : ControllerBase
         teacher.Phone = req.Phone.Trim();
         teacher.Specialty = req.Specialty.Trim();
         teacher.Degree = req.Degree?.Trim();
+        teacher.TeachingExperience = req.TeachingExperience?.Trim();
         teacher.HireDate = req.HireDate;
         teacher.Status = req.Status;
         await _db.SaveChangesAsync();

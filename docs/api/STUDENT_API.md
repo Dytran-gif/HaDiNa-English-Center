@@ -1,5 +1,7 @@
 # API chức năng Student (SPEC, CHƯA CODE)
 
+> 2026-11-27: Classes no longer store Code or MeetingUrl. Class responses use id/name; references use classId/className. Student/course codes remain separate. Public open_classes use id/name, not code. See CLASS-FIELDS.md.
+
 > **Trạng thái: đề xuất.** Đây là hợp đồng để nhóm Student code BE (plan 10–14) và FE (plan 15) song song.
 > Đổi gì thì sửa ở đây trước. Mục nào đã code xong thì đổi nhãn `⬜` thành `✅`.
 
@@ -25,7 +27,7 @@ Dữ liệu dùng chung với Teacher (bảng nào bên nào ghi): xem mục cu�
 | POST | `/api/student/profile/change-password` ✅ | `{ currentPassword, newPassword, confirmPassword }`. `400` sai mật khẩu cũ / mật khẩu mới < 8 ký tự / trùng mật khẩu cũ. Thành công: `TokenVersion++` (token cũ mất hiệu lực) và trả `{ message, token }` mới — FE dùng `replaceToken` giữ phiên |
 | POST | `/api/student/profile/logout` | Tăng `TokenVersion` |
 | GET | `/api/student/classes?status=Ongoing\|Upcoming\|Finished` | Lớp đã/đang học: khóa, GV, lịch tuần, `progressPercent`, `attendanceRate` |
-| GET | `/api/student/classes/{id}` | Chi tiết: syllabus (bài nào đã dạy), danh sách buổi, tài liệu từng buổi, `meetingUrl`. 404 nếu không học lớp này |
+| GET | `/api/student/classes/{id}` | Chi tiết: syllabus (bài nào đã dạy), danh sách buổi, tài liệu từng buổi. 404 nếu không học lớp này |
 | GET | `/api/student/courses` ✅ | Danh sách khóa học của trung tâm (trang Courses): mảng khóa học theo type `Course` trong FE `GeneralTypes.ts`; `imageUrl` luôn `null` vì bảng Courses chưa có cột ảnh (FE tự dùng ảnh mặc định) |
 | POST | `/api/student/courses/{id}/register` ✅ | Đăng ký giả lập: tạo `Enrollment` (status `Active`, snapshot học phí từ khóa) vào **lớp đầu tiên** của khóa. `409` nếu đã có enrollment bất kỳ cho khóa này (chặn đăng ký trùng) hoặc khóa chưa có lớp. Trả `201 { id, message }` |
 | GET | `/api/student/enrollments` ✅ | Các ghi danh của học viên (khối Registered Courses trang Courses): `[{ enrollmentId, status, course }]`, mới nhất trước |
