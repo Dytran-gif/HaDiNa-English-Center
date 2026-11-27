@@ -1,4 +1,4 @@
--- Seed dữ liệu test cho HaDiNa English Center (2026-11-03)
+-- Seed dữ liệu test cho HaDI English Center (2026-11-03)
 -- CHỈ THÊM DỮ LIỆU - không sửa bảng/cột. Có guard chống chạy trùng (chạy lại an toàn).
 -- Bỏ qua: Users, Students, Teachers (theo yêu cầu) và CenterSettings (bảng chỉ có 1 dòng Id=1).
 -- Enrollment/Payment gán cho học viên Id=3 (student2@demo.com) để giữ tài khoản demo

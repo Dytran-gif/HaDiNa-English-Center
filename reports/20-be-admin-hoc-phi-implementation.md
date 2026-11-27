@@ -36,7 +36,7 @@ Plan: plans/20-be-admin-hoc-phi.md · Vùng: Admin · Người làm: Codex · Ng
 
 Build trong sandbox ban đầu không đọc được NuGet.Config ở profile người dùng; chạy lại dotnet build với quyền ngoài sandbox đã PASS. Không đổi cấu hình NuGet để né sandbox.
 
-Harness tạm: `dotnet run --project C:/Users/ADMIN/AppData/Local/Temp/hadina-admin-check-ecc637d5033a4e0cb4c9943e041fe4cf/Verify.csproj`. Không thêm project test/package vào repo. Kiểm tra 11 trường hợp DTO, không có Amount trong request, JSON total/totalItems, EF ToQueryString (payments, classes còn chỗ, lịch sử, truy vấn snapshot), authorize admin, guard claim/ngày trước khi truy cập DB. Có thể mất khi hệ thống dọn TEMP.
+Harness tạm: `dotnet run --project C:/Users/ADMIN/AppData/Local/Temp/HaDI-admin-check-ecc637d5033a4e0cb4c9943e041fe4cf/Verify.csproj`. Không thêm project test/package vào repo. Kiểm tra 11 trường hợp DTO, không có Amount trong request, JSON total/totalItems, EF ToQueryString (payments, classes còn chỗ, lịch sử, truy vấn snapshot), authorize admin, guard claim/ngày trước khi truy cập DB. Có thể mất khi hệ thống dọn TEMP.
 
 ## Tiêu chí hoàn thành
 
