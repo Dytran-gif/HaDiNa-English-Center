@@ -114,7 +114,7 @@ public class TeacherClassesController : TeacherControllerBase
                 Schedules = x.Schedules.OrderBy(s => s.DayOfWeek).ThenBy(s => s.StartTime)
                     .Select(s => new { s.DayOfWeek, s.StartTime, s.EndTime, RoomName = s.Room.Name })
                     .ToList(),
-                Students = x.Enrollments.OrderBy(e => e.Student.FullName)
+                Students = x.Enrollments.Where(e => e.Student.DeletedAt == null).OrderBy(e => e.Student.FullName)
                     .Select(e => new
                     {
                         e.Student.Id, e.Student.Code, e.Student.FullName, e.Student.Phone,

@@ -50,10 +50,10 @@ builder.Services
 
                 var u = await db.Users.AsNoTracking()
                     .Where(x => x.Id == id)
-                    .Select(x => new { x.TokenVersion, x.IsLocked })
+                    .Select(x => new { x.TokenVersion, x.IsLocked, Deleted = x.Student != null && x.Student.DeletedAt != null })
                     .FirstOrDefaultAsync();
 
-                if (u == null || u.IsLocked || u.TokenVersion != ver)
+                if (u == null || u.IsLocked || u.Deleted || u.TokenVersion != ver)
                     ctx.Fail("Token đã bị thu hồi");
             }
         };

@@ -36,7 +36,7 @@ public abstract class StudentControllerBase : ControllerBase, IAsyncActionFilter
         }
 
         var studentId = await Db.Students.AsNoTracking()
-            .Where(s => s.UserId == userId)
+            .Where(s => s.UserId == userId && s.DeletedAt == null)
             .Select(s => (int?)s.Id)
             .FirstOrDefaultAsync();
         if (studentId == null)

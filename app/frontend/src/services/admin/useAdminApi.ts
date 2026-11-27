@@ -15,7 +15,7 @@ export function useAdminApi() {
       if (!token) throw new ApiError(401, "Đăng nhập bằng tài khoản thật để lưu dữ liệu.");
       try {
         const result = await request<T>(`/api/admin/${path}`, token, { method, body: body === undefined ? undefined : JSON.stringify(body) });
-        if (/^(courses|classes|teachers)(\/|$)|^students\/\d+\/enrollments(\/|$)/.test(path)) notifyCoursesChanged();
+        if (/^(courses|classes|teachers|students)(\/|$)/.test(path)) notifyCoursesChanged();
         return result;
       }
       catch (error) { if (error instanceof ApiError && error.status === 401) logout(); throw error; }
@@ -34,6 +34,19 @@ export function useAdminQuery<T>(path: string, allPages = false) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [revision, setRevision] = useState(0);
+  useEffect(() => {
+    if (!/^(classes|courses|students|teachers|dashboard)([/?]|$)/.test(path)) return;
+    const refresh = () => setRevision(value => value + 1);
+    const storage = (event: StorageEvent) => { if (event.key === "ecw_courses_revision") refresh(); };
+    window.addEventListener("courses-changed", refresh);
+    window.addEventListener("storage", storage);
+    window.addEventListener("focus", refresh);
+    return () => {
+      window.removeEventListener("courses-changed", refresh);
+      window.removeEventListener("storage", storage);
+      window.removeEventListener("focus", refresh);
+    };
+  }, [path]);
   useEffect(() => {
     const controller = new AbortController();
     setData(undefined); setError(""); setLoading(true);

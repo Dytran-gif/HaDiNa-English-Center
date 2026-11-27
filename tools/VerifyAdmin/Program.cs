@@ -50,6 +50,13 @@ foreach (var length in new[] { 7,8 }) {
 Check(Math.Abs((AppTime.Now - DateTime.UtcNow.AddHours(7)).TotalSeconds) < 2 && AppTime.Now.Kind == DateTimeKind.Unspecified, "Vietnam business time independent of server timezone, serialized without Z");
 var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlServer("Server=localhost;Database=VerifyOnly;Trusted_Connection=True;TrustServerCertificate=True").Options;
 using var db = new AppDbContext(options);
+Check(db.Model.FindEntityType(typeof(Student))!.FindProperty(nameof(Student.DeletedAt))!.IsNullable,
+    "student archive marker leaves existing records active by default");
+var retainedHistorySql = db.Payments.Select(p => new { p.Id, p.Amount, p.Enrollment.Student.FullName }).ToQueryString();
+Check(!retainedHistorySql.Contains("DeletedAt"), "financial history is not filtered away when a student is archived");
+Check(db.Model.FindEntityType(typeof(Enrollment))!.GetForeignKeys()
+    .Single(fk => fk.PrincipalEntityType.ClrType == typeof(Student)).DeleteBehavior == DeleteBehavior.Restrict,
+    "student enrollment history keeps restrictive foreign key");
 var search = assembly.GetType("EnglishCenter.Api.Controllers.Admin.AdminSearch")!.GetMethod("WhereContains",BindingFlags.Static|BindingFlags.NonPublic)!.MakeGenericMethod(typeof(Course));
 Expression<Func<Course,string>>[] names = [c=>c.Name];
 var query = (IQueryable<Course>)search.Invoke(null,[db.Courses,"ielts",names])!;

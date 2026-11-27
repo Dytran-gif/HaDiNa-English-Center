@@ -74,7 +74,7 @@ public class ClassesController : ControllerBase
         cls.Status = StatusOf(cls.StartDate, cls.EndDate, Today());
 
         cls.Students = await _db.Enrollments
-            .Where(e => e.ClassId == id)
+            .Where(e => e.ClassId == id && e.Student.DeletedAt == null)
             .OrderBy(e => e.Student.FullName)
             .Select(e => new ClassStudentItem
             {

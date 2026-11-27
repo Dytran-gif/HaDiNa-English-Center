@@ -112,7 +112,7 @@ public class TeacherAttendanceController : TeacherControllerBase
         var students = await Db.Enrollments.AsNoTracking()
             .Where(e => e.ClassId == classId && (e.Status == "Active" || recordIds.Contains(e.StudentId)))
             .OrderBy(e => e.Student.FullName)
-            .Select(e => new { e.StudentId, e.Student.Code, e.Student.FullName, EnrollmentStatus = e.Status })
+            .Select(e => new { e.StudentId, e.Student.Code, e.Student.FullName, EnrollmentStatus = e.Status, IsDeleted = e.Student.DeletedAt != null })
             .ToListAsync();
 
         var slot = c.Slots.First(s => s.DayOfWeek == AppTime.DayNo(date));
@@ -123,7 +123,7 @@ public class TeacherAttendanceController : TeacherControllerBase
             Items = students.Select(s =>
             {
                 records.TryGetValue(s.StudentId, out var r);
-                return new { s.StudentId, s.Code, s.FullName, s.EnrollmentStatus, Status = r?.Status, Note = r?.Note };
+                return new { s.StudentId, s.Code, s.FullName, s.EnrollmentStatus, s.IsDeleted, Status = r?.Status, Note = r?.Note };
             })
         });
     }
@@ -157,7 +157,7 @@ public class TeacherAttendanceController : TeacherControllerBase
 
         var ids = req.Items.Select(i => i.StudentId).ToList();
         var enrolled = await Db.Enrollments
-            .Where(e => e.ClassId == req.ClassId && ids.Contains(e.StudentId))
+            .Where(e => e.ClassId == req.ClassId && ids.Contains(e.StudentId) && e.Student.DeletedAt == null)
             .Select(e => e.StudentId).ToListAsync();
         if (enrolled.Count != ids.Count) return Error(400, "Có học viên không thuộc lớp này");
 

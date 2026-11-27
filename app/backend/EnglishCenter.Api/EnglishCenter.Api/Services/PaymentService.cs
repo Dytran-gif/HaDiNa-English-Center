@@ -55,7 +55,7 @@ public class PaymentService
 
     private async Task<(Enrollment? enrollment, TuitionBalance balance)> LoadAsync(int enrollmentId)
     {
-        var e = await _db.Enrollments.Include(x => x.Payments).FirstOrDefaultAsync(x => x.Id == enrollmentId);
+        var e = await _db.Enrollments.Include(x => x.Payments).Include(x => x.Student).FirstOrDefaultAsync(x => x.Id == enrollmentId);
         return (e, e == null ? new TuitionBalance(0, 0, 0, 0) : Balance(e.FinalTuitionFee, e.Payments));
     }
 
@@ -85,9 +85,13 @@ public class PaymentService
     public async Task<PaymentResult> CreateConfirmedAsync(int adminUserId, int enrollmentId, decimal amount, string method,
         DateOnly? paidDate, string? transferRef, string? note)
     {
+        var studentId = await _db.Enrollments.Where(e => e.Id == enrollmentId).Select(e => (int?)e.StudentId).FirstOrDefaultAsync();
+        if (studentId == null) return PaymentResult.Fail(404, "Không tìm thấy ghi danh");
+        await using var tx = await _db.Database.BeginTransactionAsync();
+        await StudentLifecycle.LockAsync(_db, studentId.Value);
         var (e, bal) = await LoadAsync(enrollmentId);
         if (e == null) return PaymentResult.Fail(404, "Không tìm thấy ghi danh");
-        if (e.Status == "Dropped") return PaymentResult.Fail(409, "Học viên đã nghỉ lớp này, không thu thêm");
+        if (e.Status == "Dropped" || e.Student.DeletedAt != null) return PaymentResult.Fail(409, "Học viên đã nghỉ lớp này, không thu thêm");
         if (amount <= 0) return PaymentResult.Fail(400, "Số tiền phải lớn hơn 0");
         if (bal.Remaining <= 0) return PaymentResult.Fail(409, "Ghi danh này đã đóng đủ học phí");
         if (amount > bal.Remaining)
@@ -104,6 +108,7 @@ public class PaymentService
         };
         _db.Payments.Add(p);
         await SaveWithReceiptAsync(p);
+        await tx.CommitAsync();
         return PaymentResult.Ok($"Đã lập phiếu thu {p.ReceiptNo}", p.Id);
     }
 
@@ -111,9 +116,11 @@ public class PaymentService
     public async Task<PaymentResult> RequestTransferAsync(int studentUserId, int studentId, int enrollmentId,
         decimal amount, string? transferRef, string? note)
     {
+        await using var tx = await _db.Database.BeginTransactionAsync();
+        await StudentLifecycle.LockAsync(_db, studentId);
         var (e, bal) = await LoadAsync(enrollmentId);
         if (e == null || e.StudentId != studentId) return PaymentResult.Fail(404, "Không tìm thấy khoản học phí");
-        if (e.Status == "Dropped") return PaymentResult.Fail(409, "Bạn đã nghỉ lớp này");
+        if (e.Status == "Dropped" || e.Student.DeletedAt != null) return PaymentResult.Fail(409, "Bạn đã nghỉ lớp này");
         if (amount <= 0) return PaymentResult.Fail(400, "Số tiền phải lớn hơn 0");
         var canRequest = bal.Remaining - bal.Pending;
         if (canRequest <= 0)
@@ -132,16 +139,23 @@ public class PaymentService
         };
         _db.Payments.Add(p);
         await _db.SaveChangesAsync();
+        await tx.CommitAsync();
         return PaymentResult.Ok("Đã gửi yêu cầu, trung tâm sẽ xác nhận sau khi kiểm tra tài khoản", p.Id);
     }
 
     // Admin xác nhận yêu cầu chuyển khoản -> thành phiếu thu
     public async Task<PaymentResult> ConfirmAsync(int adminUserId, int paymentId, DateOnly? paidDate)
     {
+        var studentId = await _db.Payments.Where(p => p.Id == paymentId).Select(p => (int?)p.Enrollment.StudentId).FirstOrDefaultAsync();
+        if (studentId == null) return PaymentResult.Fail(404, "Không tìm thấy yêu cầu");
+        await using var tx = await _db.Database.BeginTransactionAsync();
+        await StudentLifecycle.LockAsync(_db, studentId.Value);
         var p = await _db.Payments.FirstOrDefaultAsync(x => x.Id == paymentId);
         if (p == null) return PaymentResult.Fail(404, "Không tìm thấy yêu cầu");
         if (p.Status != Pending) return PaymentResult.Fail(409, "Yêu cầu này đã được xử lý");
-        var (_, bal) = await LoadAsync(p.EnrollmentId);
+        var (enrollment, bal) = await LoadAsync(p.EnrollmentId);
+        if (enrollment == null || enrollment.Student.DeletedAt != null || enrollment.Status == "Dropped")
+            return PaymentResult.Fail(409, "Học viên đã nghỉ hoặc đã được xóa, không xác nhận khoản thu mới");
         if (p.Amount > bal.Remaining)
             return PaymentResult.Fail(409, $"Số tiền yêu cầu vượt số còn nợ ({bal.Remaining:N0}đ). Hãy từ chối và lập phiếu đúng số");
         var date = paidDate ?? p.PaidDate;
@@ -152,6 +166,7 @@ public class PaymentService
         p.ConfirmedByUserId = adminUserId;
         p.ConfirmedAt = AppTime.Now;
         await SaveWithReceiptAsync(p);
+        await tx.CommitAsync();
         return PaymentResult.Ok($"Đã xác nhận, số biên lai {p.ReceiptNo}", p.Id);
     }
 

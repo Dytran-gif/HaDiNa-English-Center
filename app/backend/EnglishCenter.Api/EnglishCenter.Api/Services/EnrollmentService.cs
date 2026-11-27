@@ -125,7 +125,7 @@ public class EnrollmentService
     {
         options ??= new EnrollOptions();
         var student = await _db.Students.FindAsync(studentId);
-        if (student == null)
+        if (student == null || student.DeletedAt != null)
             return EnrollmentResult.Fail(404, "Không tìm thấy học viên");
         if (student.Status == "Dropped")
             return EnrollmentResult.Fail(409, "Học viên đã nghỉ, không thể ghi danh");
@@ -137,6 +137,11 @@ public class EnrollmentService
 
         // Serializable: hai người đăng ký cùng lúc không vượt sĩ số
         await using var tx = await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+        await StudentLifecycle.LockAsync(_db, studentId);
+
+        // Recheck inside the transaction: the student may have been deleted after the initial read.
+        if (!await _db.Students.AnyAsync(s => s.Id == studentId && s.DeletedAt == null && s.Status != "Dropped"))
+            return EnrollmentResult.Fail(409, "Học viên đã nghỉ hoặc đã được xóa, không thể ghi danh");
 
         if (await _db.Enrollments.AnyAsync(e => e.StudentId == studentId && e.ClassId == classId))
             return EnrollmentResult.Fail(409, "Học viên đã có ghi danh trong lớp này");
@@ -193,10 +198,12 @@ public class EnrollmentService
     // - Còn lại: chuyển sang Dropped để giữ lịch sử điểm danh, bài nộp, phiếu thu (hoàn tiền lập phiếu Refund riêng).
     public async Task<EnrollmentResult> WithdrawAsync(int studentId, int enrollmentId, bool byStudent = false)
     {
+        await using var tx = await _db.Database.BeginTransactionAsync();
+        await StudentLifecycle.LockAsync(_db, studentId);
         var enrollment = await _db.Enrollments
             .Include(e => e.Payments)
             .Include(e => e.Class)
-            .FirstOrDefaultAsync(e => e.Id == enrollmentId && e.StudentId == studentId);
+            .FirstOrDefaultAsync(e => e.Id == enrollmentId && e.StudentId == studentId && e.Student.DeletedAt == null);
 
         if (enrollment == null)
             return EnrollmentResult.Fail(404, "Không tìm thấy ghi danh");
@@ -217,6 +224,7 @@ public class EnrollmentService
             _db.Payments.RemoveRange(enrollment.Payments);
             _db.Enrollments.Remove(enrollment);
             await _db.SaveChangesAsync();
+            await tx.CommitAsync();
             return EnrollmentResult.Ok(byStudent ? "Đã hủy đăng ký" : "Đã rút học viên khỏi lớp");
         }
 
@@ -227,6 +235,7 @@ public class EnrollmentService
             p.CancelReason = "Học viên đã nghỉ lớp";
         }
         await _db.SaveChangesAsync();
+        await tx.CommitAsync();
         return EnrollmentResult.Ok(hasConfirmed
             ? "Đã chuyển ghi danh sang Nghỉ (Dropped). Nếu hoàn tiền, lập phiếu hoàn ở trang Học phí"
             : "Lớp đã khai giảng nên ghi danh được chuyển sang Nghỉ (Dropped) để giữ lịch sử học");

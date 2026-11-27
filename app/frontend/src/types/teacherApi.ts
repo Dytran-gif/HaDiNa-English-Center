@@ -101,7 +101,7 @@ export interface AttendanceSession {
 
 export interface AttendanceRoster {
   classId: number; className: string; date: string; startTime: string; endTime: string; roomName: string; canEdit: boolean;
-  items: { studentId: number; code: string; fullName: string; enrollmentStatus: string; status: AttendanceStatus | null; note: string | null }[];
+  items: { studentId: number; code: string; fullName: string; enrollmentStatus: string; isDeleted?: boolean; status: AttendanceStatus | null; note: string | null }[];
 }
 
 export interface AttendanceSummary {

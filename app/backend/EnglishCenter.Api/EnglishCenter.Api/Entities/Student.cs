@@ -13,6 +13,8 @@ public class Student
     public string? ParentPhone { get; set; }
     public string Status { get; set; } = "Studying";   // Studying | OnHold | Dropped
     public DateTime CreatedAt { get; set; }
+    // Removed from operational lists; financial and academic history remain linked.
+    public DateTime? DeletedAt { get; set; }
 
     public User User { get; set; } = null!;
     public List<Enrollment> Enrollments { get; set; } = new();

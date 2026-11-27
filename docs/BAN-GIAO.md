@@ -1,5 +1,12 @@
 # Nhật ký bàn giao
 
+## [2026-11-27] Xóa học viên đã khóa hoặc đã nghỉ, cập nhật sĩ số
+
+- Admin được xóa nếu tài khoản khóa HOẶC trạng thái Dropped dù có ghi danh. Xóa khỏi danh sách bằng DeletedAt, chuyển ghi danh Dropped để sĩ số tự tính lại; giữ phiếu thu Confirmed/lịch sử. Pending được từ chối.
+- Thêm migration `20261127084005_ArchiveDeletedStudents`, đã backup/verify và áp dụng local. Không global filter làm mất join báo cáo; login/JWT/mở khóa/ghi danh chặn hồ sơ đã xóa.
+- Đã test API điều kiện, nhiều lớp, biên lai, phiên đăng nhập cũ và các thao tác đồng thời. Dọn đủ sáu tài khoản QA; giữ thao tác xóa ID1 từ phiên khác trong lúc kiểm tra. Xem `docs/api/STUDENT-DELETION.md`.
+- Điểm danh cũ vẫn xem được, dòng học viên đã xóa chỉ đọc. Không sửa luật xóa lớp/khóa trong task này. FE/BE cần triển khai cùng migration.
+
 ## [2026-11-27] Khóa học public dùng chung DB với Admin
 
 - Homepage 6 khóa + Xem tất cả; danh sách/chi tiết/menu/footer/tư vấn/khảo sát lấy API thật. Không còn chặn trang chi tiết theo slug trong dữ liệu tĩnh.

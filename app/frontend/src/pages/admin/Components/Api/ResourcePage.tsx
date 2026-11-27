@@ -80,7 +80,8 @@ export default function ResourcePage({ config }: { config: ResourceConfig }) {
   }
   const nameOf=(row:AdminRecord)=>String(row.fullName ?? row.name ?? config.singular);
   function actions(row:AdminRecord){
-    const deleteButton=<Button icon="trash" variant="danger" onClick={()=>setConfirmation({row,action:"delete"})} disabled={busy}>Xóa {config.singular}</Button>;
+    const studentDeleteBlocked=config.path==="students" && !row.isLocked && row.status!=="Dropped";
+    const deleteButton=<Button icon="trash" variant="danger" onClick={()=>setConfirmation({row,action:"delete"})} disabled={busy||studentDeleteBlocked} title={studentDeleteBlocked?"Khóa tài khoản hoặc chuyển sang Nghỉ học để xóa học viên.":undefined}>Xóa {config.singular}</Button>;
     return <RowActions name={nameOf(row)} onEdit={()=>edit(row)} disabled={busy} onDelete={accounts?undefined:()=>setConfirmation({row,action:"delete"})}>{accounts?<ActionMenu label={nameOf(row)}>
       <Button onClick={()=>{setResetRow(row);setPassword("");setActionError("");setFieldErrors({});}} disabled={busy}>Đặt lại mật khẩu</Button>
       <Button onClick={()=>setConfirmation({row,action:"lock"})} disabled={busy}>{row.isLocked?"Mở khóa tài khoản":"Khóa tài khoản"}</Button>
@@ -130,6 +131,6 @@ export default function ResourcePage({ config }: { config: ResourceConfig }) {
     <ConfirmDialog open={Boolean(confirmation)} title={confirmation?.action==="delete"?`Xóa ${config.singular}`:confirmation?.row.isLocked?"Mở khóa tài khoản":"Khóa tài khoản"} confirmLabel={confirmation?.action==="delete"?"Xác nhận xóa":confirmation?.row.isLocked?"Mở khóa":"Khóa tài khoản"} danger={confirmation?.action==="delete"||!confirmation?.row.isLocked} onClose={()=>setConfirmation(null)} onConfirm={async()=>{
       if(!confirmation)return;const {row,action}=confirmation;
       await mutate(()=>api.send(action==="delete"?"DELETE":"POST",`${config.path}/${row.id}${action==="delete"?"":`/${row.isLocked?"unlock":"lock"}`}`),action==="delete"?`Đã xóa ${nameOf(row)}.`:"Đã cập nhật trạng thái tài khoản.",action==="delete",true);
-    }}><p>{confirmation?.action==="delete"?"Bạn muốn xóa":"Thay đổi quyền đăng nhập của"} <strong>{confirmation?nameOf(confirmation.row):""}</strong>?</p>{confirmation?.action==="delete"&&<p>Dữ liệu đang được sử dụng sẽ được máy chủ kiểm tra trước khi xóa.</p>}</ConfirmDialog>
+    }}><p>{confirmation?.action==="delete"?"Bạn muốn xóa":"Thay đổi quyền đăng nhập của"} <strong>{confirmation?nameOf(confirmation.row):""}</strong>?</p>{confirmation?.action==="delete"&&<p>{config.path==="students"?"Học viên sẽ được gỡ khỏi danh sách và sĩ số các lớp. Lịch sử học và phiếu thu được giữ lại.":"Dữ liệu đang được sử dụng sẽ được máy chủ kiểm tra trước khi xóa."}</p>}</ConfirmDialog>
   </div>;
 }
